@@ -3,7 +3,7 @@
 ## Todo List
 
 - [] db schema
-- [] auth
+- [x] auth
 - [] deployment sst
 - [] header navbar
 - [] brand crud
