@@ -31,23 +31,12 @@ export const UsersTable = createTable(
   })
 );
 
-export const SessionsTable= createTable(
-  "session",
-  {
-    id: text("id", { length: 256 }).primaryKey(),
-    userId: int("user_id", { mode: "number" }),
-    expiresAt: int("expires_at", { mode: "timestamp" }).notNull(),
-  },
-  (example) => ({
-    userIdIndex: index("user_id_idx").on(example.userId),
-  })
-);
-
-export const posts = createTable(
-  "post",
+export const CustomersTable = createTable(  
+  "customer",
   {
     id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-    name: text("name", { length: 256 }),
+    phone: text("phone", { length: 8 }),
+    address: text("address", { length: 256 }),
     createdAt: int("created_at", { mode: "timestamp" })
       .default(sql`(unixepoch())`)
       .notNull(),
@@ -55,10 +44,10 @@ export const posts = createTable(
       () => new Date()
     ),
   },
-  (example) => ({
-    nameIndex: index("name_idx").on(example.name),
+  (example) => ({ 
+    phoneIndex: index("phone_idx").on(example.phone),
   })
 );
 
 export type User=InferSelectModel<typeof UsersTable>;
-export type Session=InferSelectModel<typeof SessionsTable>;
+

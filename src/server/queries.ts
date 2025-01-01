@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "./db";
-import { User, SessionsTable, UsersTable } from "./db/schema";
+import { User, UsersTable } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { redis } from "./db";
 
