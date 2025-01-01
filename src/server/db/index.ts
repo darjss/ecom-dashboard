@@ -1,5 +1,6 @@
 import { createClient, type Client } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
+import {Redis} from "@upstash/redis"
 
 import * as schema from "./schema";
 
@@ -24,3 +25,5 @@ export const client =
 if (process.env.NODE_ENV !== "production") globalForDb.client = client;
 
 export const db = drizzle(client, { schema });
+
+export const redis=Redis.fromEnv();

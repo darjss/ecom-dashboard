@@ -16,10 +16,14 @@ export default function RootLayout({
     <div>
       <SidebarProvider>
         <AppSidebar />
-        <div>
+        <div className="flex min-h-screen flex-col">
           <Header />
+          <main className="flex-1 pt-16">
+            <div className="p-4">
 
-          {children}
+            {children}
+            </div>
+          </main>
         </div>
       </SidebarProvider>
     </div>

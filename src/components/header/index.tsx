@@ -6,6 +6,7 @@ import { Suspense } from "react";
 
 import UserGreeting from "./user-greeting";
 import Pathname from "./pathname";
+import UserData from "./user-data";
 
 const Header = async () => {
   return (
@@ -55,7 +56,7 @@ const Header = async () => {
             </PopoverTrigger>
             <PopoverContent className="w-56">
               <Suspense fallback={<div className="p-4 text-center text-gray-500">Loading...</div>}>
-                <UserGreeting />
+                <UserData />
               </Suspense>
             </PopoverContent>
           </Popover>
