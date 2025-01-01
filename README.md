@@ -5,7 +5,7 @@
 - [] db schema
 - [x] auth
 - [] deployment sst
-- [] header navbar
+- [x] header navbar
 - [] brand crud
 - [] category crud
 - [] user crud
