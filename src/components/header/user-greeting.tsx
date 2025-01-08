@@ -1,11 +1,11 @@
 "use client";
 import { logout } from "@/lib/auth";
 import { getCurrentSession } from "@/lib/session";
-import { User } from "@/server/db/schema";
+import { UserSelectType } from "@/server/db/schema";
 import { useActionState } from "react";
 
 interface UserGreetingProps {
-  user: User;
+  user: UserSelectType;
 }
 
 const UserGreeting= ({user}:UserGreetingProps)=>{
