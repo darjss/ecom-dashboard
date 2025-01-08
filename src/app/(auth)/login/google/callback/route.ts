@@ -9,6 +9,7 @@ import { decodeIdToken } from "arctic";
 
 import type { OAuth2Tokens } from "arctic";
 import { createUser, getUserFromGoogleId } from "@/server/queries";
+import { create } from "domain";
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
@@ -62,7 +63,6 @@ export async function GET(request: Request): Promise<Response> {
       },
     });
   }
-
 
   return new Response(null, {
     status: 302,
