@@ -4,7 +4,6 @@ import { SidebarTrigger } from "../ui/sidebar";
 import { Input } from "../ui/input";
 import { Suspense } from "react";
 
-import UserGreeting from "./user-greeting";
 import Pathname from "./pathname";
 import UserData from "./user-data";
 

@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { FormWrapper } from "./formWrapper";
 import SubmitButton from "./submit-button";
-import { addProductSchema, addProductType } from "@/lib/zod/schema";
+import { addProductSchema } from "@/lib/zod/schema";
 import {
   addBrandsAndCategories,
   addProduct,
