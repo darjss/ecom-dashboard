@@ -1,1 +1,0 @@
-ALTER TABLE `ecommerce-dashboard_user` DROP COLUMN `role`;

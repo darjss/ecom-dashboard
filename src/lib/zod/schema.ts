@@ -1,13 +1,13 @@
 import { z } from "zod";
 const variantSchema = z.object({
-  name: z
-    .string()
-    .min(2, {
-      message: "Product Variation name is too short",
-    })
-    .max(30),
-  stock: z.number().finite().safe().positive(),
-  price: z.number().finite().safe().positive(),
+  amount: z.string().min(3, {
+    message: "Product Variation amount is too short",
+  }),
+  potency: z.string().min(2, {
+    message: "Product Variation potency is too short",
+  }).optional(),
+  stock: z.number().int().positive().finite(),
+  price: z.number().int().positive().finite(),
 });
 
 const productImageSchema = z.object({
@@ -25,11 +25,10 @@ export const addProductSchema = z.object({
   description: z.string().min(5, {
     message: "Product description is too short",
   }),
-  // brandId: z.string().max(2),
-  // categoryId: z.string().max(2),
-  // status: z.enum(["Active", "Draft", "Archived"]),
-  brandId: z.string().min(1, "Please select a brand"),
-  categoryId: z.string().min(1, "Please select a category"),
+  dailyIntake: z.number().int().positive().finite(),
+  brandId: z.coerce.number().int().positive().finite(),
+  categoryId: z.coerce.number().int().positive().finite(),
+
   //   variants:z.array(variantSchema).nonempty(),
   //   images:z.array(productImageSchema).nonempty()
 });

@@ -5,12 +5,12 @@ import { Input } from "../ui/input";
 import { Suspense } from "react";
 
 import Pathname from "./pathname";
-import UserData from "./user-data";
+// import UserData from "./user-data";
 
 const Header = async () => {
   return (
-    <header className="fixed left-0 right-0 top-0 z-50 border-b bg-white shadow-sm">
-      <div className="flex h-16 items-center justify-between px-4">
+    <header className="relative flex h-16 border-b bg-white shadow-sm">
+      <div className="flex h-full w-full items-center justify-between px-4">
         <div className="flex items-center gap-2 md:gap-4">
           <SidebarTrigger className="text-gray-500 hover:text-gray-700" />
           <Pathname />
@@ -55,7 +55,7 @@ const Header = async () => {
             </PopoverTrigger>
             <PopoverContent className="w-56">
               <Suspense fallback={<div className="p-4 text-center text-gray-500">Loading...</div>}>
-                <UserData />
+                {/* <UserData /> */}
               </Suspense>
             </PopoverContent>
           </Popover>

@@ -6,6 +6,7 @@ import {
   UseFormReturn,
   SubmitHandler,
   SubmitErrorHandler,
+  useFieldArray,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ZodObject, ZodSchema, ZodTypeAny } from "zod";
@@ -61,6 +62,7 @@ export function FormWrapper<T extends ZodSchema>({
     resolver: zodResolver(schema),
     defaultValues: defaultValues,
   });
+  const {control}=form;
 
   const onValidSubmit: SubmitHandler<any> = useCallback(
     async (data) => {
@@ -68,9 +70,10 @@ export function FormWrapper<T extends ZodSchema>({
         console.log("Form data (valid submission):", data);
         const result = await formAction(data);
         console.log("Form submission result:", result);
-        if (result && typeof result === "object" && "message" in result) {
-          toast.success(result.message);
-        }
+      if (result && typeof result === "object" && "message" in result) {
+        // toast.success(result.message);
+        console.log(result.message);
+      }
         if (onSubmit) {
           onSubmit(data);
         }
@@ -78,7 +81,7 @@ export function FormWrapper<T extends ZodSchema>({
       } catch (error) {
         console.error("Form submission error:", error);
         console.log(form.getValues)
-        toast.error("An error occurred while submitting the form");
+        // toast.error("An error occurred while submitting the form");
       }
     },
     [formAction, form, onSubmit],

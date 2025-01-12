@@ -1,29 +1,38 @@
 import { createClient, type Client } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import {Redis} from "@upstash/redis"
-
+import { Redis } from "@upstash/redis";
 import * as schema from "./schema";
 
 /**
- * Cache the database connection in development. This avoids creating a new connection on every HMR
- * update.
+ * Cache the database connection in development to avoid creating
+ * a new connection on every HMR update.
  */
 const globalForDb = globalThis as unknown as {
   client: Client | undefined;
 };
 
-if (!process.env.TURSO_CONNECTION_URL) {
-  throw new Error("DATABASE_URL environment variable is not defined");
-}
+const isDevelopment = process.env.NODE_ENV !== "production";
+
+const getDbUrl = () => {
+  if (isDevelopment) {
+    return "file:local.db";
+  }
+ 
+  if (!process.env.TURSO_CONNECTION_URL) {
+    throw new Error("TURSO_CONNECTION_URL environment variable is not defined in production");
+  }
+  return process.env.TURSO_CONNECTION_URL;
+};
 
 export const client =
   globalForDb.client ??
   createClient({
-    url: process.env.TURSO_CONNECTION_URL,
-    authToken: process.env.TURSO_AUTH_TOKEN,
+    url: getDbUrl(),
+    // Only include auth token in production
+    ...(isDevelopment ? {} : { authToken: process.env.TURSO_AUTH_TOKEN }),
   });
-if (process.env.NODE_ENV !== "production") globalForDb.client = client;
+
+if (isDevelopment) globalForDb.client = client;
 
 export const db = drizzle(client, { schema });
-
-export const redis=Redis.fromEnv();
+export const redis = Redis.fromEnv();

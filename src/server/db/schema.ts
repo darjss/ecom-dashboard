@@ -98,6 +98,7 @@ export const ProductsTable = createTable(
     status: text("status", { length: 20 }).default("draft").notNull(),
     hasVariants: int("has_variants", { mode: "boolean" }).default(sql`0`).notNull(),
     discount: int("discount", { mode: "number" }).default(0),
+    dailyIntake: int("daily_intake", { mode: "number" }).default(0),
     categoryId: int("category_id", { mode: "number" }).references(() => CategoriesTable.id),
     brandId: int("brand_id", { mode: "number" }).references(() => BrandsTable.id),
     createdAt: int("created_at", { mode: "timestamp" })
@@ -124,7 +125,9 @@ export const ProductVariantsTable = createTable(
     id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
     productId: int("product_id", { mode: "number" }).references(() => ProductsTable.id, { onDelete: "cascade" }).notNull(),
     sku: text("sku", { length: 50 }).notNull().unique(),
-    name: text("name", { length: 256 }).notNull(),
+    amount: text("amount", { length: 15
+     }).notNull(),
+    potency: text("potency", { length: 10 }).notNull(),
     stock: int("stock", { mode: "number" }).default(0),
     price: int("price", { mode: "number" }).notNull(),
     createdAt: int("created_at", { mode: "timestamp" })
@@ -136,7 +139,6 @@ export const ProductVariantsTable = createTable(
   },
   (table) => ({
     productIndex: index("variant_product_idx").on(table.productId),
-    nameIndex: index("variant_name_idx").on(table.name),
   })
 );
 

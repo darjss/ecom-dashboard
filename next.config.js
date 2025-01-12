@@ -9,6 +9,7 @@ const config = {
     experimental: {
         ppr: 'incremental',
         dynamicIO: true,
+        reactCompiler: true,
       },
       eslint: {
         // Warning: This allows production builds to successfully complete even if
@@ -16,5 +17,5 @@ const config = {
         ignoreDuringBuilds: true,
       },
 };
-
+  
 export default config;

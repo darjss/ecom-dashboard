@@ -13,7 +13,7 @@ CREATE TABLE `ecommerce-dashboard_cart_item` (
 	`quantity` integer NOT NULL,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer,
-	FOREIGN KEY (`cart_id`) REFERENCES `ecommerce-dashboard_cart`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`cart_id`) REFERENCES `ecommerce-dashboard_cart`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`product_variant_id`) REFERENCES `ecommerce-dashboard_product_variant`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
@@ -56,13 +56,15 @@ CREATE TABLE `ecommerce-dashboard_order_detail` (
 	`order_id` integer NOT NULL,
 	`product_variant_id` integer NOT NULL,
 	`quantity` integer NOT NULL,
-	FOREIGN KEY (`order_id`) REFERENCES `ecommerce-dashboard_order`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`order_id`) REFERENCES `ecommerce-dashboard_order`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`product_variant_id`) REFERENCES `ecommerce-dashboard_product_variant`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `ecommerce-dashboard_order` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`order_number` text(8) NOT NULL,
 	`customer_id` integer NOT NULL,
+	`status` text(50) NOT NULL,
 	`total` integer NOT NULL,
 	`notes` text,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
@@ -87,7 +89,7 @@ CREATE TABLE `ecommerce-dashboard_product_image` (
 	`is_primary` integer DEFAULT 0 NOT NULL,
 	`display_order` integer DEFAULT 0,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
-	FOREIGN KEY (`product_variant_id`) REFERENCES `ecommerce-dashboard_product_variant`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`product_variant_id`) REFERENCES `ecommerce-dashboard_product_variant`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `ecommerce-dashboard_product_variant` (
@@ -99,7 +101,7 @@ CREATE TABLE `ecommerce-dashboard_product_variant` (
 	`price` integer NOT NULL,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer,
-	FOREIGN KEY (`product_id`) REFERENCES `ecommerce-dashboard_product`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`product_id`) REFERENCES `ecommerce-dashboard_product`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `ecommerce-dashboard_product` (
@@ -119,17 +121,14 @@ CREATE TABLE `ecommerce-dashboard_product` (
 	FOREIGN KEY (`brand_id`) REFERENCES `ecommerce-dashboard_brand`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-DROP TABLE `ecommerce-dashboard_session`;--> statement-breakpoint
-DROP TABLE `ecommerce-dashboard_post`;--> statement-breakpoint
-/*
- SQLite does not support "Set not null to column" out of the box, we do not generate automatic migration for that, so it has to be done manually
- Please refer to: https://www.techonthenet.com/sqlite/tables/alter_table.php
-                  https://www.sqlite.org/lang_altertable.html
-                  https://stackoverflow.com/questions/2083543/modify-a-columns-type-in-sqlite3
-
- Due to that we don't generate migration automatically and it has to be done manually
-*/--> statement-breakpoint
-ALTER TABLE `ecommerce-dashboard_user` ADD `role` text(20) DEFAULT 'admin' NOT NULL;--> statement-breakpoint
+CREATE TABLE `ecommerce-dashboard_user` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`username` text(256) NOT NULL,
+	`google_id` text(256),
+	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
+	`updated_at` integer
+);
+--> statement-breakpoint
 CREATE UNIQUE INDEX `ecommerce-dashboard_brand_name_unique` ON `ecommerce-dashboard_brand` (`name`);--> statement-breakpoint
 CREATE INDEX `brand_name_idx` ON `ecommerce-dashboard_brand` (`name`);--> statement-breakpoint
 CREATE INDEX `cart_item_cart_idx` ON `ecommerce-dashboard_cart_item` (`cart_id`);--> statement-breakpoint
@@ -159,4 +158,5 @@ CREATE INDEX `product_status_idx` ON `ecommerce-dashboard_product` (`status`);--
 CREATE INDEX `product_category_idx` ON `ecommerce-dashboard_product` (`category_id`);--> statement-breakpoint
 CREATE INDEX `product_brand_idx` ON `ecommerce-dashboard_product` (`brand_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `ecommerce-dashboard_user_google_id_unique` ON `ecommerce-dashboard_user` (`google_id`);--> statement-breakpoint
+CREATE INDEX `username_idx` ON `ecommerce-dashboard_user` (`username`);--> statement-breakpoint
 CREATE INDEX `google_id_idx` ON `ecommerce-dashboard_user` (`google_id`);

@@ -73,6 +73,7 @@ function setCacheEntry(sessionId: string, session: Session, user: UserSelectType
 }
 
 function getCacheEntry(sessionId: string): CachedSession | undefined {
+  console.log("Getting cache entry")
   const cachedSession = sessionCache.get(sessionId);
   if (cachedSession) {
     // Update last accessed time
@@ -114,6 +115,7 @@ export async function createSession(
 export async function validateSessionToken(
   token: string,
 ): Promise<SessionValidationResult> {
+  console.log("Validating session token")
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
   let result: { session: Session; user: UserSelectType } | null;
   
@@ -126,6 +128,7 @@ export async function validateSessionToken(
     };
   } else {
     // If not in cache, get from database
+    console.log("Getting from redis")
     result = await getDbSession(sessionId);
     if (result) {
       setCacheEntry(sessionId, result.session, result.user);

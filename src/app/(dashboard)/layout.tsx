@@ -13,15 +13,14 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div>
+    <div className="flex h-screen overflow-hidden">
       <SidebarProvider>
         <AppSidebar />
-        <div className="flex min-h-screen flex-col">
+        <div className="flex flex-1 flex-col">
           <Header />
-          <main className="flex-1 pt-16">
+          <main className="flex-1 overflow-y-auto">
             <div className="p-4">
-
-            {children}
+              {children}
             </div>
           </main>
         </div>
