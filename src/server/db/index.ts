@@ -15,7 +15,7 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 
 const getDbUrl = () => {
   if (isDevelopment) {
-    return "file:local.db";
+    return "file:dev.db";
   }
  
   if (!process.env.TURSO_CONNECTION_URL) {

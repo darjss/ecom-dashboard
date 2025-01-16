@@ -1,24 +1,14 @@
 import { z } from "zod";
-const variantSchema = z.object({
-  amount: z.string().min(3, {
-    message: "Product Variation amount is too short",
-  }),
-  potency: z.string().min(2, {
-    message: "Product Variation potency is too short",
-  }).optional(),
-  stock: z.number().int().positive().finite(),
-  price: z.number().int().positive().finite(),
-});
+import { status } from "../constants";
 
-const productImageSchema = z.object({
-  url: z.string().url(),
-  isPrimary: z.boolean(),
+const imageSchema = z.object({
+  url: z.string(),
 });
 
 export const addProductSchema = z.object({
   name: z
     .string()
-    .min(5, {
+    .min(1, {
       message: "Product name is too short",
     })
     .max(100),
@@ -28,9 +18,17 @@ export const addProductSchema = z.object({
   dailyIntake: z.number().int().positive().finite(),
   brandId: z.coerce.number().int().positive().finite(),
   categoryId: z.coerce.number().int().positive().finite(),
-
+  amount: z.string().min(3, {
+    message: "Product amount is too short",
+  }),
+  potency: z.string().min(2, {
+    message: "Product potency is too short",
+  }),
+  status: z.enum(status),
+  stock: z.number().int().positive().finite(),
+  price: z.number().int().min(20000),
   //   variants:z.array(variantSchema).nonempty(),
-  //   images:z.array(productImageSchema).nonempty()
+  images: z.array(imageSchema).nonempty(),
 });
 
 export type addProductType = z.infer<typeof addProductSchema>;

@@ -17,7 +17,7 @@ const publicPaths = [
 export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   if (process.env.NODE_ENV === "development") {
-    console.log("Middleware request:", request);
+    // console.log("Middleware request:", request);
     return NextResponse.next();
   }
 

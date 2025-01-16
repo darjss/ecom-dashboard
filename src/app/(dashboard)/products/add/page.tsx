@@ -1,24 +1,13 @@
-import AddProductForm from "@/components/add-product-form";
+
 import { BrandType, getAllBrands, getAllCategories } from "@/server/queries";
+import AddProductForm from "../_components/add-product-form";
 
-// import { ProfileForm } from "@/components/shad-example-form";
-
-// export default async function HomePage() {
-//       const categories=await getAllCategories();
-//       const brands= await getAllBrands();
-//   return (
-//     <div className="w-screen flex justify-center items-center h-screen">
-//       <AddProductForm categories={categories} brands= {brands} />
-//     </div>
-//   );
-// }
 export default async function Page() {
-    const categories=await getAllCategories();
-    const brands:BrandType= await getAllBrands();
+  const categories = await getAllCategories();
+  const brands: BrandType = await getAllBrands();
   return (
-    <div className="flex h-full w-full items-center justify-center">
-      <AddProductForm categories={categories} brands= {brands} />
-      {/* <SelectForm /> */}
+    <div className="flex w-full items-start justify-center">
+      <AddProductForm categories={categories} brands={brands} />
     </div>
   );
 }

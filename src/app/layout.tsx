@@ -1,10 +1,9 @@
-
 import { Toaster } from "@/components/ui/sonner";
 import "@/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
-
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -17,9 +16,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
-      <body>
+      <body className="">
+        <NuqsAdapter>
           <main>{children}</main>
-          <Toaster/>
+          <Toaster />
+        </NuqsAdapter>
       </body>
     </html>
   );

@@ -9,6 +9,8 @@ import {
     Settings
   } from "lucide-react"
 
+export const status = ["active", "draft", "out_of_stock"] as const;
+
 export const sideNavitems = [
     {
       title: "Home",
