@@ -15,7 +15,7 @@ const publicPaths = [
 ];
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
-
+  console.log("Middleware")
   if (process.env.NODE_ENV === "development") {
     // console.log("Middleware request:", request);
     return NextResponse.next();
@@ -35,6 +35,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // Handle GET requests - cookie extension and auth check
   if (request.method === "GET") {
     // Skip auth for public paths
+    console.log("GET REQUEST MIDDLEWARE")
     if (publicPaths.some((publicPath) => path.startsWith(publicPath))) {
       return NextResponse.next();
     }

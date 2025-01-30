@@ -1,4 +1,3 @@
-
 import { BrandType, getAllBrands, getAllCategories } from "@/server/queries";
 import AddProductForm from "../_components/add-product-form";
 

@@ -1,4 +1,3 @@
-import { redis } from "@/server/db";
 
 const Counter = async () => {
     const count= await redis.incr("counter");

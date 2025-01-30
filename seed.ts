@@ -1,4 +1,4 @@
-// Import necessary functions and type definitions
+"use server";
 import { addProduct, addBrand, addCategory } from "@/server/queries";
 import { BrandInsertType, CategoryInsertType } from "@/server/db/schema";
 import { addProductType } from "@/lib/zod/schema";
@@ -47,6 +47,7 @@ const productsData: addProductType[] = [
       { url: "https://example.com/product1_image2.jpg" },
       { url: "" }, // Empty string at the end
     ],
+    status: "active",
   },
   {
     name: "Vitamin C",
@@ -63,6 +64,7 @@ const productsData: addProductType[] = [
       { url: "https://example.com/product2_image2.jpg" },
       { url: "" },
     ],
+    status: "active",
   },
   {
     name: "Vitamin D3",
@@ -79,6 +81,7 @@ const productsData: addProductType[] = [
       { url: "https://example.com/product3_image2.jpg" },
       { url: "" },
     ],
+    status: "active",
   },
   {
     name: "Vitamin E",
@@ -95,6 +98,7 @@ const productsData: addProductType[] = [
       { url: "https://example.com/product4_image2.jpg" },
       { url: "" },
     ],
+    status: "active",
   },
   {
     name: "Vitamin B Complex",
@@ -111,6 +115,7 @@ const productsData: addProductType[] = [
       { url: "https://example.com/product5_image2.jpg" },
       { url: "" },
     ],
+    status: "active",
   },
   {
     name: "Vitamin K2",
@@ -127,6 +132,7 @@ const productsData: addProductType[] = [
       { url: "https://example.com/product6_image2.jpg" },
       { url: "" },
     ],
+    status: "active",
   },
   {
     name: "Vitamin B12",
@@ -143,6 +149,7 @@ const productsData: addProductType[] = [
       { url: "https://example.com/product7_image2.jpg" },
       { url: "" },
     ],
+    status: "active",
   },
   {
     name: "Vitamin B6",
@@ -159,6 +166,7 @@ const productsData: addProductType[] = [
       { url: "https://example.com/product8_image2.jpg" },
       { url: "" },
     ],
+    status: "active",
   },
   {
     name: "Vitamin B5",
@@ -175,6 +183,7 @@ const productsData: addProductType[] = [
       { url: "https://example.com/product9_image2.jpg" },
       { url: "" },
     ],
+    status: "active",
   },
   {
     name: "Vitamin B3",
@@ -191,6 +200,7 @@ const productsData: addProductType[] = [
       { url: "https://example.com/product10_image2.jpg" },
       { url: "" },
     ],
+    status: "active",
   },
 ];
 
@@ -217,6 +227,3 @@ export const seedDatabase = async () => {
     console.error("Error during database seeding:", error);
   }
 };
-
-// Execute the seed function
-seedDatabase();

@@ -10,15 +10,15 @@
 const config = {
   experimental: {
     ppr: "incremental",
-    dynamicIO: true,
-    reactCompiler: true,
-    cacheLife: {
-      brandCategory: {
-        stale: 60 * 60 * 24,
-        revalidate: 60 * 60 * 24,
-        expire: 60 * 60 * 24 * 30,
-      },
-    },
+   dynamicIO: true,
+   reactCompiler: true,
+   cacheLife: {
+     brandCategory: {
+       stale: 60 * 60 * 24,
+       revalidate: 60 * 60 * 24,
+       expire: 60 * 60 * 24 * 30,
+     },
+   },
   },
   eslint: {
     // Warning: This allows production builds to successfully complete even if
@@ -26,5 +26,5 @@ const config = {
     ignoreDuringBuilds: true,
   },
 };
-  
+
 export default config;

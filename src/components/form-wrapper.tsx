@@ -21,6 +21,7 @@ interface FormWrapperProps<T extends ZodSchema> {
   children: (methods: UseFormReturn<any>) => ReactNode;
   className?: string;
   onSubmit?: (data: any) => void;
+  initialData?: {}
 }
 
 
@@ -30,8 +31,10 @@ export function FormWrapper<T extends ZodSchema>({
   children,
   className,
   onSubmit,
+  initialData
 }: FormWrapperProps<T>) {
-  const defaultValues = generateDefaultValues(schema);
+  console.log("data",initialData)
+  const defaultValues =initialData===undefined? generateDefaultValues(schema): initialData;
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: defaultValues,

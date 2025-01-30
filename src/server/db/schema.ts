@@ -91,23 +91,23 @@ export const CategoriesTable = createTable(
 export const ProductsTable = createTable(
   "product",
   {
-    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }).notNull(),
     name: text("name", { length: 256 }).notNull(),
     slug: text("slug", { length: 256 }).notNull().unique(),
-    description: text("description"),
+    description: text("description").notNull(),
     status: text("status", { enum: status }).default("draft").notNull(),
-    discount: int("discount", { mode: "number" }).default(0),
-    amount: text("amount", { length: 15 }),
-    potency: text("potency", { length: 10 }),
-    stock: int("stock", { mode: "number" }).default(0),
+    discount: int("discount", { mode: "number" }).default(0).notNull(),
+    amount: text("amount", { length: 15 }).notNull(),
+    potency: text("potency", { length: 10 }).notNull(),
+    stock: int("stock", { mode: "number" }).default(0).notNull(),
     price: int("price", { mode: "number" }).notNull(),
-    dailyIntake: int("daily_intake", { mode: "number" }).default(0),
+    dailyIntake: int("daily_intake", { mode: "number" }).default(0).notNull(),
     categoryId: int("category_id", { mode: "number" }).references(
       () => CategoriesTable.id,
-    ),
+    ).notNull(),
     brandId: int("brand_id", { mode: "number" }).references(
       () => BrandsTable.id,
-    ),
+    ).notNull(),
     createdAt: int("created_at", { mode: "timestamp" })
       .default(sql`(unixepoch())`)
       .notNull(),
@@ -129,7 +129,7 @@ export const ProductsTable = createTable(
 export const ProductImagesTable = createTable(
   "product_image",
   {
-    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }).notNull(),
     productId: int("product_id", { mode: "number" }).references(() => ProductsTable.id, { onDelete: "cascade" }).notNull(),
     url: text("url", { length: 512 }).notNull(),
     isPrimary: int("is_primary", { mode: "boolean" }).default(sql`0`).notNull(),

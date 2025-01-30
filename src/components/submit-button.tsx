@@ -1,8 +1,8 @@
-import { ReactNode } from "react";
+import { ButtonHTMLAttributes, ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 
-interface SubmitButtonProps {
+interface SubmitButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   isPending: boolean;
   children: ReactNode;
   className?: string;
@@ -24,19 +24,19 @@ const SubmitButton = ({
   className,
   spinnerSize = 20,
   variant = "default",
+  ...props
 }: SubmitButtonProps) => {
   return (
     <Button
-    type="submit"
+      type="submit"
       className={`flex gap-2 ${className}`}
       variant={variant}
       disabled={isPending}
+      {...props}
     >
-      {isPending && (
-        <Loader2 className="animate-spin" size={spinnerSize} />
-      )}
+      {isPending && <Loader2 className="animate-spin" size={spinnerSize} />}
       {children}
     </Button>
   );
 };
-export default SubmitButton
+export default SubmitButton;

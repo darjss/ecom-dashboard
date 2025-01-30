@@ -1,3 +1,4 @@
+import { ProductType } from "@/server/queries";
 import {
   z,
   ZodSchema,
@@ -9,6 +10,7 @@ import {
   ZodBoolean,
   ZodOptional,
 } from "zod";
+import { addProductType } from "./schema";
 
 export const generateDefaultValues = (schema: ZodSchema) => {
   if (!(schema instanceof ZodObject)) {
@@ -65,3 +67,44 @@ export const generateDefaultValues = (schema: ZodSchema) => {
 
   return defaultValues;
 };
+
+export const parseProduct = (product: ProductType): addProductType => {
+  const { createdAt, updatedAt, ...parsedProduct } = product;
+  const images =
+    parsedProduct.images.length > 0
+      ? parsedProduct.images.map((url) => ({ url }))
+      : [{ url: "default-image-url.jpg" }];
+  const result: addProductType = {
+    ...parsedProduct,
+    images: images as [{ url: string }, ...{ url: string }[]],
+  };
+  return result;
+};
+// const parsedProduct: {
+//   images: string[];
+//   name: string;
+//   slug: string;
+//   description: string;
+//   status: "active" | "draft" | "out_of_stock";
+//   discount: number;
+//   amount: string;
+//   potency: string;
+//   stock: number;
+//   price: number;
+//   dailyIntake: number;
+//   categoryId: number | null;
+//   brandId: number | null;
+// };
+// type addProductType = {
+//     name: string;
+//     description: string;
+//     dailyIntake: number;
+//     brandId: number;
+//     categoryId: number;
+//     amount: string;
+//     potency: string;
+//     status: "active" | "draft" | "out_of_stock";
+//     stock: number;
+//     price: number;
+//     images: [...];
+// }

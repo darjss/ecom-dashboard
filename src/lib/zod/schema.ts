@@ -6,6 +6,7 @@ const imageSchema = z.object({
 });
 
 export const addProductSchema = z.object({
+  id: z.number().int().positive().finite().optional(),
   name: z
     .string()
     .min(1, {

@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { addProductSchema } from "@/lib/zod/schema";
-import { addProduct, BrandType, CategoryType, getProductById, ProductType, updateProduct } from "@/server/queries";
+import { addProduct, BrandType, CategoryType, ProductType } from "@/server/queries";
 import { useAction } from "@/hooks/use-action";
 import {
   Select,
@@ -25,25 +25,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import SubmitButton from "@/components/submit-button";
 import { status } from "@/lib/constants";
 import { AddImageForm } from "./image-form";
+import { parseProduct } from "@/lib/zod/utils";
 
-
-interface EditProductFormProps {
+interface AddProductFormProps {
+  product: ProductType;
   categories: CategoryType;
   brands: BrandType;
-  
 }
 
-const EditProductForm = async ({
-  categories,
-  brands,
-}: EditProductFormProps) => {
-  const [action, isLoading] = useAction(updateProduct);
-
+const EditProductForm = ({ categories, brands, product }: AddProductFormProps) => {
+  const [action, isLoading] = useAction(addProduct);
+  const parsedProducts = parseProduct(product);
   return (
-    <div className="mx-auto w-full max-w-6xl bg-background p-4 sm:p-6 lg:p-8">
+    <div className="mx-auto w-full max-w-6xl bg-background p-4 sm:p-6 lg:p-8 overflow-auto">
       <FormWrapper
         formAction={action}
         schema={addProductSchema}
+        initialData={parsedProducts}
         className="space-y-8"
       >
         {(form) => (
@@ -87,7 +85,7 @@ const EditProductForm = async ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Brand</FormLabel>
-                      <Select
+                    <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value || ""}
                       >

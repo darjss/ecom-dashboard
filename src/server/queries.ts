@@ -1,5 +1,5 @@
 "use server";
-// import "server-only";
+import "server-only";
 import { db } from "./db";
 import {
   BrandInsertType,
@@ -17,10 +17,10 @@ import { desc, eq, getTableColumns, sql } from "drizzle-orm";
 import { redis } from "./db";
 import { addProductType } from "@/lib/zod/schema";
 import { z } from "zod";
-import { error } from "console";
+
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
-import { name } from ".eslintrc.cjs";
-import { status } from "@/lib/constants";
+import { error } from "console";
+import { revalidatePath } from "next/cache";
 
 export interface Session {
   id: string;
@@ -174,26 +174,29 @@ export const addBrand = async (brand: BrandInsertType) => {
 };
 
 export const getProductById = async (id: number) => {
-  try {
-const result = await db.run(sql`
-      SELECT 
-        p.*,
-       json_group_array(pi.url) as product_image
-      FROM ${ProductsTable} p
-      LEFT JOIN ${ProductImagesTable} pi ON pi.product_variant_id = p.id
-      WHERE p.id = ${id}
-    `);
-    const product=result.rows[0];
-    if (product === null || product === undefined || product.product_image === undefined) {
-      return null;
-    }
-    product.product_image=JSON.parse(product.product_image?.toString() as string);
-console.log(result.rows[0]);
-return result.rows[0];
-  } catch (e) {
-    console.log(e);
-    throw new Error("Operation failed" + e);
+  console.log("Fetching product with id", id);
+  const products = await db
+    .select({
+      ...getTableColumns(ProductsTable),
+      images: sql`json_group_array(${ProductImagesTable.url})`.as(
+        "images",
+      ),
+    })
+    .from(ProductsTable)
+    .leftJoin(
+      ProductImagesTable,
+      eq(ProductImagesTable.productId, ProductsTable.id),
+    )
+    .where(eq(ProductsTable.id, id))
+    .groupBy(ProductsTable.id);
+  if (products[0] === undefined) {
+    return { message: "Operation failed", error: "Product not found" };
   }
+  console.log(products[0]);
+  return {
+    ...products[0],
+    images: JSON.parse(products[0].images as string) as string[],
+  };
 };
 // export const updateProduct = async (product: ProductType) => {
 //   try {
@@ -209,18 +212,42 @@ return result.rows[0];
 //   }
 // };
 
+export const deleteProduct = async (id: number) => {
+  try {
+    const result = await db
+      .delete(ProductsTable)
+      .where(eq(ProductsTable.id, id));
+    revalidatePath("/products");
+    return { message: "Successfully deleted Product" };
+  } catch (e) {
+    console.log(e);
+    return { message: "Deleting failed", error: e };
+  }
+};
+
 export const getAllProducts = async () => {
   "use cache";
   cacheLife("minutes");
   const products = await db
-    .select()
+    .select({
+      ...getTableColumns(ProductsTable),
+      images: sql`json_group_array(${ProductImagesTable.url})`.as(
+        "images",
+      ),
+    })
     .from(ProductsTable)
-    .rightJoin(
+    .leftJoin(
       ProductImagesTable,
       eq(ProductImagesTable.productId, ProductsTable.id),
     )
     .groupBy(ProductsTable.id);
-  return products;
+  const parsedProducts = products.map((product) => ({
+    ...product,
+    images: JSON.parse(product.images as string) as string[],
+  }));
+
+  console.log("products:", parsedProducts);
+  return parsedProducts;
 };
 
 export const addCategory = async (category: CategoryInsertType) => {
@@ -264,6 +291,6 @@ export const addImage = async (image: ProductImageInsertType) => {
 export type BrandType = Awaited<ReturnType<typeof getAllBrands>>;
 export type CategoryType = Awaited<ReturnType<typeof getAllCategories>>;
 export type ProductType = Exclude<
-  Awaited<ReturnType<typeof getProductById>>,
-  null
+  Exclude<Awaited<ReturnType<typeof getProductById>>, null>,
+  { message: string; error: string }
 >;

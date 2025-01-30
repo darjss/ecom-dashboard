@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "7d742068-7dd2-4a21-872e-86a68392845d",
+  "id": "cd0de7fb-118a-4bf4-bb89-ebcb209737ed",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "ecommerce-dashboard_brand": {
@@ -604,8 +604,8 @@
           "notNull": true,
           "autoincrement": true
         },
-        "product_variant_id": {
-          "name": "product_variant_id",
+        "product_id": {
+          "name": "product_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -639,18 +639,18 @@
         "image_variant_idx": {
           "name": "image_variant_idx",
           "columns": [
-            "product_variant_id"
+            "product_id"
           ],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "ecommerce-dashboard_product_image_product_variant_id_ecommerce-dashboard_product_id_fk": {
-          "name": "ecommerce-dashboard_product_image_product_variant_id_ecommerce-dashboard_product_id_fk",
+        "ecommerce-dashboard_product_image_product_id_ecommerce-dashboard_product_id_fk": {
+          "name": "ecommerce-dashboard_product_image_product_id_ecommerce-dashboard_product_id_fk",
           "tableFrom": "ecommerce-dashboard_product_image",
           "tableTo": "ecommerce-dashboard_product",
           "columnsFrom": [
-            "product_variant_id"
+            "product_id"
           ],
           "columnsTo": [
             "id"

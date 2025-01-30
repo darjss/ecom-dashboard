@@ -2,17 +2,20 @@
 
 ## Todo List
 
-- [] db schema
+- [x] db schema
 - [x] auth
-- [] deployment sst
 - [x] header navbar
-- [] brand crud
-- [] category crud
-- [] user crud
-- [] product crud
-- [] search
-- [] order crud
-- [] analytics
-- [] payment confirm
-
-
+- [x] brand crud
+- [x] category crud
+- [ ] user management
+- [ ] product crud
+  - [x] add product
+  - [ ] edit product
+  - [x] delete product
+  - [ ] product table pagination filter
+  - [ ] file upload
+  - [ ] ai scraper
+- [ ] search
+- [ ] order crud
+- [ ] analytics
+- [ ] payment confirm
