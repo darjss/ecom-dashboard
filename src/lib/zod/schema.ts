@@ -3,6 +3,7 @@ import { status } from "../constants";
 
 const imageSchema = z.object({
   url: z.string(),
+  id: z.number().int().positive().finite().optional(),
 });
 
 export const addProductSchema = z.object({
@@ -28,8 +29,8 @@ export const addProductSchema = z.object({
   status: z.enum(status),
   stock: z.number().int().positive().finite(),
   price: z.number().int().min(20000),
-  //   variants:z.array(variantSchema).nonempty(),
   images: z.array(imageSchema).nonempty(),
 });
 
 export type addProductType = z.infer<typeof addProductSchema>;
+

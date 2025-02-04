@@ -9,15 +9,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { useFieldArray, UseFormReturn, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import {  useEffect } from "react";
+import { useEffect } from "react";
 import { XIcon, ImageIcon } from "lucide-react";
 import { z } from "zod";
 import { Card, CardContent } from "@/components/ui/card";
 interface Image {
   url: string;
+  id?:number
 }
 
-export const AddImageForm = ({ form }: { form: UseFormReturn<any> }) => {
+export const AddImageForm = ({
+  form,
+  isEdit,
+}: {
+  form: UseFormReturn<any>;
+  isEdit: boolean;
+}) => {
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "images",
@@ -26,6 +33,7 @@ export const AddImageForm = ({ form }: { form: UseFormReturn<any> }) => {
     control: form.control,
     name: "images",
   });
+  console.log("watchdImages", watchedImages);
 
   useEffect(() => {
     if (watchedImages.length > 0) {
@@ -38,11 +46,13 @@ export const AddImageForm = ({ form }: { form: UseFormReturn<any> }) => {
       }
     }
   }, [watchedImages, append]);
+  
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         {fields.map((field, index) => (
+          <>
           <FormField
             key={field.id}
             control={form.control}
@@ -55,7 +65,7 @@ export const AddImageForm = ({ form }: { form: UseFormReturn<any> }) => {
                       placeholder="Image URL"
                       {...field}
                       className="flex-grow"
-                    />
+                      />
                     {index !== fields.length - 1 && (
                       <Button
                         type="button"
@@ -63,7 +73,7 @@ export const AddImageForm = ({ form }: { form: UseFormReturn<any> }) => {
                         size="icon"
                         onClick={() => remove(index)}
                         className="transition-colors duration-300 hover:bg-destructive hover:text-destructive-foreground"
-                      >
+                        >
                         <XIcon className="h-4 w-4" />
                       </Button>
                     )}
@@ -72,7 +82,25 @@ export const AddImageForm = ({ form }: { form: UseFormReturn<any> }) => {
                 <FormMessage />
               </FormItem>
             )}
+            />
+             <FormField
+            key={index}
+            control={form.control}
+            name={`images.${index}.id`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                    <Input
+                      placeholder="Image URL"
+                      {...field}
+                      className="hidden"
+                    />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
+            </>
         ))}
       </div>
 

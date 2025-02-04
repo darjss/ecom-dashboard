@@ -9,7 +9,9 @@ const Page = async () => {
   const products = await getAllProducts();
   const categories = await getAllCategories();
   const brands: BrandType = await getAllBrands();
-  console.log(products);
+  console.log("products", products);
+  // console.log("categories", categories);
+  // console.log("brands", brands);
   // const dummyProduct: ProductType = {
   //   images: [],
   //   id: 1,

@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { addProductSchema } from "@/lib/zod/schema";
-import { addProduct, BrandType, CategoryType, ProductType } from "@/server/queries";
+import {  BrandType, CategoryType, ProductType, updateProduct } from "@/server/queries";
 import { useAction } from "@/hooks/use-action";
 import {
   Select,
@@ -34,14 +34,20 @@ interface AddProductFormProps {
 }
 
 const EditProductForm = ({ categories, brands, product }: AddProductFormProps) => {
-  const [action, isLoading] = useAction(addProduct);
+  const [action, isLoading] = useAction(updateProduct);
   const parsedProducts = parseProduct(product);
+  
+  console.log("parsed",parsedProducts);
   return (
     <div className="mx-auto w-full max-w-6xl bg-background p-4 sm:p-6 lg:p-8 overflow-auto">
       <FormWrapper
         formAction={action}
         schema={addProductSchema}
-        initialData={parsedProducts}
+        initialData={{
+          ...parsedProducts,
+          brandId: product.brandId+"",
+          categoryId: product.categoryId+"",
+        }}
         className="space-y-8"
       >
         {(form) => (
@@ -182,7 +188,7 @@ const EditProductForm = ({ categories, brands, product }: AddProductFormProps) =
                           placeholder="Enter price"
                           {...field}
                           onChange={(e) =>
-                            field.onChange(parseFloat(e.target.value))
+                            field.onChange(parseInt(e.target.value))
                           }
                         />
                       </FormControl>
@@ -202,7 +208,7 @@ const EditProductForm = ({ categories, brands, product }: AddProductFormProps) =
                           placeholder="Enter stock quantity"
                           {...field}
                           onChange={(e) =>
-                            field.onChange(parseInt(e.target.value, 10))
+                            field.onChange(parseInt(e.target.value))
                           }
                         />
                       </FormControl>
@@ -263,7 +269,7 @@ const EditProductForm = ({ categories, brands, product }: AddProductFormProps) =
               <CardContent className="space-y-4 p-6">
                 <h3 className="mb-4 text-xl font-semibold">Product Images</h3>
                 <Suspense fallback={<div>Loading...</div>}>
-                  <AddImageForm form={form} />
+                  <AddImageForm form={form} isEdit={true}/>
                 </Suspense>
               </CardContent>
             </Card>

@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { FormWrapper } from "./formWrapper";
+import { FormWrapper } from "./form-wrapper";
 import { useFieldArray } from "react-hook-form";
 
 interface AddProductFormProps {

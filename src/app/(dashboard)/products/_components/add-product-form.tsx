@@ -260,7 +260,7 @@ const AddProductForm = ({ categories, brands }: AddProductFormProps) => {
               <CardContent className="space-y-4 p-6">
                 <h3 className="mb-4 text-xl font-semibold">Product Images</h3>
                 <Suspense fallback={<div>Loading...</div>}>
-                  <AddImageForm form={form} />
+                  <AddImageForm form={form} isEdit={false} />
                 </Suspense>
               </CardContent>
             </Card>

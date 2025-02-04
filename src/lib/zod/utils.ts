@@ -72,11 +72,20 @@ export const parseProduct = (product: ProductType): addProductType => {
   const { createdAt, updatedAt, ...parsedProduct } = product;
   const images =
     parsedProduct.images.length > 0
-      ? parsedProduct.images.map((url) => ({ url }))
-      : [{ url: "default-image-url.jpg" }];
+      ? parsedProduct.images.map((image) => ({
+          url: image.url as string,
+          id: image.id as number,
+        })) as [
+          { url: string; id: number },
+          ...{ url: string; id: number }[],
+      ]
+      : ([{ id: 0, url: "default-image-url.jpg" }] as [
+          { url: string; id: number },
+          ...{ url: string; id: number }[],
+        ]);
   const result: addProductType = {
     ...parsedProduct,
-    images: images as [{ url: string }, ...{ url: string }[]],
+    images: images,
   };
   return result;
 };

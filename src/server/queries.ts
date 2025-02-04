@@ -21,13 +21,17 @@ import { z } from "zod";
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
 import { error } from "console";
 import { revalidatePath } from "next/cache";
+import { L } from "node_modules/@upstash/redis/zmscore-Dc6Llqgr.mjs";
 
 export interface Session {
   id: string;
   userId: number;
   expiresAt: Date;
 }
-
+export interface ProductImageType{
+  id: number,
+  url:string
+}
 export const insertSession = async (session: Session) => {
   // Convert Date to ISO string for storage
   const sessionToStore = {
@@ -106,7 +110,7 @@ export const getUserFromGoogleId = async (googleId: string) => {
 export const addProduct = async (product: addProductType) => {
   product.images.pop();
   const imagesUrls = product.images.map((image) => {
-    const parsed = z.string().url().safeParse(image);
+    const parsed = z.string().url().safeParse(image.url);
     if (!parsed.success) {
       return { message: "image url validation error", error: parsed.error };
     }
@@ -175,12 +179,17 @@ export const addBrand = async (brand: BrandInsertType) => {
 
 export const getProductById = async (id: number) => {
   console.log("Fetching product with id", id);
-  const products = await db
+  const [product] = await db
     .select({
       ...getTableColumns(ProductsTable),
-      images: sql`json_group_array(${ProductImagesTable.url})`.as(
-        "images",
-      ),
+      images: sql`
+        json_group_array(
+          json_object(
+            'id', ${ProductImagesTable.id},
+            'url', ${ProductImagesTable.url}
+          )
+        )
+      `.as<"images">(),
     })
     .from(ProductsTable)
     .leftJoin(
@@ -189,28 +198,82 @@ export const getProductById = async (id: number) => {
     )
     .where(eq(ProductsTable.id, id))
     .groupBy(ProductsTable.id);
-  if (products[0] === undefined) {
+  if (product === undefined) {
     return { message: "Operation failed", error: "Product not found" };
   }
-  console.log(products[0]);
+  console.log(product);
   return {
-    ...products[0],
-    images: JSON.parse(products[0].images as string) as string[],
+    ...product,
+    images: JSON.parse(product.images as string) as {
+      id: number;
+      url: string;
+    }[],
   };
 };
-// export const updateProduct = async (product: ProductType) => {
-//   try {
-//     const slug=product.name.replace("")
-//     const updatedProduct = await db.update(ProductsTable).set();
-//     const updatedImages = await db
-//       .update(ProductImagesTable)
-//       .set(product.product_image);
-//     return { message: "Successfully updated product" };
-//   } catch (e) {
-//     console.log(e);
-//     return { message: "Operation failed", error: e };
-//   }
-// };
+export const updateProduct = async (product: addProductType) => {
+  try {
+    if (product.id === undefined) {
+      return { message: "Operation Failed", error: "Product id not found" };
+    }
+    const { images, ...Parsedproduct } = product;
+    images.pop();
+    for (let i = 0; i < images.length; i++) {
+      if (images[i]?.id === undefined && images[i] === undefined) {
+        return { message: "Operation Failed", error: "Product id not found" };
+      }
+      const parsed = z.string().url().safeParse(images[i]?.url);
+      if (!parsed.success) {
+        return { message: "image url validation error", error: parsed.error };
+      }
+    }
+    const allBrands = await getAllBrands();
+    const brandName = allBrands.find(
+      (brand) => brand.id === product.brandId,
+    )?.name;
+    product.name =
+      brandName +
+      " " +
+      product.name +
+      " " +
+      product.potency +
+      " " +
+      product.amount;
+    const slug = product.name.replace(/\s+/g, "-").toLowerCase();
+    const updateProductPromise = db
+      .update(ProductsTable)
+      .set({...Parsedproduct, slug: slug})
+      .where(eq(ProductsTable.id, product.id));
+      const updateImagePromises: Promise<any>[] = images.map((img, index) =>
+        db
+          .update(ProductImagesTable)
+          .set({ url: img!.url })
+          .where(eq(ProductImagesTable.id, img!.id as number))
+      );
+   await Promise.allSettled([updateProductPromise,...updateImagePromises ])
+  } catch (e) {
+    console.log(e);
+    return { message: "Operation failed", error: e };
+  }
+};
+ 
+const updateImage= async(newImages: ProductImageType[], productId: number)=>{
+  const existingImages=await db.select({
+    id:ProductImagesTable.id,
+    url:ProductImagesTable.url
+  }).from(ProductImagesTable).where(eq(ProductImagesTable, productId));
+ let isDiff:boolean=false;
+ if(newImages.length!=existingImages.length){
+  isDiff=true;
+ } else{
+   newImages.sort((a,b)=>a.url.localeCompare(b.url));
+   existingImages.sort((a,b)=>a.url.localeCompare(b.url));
+   for(let i=0; i<newImages.length; i++){
+    if(newImages[i].)
+   }
+  }
+
+
+}
 
 export const deleteProduct = async (id: number) => {
   try {
@@ -231,9 +294,14 @@ export const getAllProducts = async () => {
   const products = await db
     .select({
       ...getTableColumns(ProductsTable),
-      images: sql`json_group_array(${ProductImagesTable.url})`.as(
-        "images",
-      ),
+      images: sql`
+        json_group_array(
+          json_object(
+            'id', ${ProductImagesTable.id},
+            'url', ${ProductImagesTable.url}
+          )
+        )
+      `.as<"images">(),
     })
     .from(ProductsTable)
     .leftJoin(
@@ -241,11 +309,12 @@ export const getAllProducts = async () => {
       eq(ProductImagesTable.productId, ProductsTable.id),
     )
     .groupBy(ProductsTable.id);
+    console.log("images",products[0]?.images)
+
   const parsedProducts = products.map((product) => ({
     ...product,
-    images: JSON.parse(product.images as string) as string[],
+    images: JSON.parse(product.images as string) as ProductImageType[],
   }));
-
   console.log("products:", parsedProducts);
   return parsedProducts;
 };

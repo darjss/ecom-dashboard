@@ -33,13 +33,13 @@ export function FormWrapper<T extends ZodSchema>({
   onSubmit,
   initialData
 }: FormWrapperProps<T>) {
-  console.log("data",initialData)
+  console.log("data",initialData);
   const defaultValues =initialData===undefined? generateDefaultValues(schema): initialData;
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: defaultValues,
   });
-
+  
   const onValidSubmit: SubmitHandler<any> = useCallback(
     async (data) => {
       try {
