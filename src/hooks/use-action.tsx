@@ -11,7 +11,7 @@ export const useAction = <T extends any[], R = any>(
 
   const action = useCallback(
     async (...args: T): Promise<R> => {
-      setIsLoading(true);
+      setIsLoading(true); 
       try {
         const result = await serverAction(...args);
 

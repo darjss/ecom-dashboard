@@ -20,34 +20,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormWrapper } from "@/components/form-wrapper";
-import { Suspense } from "react";
+import { Dispatch, SetStateAction, Suspense } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import SubmitButton from "@/components/submit-button";
 import { status } from "@/lib/constants";
 import { AddImageForm } from "./image-form";
 import { parseProduct } from "@/lib/zod/utils";
+import { useFormContext } from "react-hook-form";
 
 interface AddProductFormProps {
   product: ProductType;
   categories: CategoryType;
   brands: BrandType;
+  setDialogOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const EditProductForm = ({ categories, brands, product }: AddProductFormProps) => {
-  const [action, isLoading] = useAction(updateProduct);
+const EditProductForm = ({ categories, brands, product, setDialogOpen }: AddProductFormProps) => {
+  const [action] = useAction(updateProduct);
   const parsedProducts = parseProduct(product);
+
   
   console.log("parsed",parsedProducts);
   return (
-    <div className="mx-auto w-full max-w-6xl bg-background p-4 sm:p-6 lg:p-8 overflow-auto">
+    <div className="mx-auto w-full max-w-6xl overflow-auto bg-background p-4 sm:p-6 lg:p-8">
       <FormWrapper
         formAction={action}
         schema={addProductSchema}
         initialData={{
           ...parsedProducts,
-          brandId: product.brandId+"",
-          categoryId: product.categoryId+"",
+          brandId: product.brandId + "",
+          categoryId: product.categoryId + "",
         }}
+        setDialogOpen={setDialogOpen}
         className="space-y-8"
       >
         {(form) => (
@@ -91,7 +95,7 @@ const EditProductForm = ({ categories, brands, product }: AddProductFormProps) =
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Brand</FormLabel>
-                    <Select
+                      <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value || ""}
                       >
@@ -269,17 +273,17 @@ const EditProductForm = ({ categories, brands, product }: AddProductFormProps) =
               <CardContent className="space-y-4 p-6">
                 <h3 className="mb-4 text-xl font-semibold">Product Images</h3>
                 <Suspense fallback={<div>Loading...</div>}>
-                  <AddImageForm form={form} isEdit={true}/>
+                  <AddImageForm form={form} isEdit={true} />
                 </Suspense>
               </CardContent>
             </Card>
 
             <div className="mt-6 flex justify-end lg:col-span-2">
               <SubmitButton
-                isPending={isLoading}
+                isPending={form.formState.isSubmitting}
                 className="w-full px-8 py-3 text-lg font-semibold transition-colors duration-300 hover:bg-primary/90 sm:w-auto"
               >
-                Add Product
+                Update Product
               </SubmitButton>
             </div>
           </div>

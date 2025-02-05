@@ -10,7 +10,7 @@ import {
   ZodBoolean,
   ZodOptional,
 } from "zod";
-import { addProductType } from "./schema";
+import { addImageType, addProductType } from "./schema";
 
 export const generateDefaultValues = (schema: ZodSchema) => {
   if (!(schema instanceof ZodObject)) {
@@ -75,14 +75,8 @@ export const parseProduct = (product: ProductType): addProductType => {
       ? parsedProduct.images.map((image) => ({
           url: image.url as string,
           id: image.id as number,
-        })) as [
-          { url: string; id: number },
-          ...{ url: string; id: number }[],
-      ]
-      : ([{ id: 0, url: "default-image-url.jpg" }] as [
-          { url: string; id: number },
-          ...{ url: string; id: number }[],
-        ]);
+        })) as addImageType
+      : ([{ id: 0, url: "default-image-url.jpg" }] as addImageType);
   const result: addProductType = {
     ...parsedProduct,
     images: images,

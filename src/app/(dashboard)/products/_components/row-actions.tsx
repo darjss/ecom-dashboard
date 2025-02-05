@@ -79,6 +79,7 @@ const rowActions = ({ product, categories, brands }: RowActionProps) => {
               product={product}
               brands={brands}
               categories={categories}
+              setDialogOpen={setIsEditDialogOpen}
             />
           </DialogContent>
         </Dialog>

@@ -25,6 +25,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import SubmitButton from "@/components/submit-button";
 import { status } from "@/lib/constants";
 import { AddImageForm } from "./image-form";
+import { useFormContext } from "react-hook-form";
 
 interface AddProductFormProps {
   categories: CategoryType;
@@ -32,7 +33,7 @@ interface AddProductFormProps {
 }
 
 const AddProductForm = ({ categories, brands }: AddProductFormProps) => {
-  const [action, isLoading] = useAction(addProduct);
+  const [action] = useAction(addProduct);
 
   return (
     <div className="mx-auto w-full max-w-6xl bg-background p-4 sm:p-6 lg:p-8">
@@ -267,7 +268,7 @@ const AddProductForm = ({ categories, brands }: AddProductFormProps) => {
 
             <div className="mt-6 flex justify-end lg:col-span-2">
               <SubmitButton
-                isPending={isLoading}
+                isPending={form.formState.isSubmitting}
                 className="w-full px-8 py-3 text-lg font-semibold transition-colors duration-300 hover:bg-primary/90 sm:w-auto"
               >
                 Add Product

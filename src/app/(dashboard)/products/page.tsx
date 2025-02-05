@@ -9,7 +9,7 @@ const Page = async () => {
   const products = await getAllProducts();
   const categories = await getAllCategories();
   const brands: BrandType = await getAllBrands();
-  console.log("products", products);
+  // console.log("products", products);\
   // console.log("categories", categories);
   // console.log("brands", brands);
   // const dummyProduct: ProductType = {
@@ -31,7 +31,7 @@ const Page = async () => {
   //   updatedAt: new Date()
   //   // Add other properties as needed
   // };
-  // console.log(dummyProduct);
+// console.log(dummyProduct);
   return (
     <div>
       <h1>Products</h1>

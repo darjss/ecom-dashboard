@@ -7,15 +7,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useFieldArray, UseFormReturn, useWatch } from "react-hook-form";
+import { useFieldArray, type UseFormReturn, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { XIcon, ImageIcon } from "lucide-react";
-import { z } from "zod";
 import { Card, CardContent } from "@/components/ui/card";
+
 interface Image {
   url: string;
-  id?:number
+  id?: number;
 }
 
 export const AddImageForm = ({
@@ -33,74 +33,67 @@ export const AddImageForm = ({
     control: form.control,
     name: "images",
   });
-  console.log("watchdImages", watchedImages);
-
+  console.log("watched Images", watchedImages);
   useEffect(() => {
-    if (watchedImages.length > 0) {
-      const lastImage = watchedImages[watchedImages.length - 1];
-      if (lastImage && lastImage.url) {
-        const parsed = z.string().url().safeParse(lastImage.url);
-        if (parsed.success) {
-          append({ url: "" });
-        }
-      }
+    console.log("Use effect running ");
+    const nonEmptyImages = watchedImages.filter((img) => img.url);
+    if (fields.length <= nonEmptyImages.length) {
+      console.log("Appending url");
+      append({ url: "" });
     }
-  }, [watchedImages, append]);
-  
+  }, [watchedImages, append, fields.length]);
+
+
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         {fields.map((field, index) => (
-          <>
-          <FormField
-            key={field.id}
-            control={form.control}
-            name={`images.${index}.url`}
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      placeholder="Image URL"
-                      {...field}
-                      className="flex-grow"
+          <div key={field.id}>
+            <FormField
+              control={form.control}
+              name={`images.${index}.url`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        placeholder="Image URL"
+                        {...field}
+                        className="flex-grow"
                       />
-                    {index !== fields.length - 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => remove(index)}
-                        className="transition-colors duration-300 hover:bg-destructive hover:text-destructive-foreground"
+                      {index !== fields.length - 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => remove(index)}
+                          className="transition-colors duration-300 hover:bg-destructive hover:text-destructive-foreground"
                         >
-                        <XIcon className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+                          <XIcon className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-             <FormField
-            key={index}
-            control={form.control}
-            name={`images.${index}.id`}
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                    <Input
-                      placeholder="Image URL"
-                      {...field}
-                      className="hidden"
-                    />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+            {isEdit && (
+              <FormField
+                control={form.control}
+                name={`images.${index}.id`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input {...field} className="hidden" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
-          />
-            </>
+          </div>
         ))}
       </div>
 
@@ -111,12 +104,12 @@ export const AddImageForm = ({
           }
           return (
             <Card
-              key={image.url + index}
+              key={`image-${index}-${image.url}`}
               className="group relative overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg"
             >
               <CardContent className="p-0">
                 <img
-                  src={image.url}
+                  src={image.url || "/placeholder.svg"}
                   alt={`Product image ${index + 1}`}
                   className="h-40 w-full object-cover transition-transform duration-300 group-hover:scale-110"
                 />
@@ -135,7 +128,7 @@ export const AddImageForm = ({
             </Card>
           );
         })}
-        {watchedImages.length === 1 && (
+        {fields.length === 1 && !watchedImages[0]?.url && (
           <Card
             className="flex h-40 cursor-pointer items-center justify-center bg-muted transition-colors duration-300 hover:bg-muted/80"
             onClick={() => form.setFocus("images.0.url")}

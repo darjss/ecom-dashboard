@@ -33,4 +33,5 @@ export const addProductSchema = z.object({
 });
 
 export type addProductType = z.infer<typeof addProductSchema>;
+export type addImageType=addProductType["images"]
 

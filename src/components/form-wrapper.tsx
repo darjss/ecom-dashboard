@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useCallback } from "react";
+import { Dispatch, ReactNode, SetStateAction, useCallback, useEffect } from "react";
 import {
   useForm,
   UseFormReturn,
@@ -9,7 +9,7 @@ import {
   useFieldArray,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z, ZodObject, ZodSchema, ZodTypeAny } from "zod";
+import { ZodSchema, ZodTypeAny } from "zod";
 import { Form } from "@/components/ui/form";
 import { QueryFunction } from "@/hooks/use-action";
 import { toast } from "sonner";
@@ -21,9 +21,9 @@ interface FormWrapperProps<T extends ZodSchema> {
   children: (methods: UseFormReturn<any>) => ReactNode;
   className?: string;
   onSubmit?: (data: any) => void;
-  initialData?: {}
+  initialData?: {};
+  setDialogOpen?: Dispatch<SetStateAction<boolean>>;
 }
-
 
 export function FormWrapper<T extends ZodSchema>({
   formAction,
@@ -31,15 +31,16 @@ export function FormWrapper<T extends ZodSchema>({
   children,
   className,
   onSubmit,
-  initialData
+  initialData,
+  setDialogOpen
 }: FormWrapperProps<T>) {
-  console.log("data",initialData);
-  const defaultValues =initialData===undefined? generateDefaultValues(schema): initialData;
+  // console.log("data",initialData);
+  const defaultValues =
+    initialData === undefined ? generateDefaultValues(schema) : initialData;
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: defaultValues,
   });
-  
   const onValidSubmit: SubmitHandler<any> = useCallback(
     async (data) => {
       try {
@@ -61,6 +62,9 @@ export function FormWrapper<T extends ZodSchema>({
           onSubmit(data);
         }
         form.reset();
+        if (setDialogOpen) {
+          setDialogOpen(false);
+        }
       } catch (error) {
         console.error("Form submission error:", error);
         console.log(form.getValues);

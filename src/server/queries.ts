@@ -15,7 +15,7 @@ import {
 } from "./db/schema";
 import { desc, eq, getTableColumns, sql } from "drizzle-orm";
 import { redis } from "./db";
-import { addProductType } from "@/lib/zod/schema";
+import { addImageType, addProductType } from "@/lib/zod/schema";
 import { z } from "zod";
 
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
@@ -28,9 +28,9 @@ export interface Session {
   userId: number;
   expiresAt: Date;
 }
-export interface ProductImageType{
-  id: number,
-  url:string
+export interface ProductImageType {
+  id: number;
+  url: string;
 }
 export const insertSession = async (session: Session) => {
   // Convert Date to ISO string for storage
@@ -160,12 +160,14 @@ export const addProduct = async (product: addProductType) => {
       });
     });
     await Promise.allSettled(imagePromises);
+
     console.log("Images added successfully");
+    revalidatePath("/products/add");
+    return { message: "Added product Successfully" };
   } catch (e) {
     console.log(e);
     return { message: "Operation failed", error: e };
   }
-  return { message: "Product added successfully" };
 };
 export const addBrand = async (brand: BrandInsertType) => {
   try {
@@ -212,6 +214,7 @@ export const getProductById = async (id: number) => {
 };
 export const updateProduct = async (product: addProductType) => {
   try {
+    console.log("updating product")
     if (product.id === undefined) {
       return { message: "Operation Failed", error: "Product id not found" };
     }
@@ -239,41 +242,69 @@ export const updateProduct = async (product: addProductType) => {
       " " +
       product.amount;
     const slug = product.name.replace(/\s+/g, "-").toLowerCase();
-    const updateProductPromise = db
+    const updatedProduct = await db
       .update(ProductsTable)
-      .set({...Parsedproduct, slug: slug})
+      .set({ ...Parsedproduct, slug: slug })
       .where(eq(ProductsTable.id, product.id));
-      const updateImagePromises: Promise<any>[] = images.map((img, index) =>
-        db
-          .update(ProductImagesTable)
-          .set({ url: img!.url })
-          .where(eq(ProductImagesTable.id, img!.id as number))
-      );
-   await Promise.allSettled([updateProductPromise,...updateImagePromises ])
+    updateImage(images, product.id);
+    revalidatePath("/products");
+    return { message: "Updated product Successfully" };
   } catch (e) {
     console.log(e);
     return { message: "Operation failed", error: e };
   }
 };
- 
-const updateImage= async(newImages: ProductImageType[], productId: number)=>{
-  const existingImages=await db.select({
-    id:ProductImagesTable.id,
-    url:ProductImagesTable.url
-  }).from(ProductImagesTable).where(eq(ProductImagesTable, productId));
- let isDiff:boolean=false;
- if(newImages.length!=existingImages.length){
-  isDiff=true;
- } else{
-   newImages.sort((a,b)=>a.url.localeCompare(b.url));
-   existingImages.sort((a,b)=>a.url.localeCompare(b.url));
-   for(let i=0; i<newImages.length; i++){
-    if(newImages[i].)
-   }
+
+const updateImage = async (newImages: addImageType, productId: number) => {
+  try {
+    console.log("updating image");
+    const existingImages = await db
+      .select({
+        id: ProductImagesTable.id,
+        url: ProductImagesTable.url,
+      })
+      .from(ProductImagesTable)
+      .where(eq(ProductImagesTable.productId, productId));
+    console.log("existing", existingImages);
+    console.log("updated", newImages);
+    let isDiff: boolean = false;
+    if (newImages.length != existingImages.length) {
+      isDiff = true;
+    } else {
+      const sortedNewImages = newImages.toSorted((a, b) =>
+        a.url.localeCompare(b.url),
+      );
+      const sortedExistingImages = existingImages.toSorted((a, b) =>
+        a.url.localeCompare(b.url),
+      );
+      for (let i = 0; i < newImages.length; i++) {
+        if (sortedNewImages[i]?.url !== sortedExistingImages[i]?.url) {
+          isDiff = true;
+        }
+      }
+    }
+      console.log("isDiff");
+      if (isDiff) {
+        const deletePromises = existingImages.map((image) =>
+          db
+            .delete(ProductImagesTable)
+            .where(eq(ProductImagesTable.id, image.id)),
+        );
+        Promise.allSettled(deletePromises);
+        const insertPromises = newImages.map((image, index) =>
+          addImage({
+            productId: productId,
+            url: image.url,
+            isPrimary: index === 0 ? true : false,
+          }),
+        );
+        Promise.allSettled(insertPromises);
+      }
+  } catch (e) {
+    console.log(e);
+    return { message: "Operation failed", error: e };
   }
-
-
-}
+};
 
 export const deleteProduct = async (id: number) => {
   try {
@@ -309,13 +340,13 @@ export const getAllProducts = async () => {
       eq(ProductImagesTable.productId, ProductsTable.id),
     )
     .groupBy(ProductsTable.id);
-    console.log("images",products[0]?.images)
+  console.log("images", products[0]?.images);
 
   const parsedProducts = products.map((product) => ({
     ...product,
     images: JSON.parse(product.images as string) as ProductImageType[],
   }));
-  console.log("products:", parsedProducts);
+  // console.log("products:", parsedProducts);
   return parsedProducts;
 };
 

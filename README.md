@@ -10,7 +10,7 @@
 - [ ] user management
 - [ ] product crud
   - [x] add product
-  - [ ] edit product
+  - [x] edit product
   - [x] delete product
   - [ ] product table pagination filter
   - [ ] file upload
