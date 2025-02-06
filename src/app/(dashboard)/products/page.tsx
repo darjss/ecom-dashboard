@@ -1,9 +1,16 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { BrandType, getAllBrands, getAllCategories, getAllProducts } from "@/server/queries";
+import {
+  BrandType,
+  getAllBrands,
+  getAllCategories,
+  getAllProducts,
+} from "@/server/queries";
 import { seedDatabase } from "seed";
 import { deleteProduct, ProductType } from "@/server/queries";
 import RowActions from "./_components/row-actions";
+import ProductTable from "./_components/product-table";
+import { Suspense } from "react";
 
 const Page = async () => {
   const products = await getAllProducts();
@@ -31,13 +38,13 @@ const Page = async () => {
   //   updatedAt: new Date()
   //   // Add other properties as needed
   // };
-// console.log(dummyProduct);
+  // console.log(dummyProduct);
   return (
     <div>
       <h1>Products</h1>
       <p>This is the products page</p>
       <p>You can add products here</p>
-      {products.map((product) => {
+      {/* {products.map((product) => {
         return (
           <div
             key={product.id}
@@ -49,7 +56,14 @@ const Page = async () => {
             <RowActions product={product} brands={brands} categories={categories}/>
           </div>
         );
-      })}
+      })} */}
+      <Suspense>
+        <ProductTable
+          products={products}
+          brands={brands}
+          categories={categories}
+        />
+      </Suspense>
       <Link href="/products/add">
         <Button>Add Product</Button>
       </Link>

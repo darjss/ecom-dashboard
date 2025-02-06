@@ -43,7 +43,7 @@ import EditProductForm from "./edit-product-form";
 interface RowActionProps {
   categories: CategoryType;
   brands: BrandType;
-  product: ProductType;
+  product:ProductType
 }
 
 const rowActions = ({ product, categories, brands }: RowActionProps) => {
