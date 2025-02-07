@@ -31,6 +31,7 @@ interface AddProductFormProps {
 const AddProductForm = ({ categories, brands }: AddProductFormProps) => {
   const [action, isLoading] = useAction(addProduct);
 
+
   return (
     <div className="h-2/4 w-1/3 rounded-lg bg-slate-300 p-4">
       <FormWrapper
@@ -39,11 +40,11 @@ const AddProductForm = ({ categories, brands }: AddProductFormProps) => {
         className="space-y-4"
       >
         {(form) => {
-            const {fields, append, remove}=useFieldArray({
-              control: form.control,
-              name: "variants",
-            })
-          
+          const { fields, append, remove } = useFieldArray({
+            control: form.control,
+            name: "variants",
+          });
+
           return (
             <>
               <FormField
@@ -129,80 +130,84 @@ const AddProductForm = ({ categories, brands }: AddProductFormProps) => {
                   </FormItem>
                 )}
               />
-              {fields.map((field,index)=>(
+              {fields.map((field, index) => (
                 <div key={field.id}>
-                   <FormField
-                control={form.control}
-                name={`variants.${index}.potency`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Variation potency</FormLabel>
-                    <FormControl>
-                      <Input placeholder="100mg" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-                <FormField
-                control={form.control}
-                name={`variants.${index}.capsuleCount`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Capsule Count</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="240"
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-                 <FormField
-                control={form.control}
-                name={`variants.${index}.stock`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Stock</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="20"
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={`varaints.${index}.price`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Price</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step={1000}
-                        placeholder="1000%"
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name={`variants.${index}.potency`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Product Variation potency</FormLabel>
+                        <FormControl>
+                          <Input placeholder="100mg" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`variants.${index}.capsuleCount`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Product Capsule Count</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="240"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`variants.${index}.stock`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Product Stock</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="20"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`varaints.${index}.price`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Product Price</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step={1000}
+                            placeholder="1000%"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-              )
-                
-              )}
+              ))}
               <SubmitButton isPending={isLoading}>Add Product</SubmitButton>
             </>
           );

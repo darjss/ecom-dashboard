@@ -11,7 +11,7 @@ const config = {
   experimental: {
     ppr: "incremental",
    dynamicIO: true,
-   reactCompiler: true,
+  //  reactCompiler: true,
    cacheLife: {
      brandCategory: {
        stale: 60 * 60 * 24,

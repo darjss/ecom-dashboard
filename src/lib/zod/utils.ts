@@ -1,4 +1,4 @@
-import { ProductType } from "@/server/queries";
+import { BrandType, CategoryType, ProductType } from "@/server/queries";
 import {
   z,
   ZodSchema,
@@ -83,6 +83,20 @@ export const parseProduct = (product: ProductType): addProductType => {
   };
   return result;
 };
+
+export const parseProductsForTable=(products:ProductType[], brands:BrandType, categories:CategoryType)=>{
+  return products.map((product) => ({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    status: product.status,
+    stock: product.stock,
+    imageUrl: product.images[0]?.url as string,
+    fullProduct: product,
+    brands: brands,
+    categories: categories,
+  }));
+}
 // const parsedProduct: {
 //   images: string[];
 //   name: string;

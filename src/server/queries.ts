@@ -322,6 +322,7 @@ export const deleteProduct = async (id: number) => {
 export const getAllProducts = async () => {
   "use cache";
   cacheLife("minutes");
+  console.log("fetching product")
   const products = await db
     .select({
       ...getTableColumns(ProductsTable),
@@ -349,6 +350,42 @@ export const getAllProducts = async () => {
   // console.log("products:", parsedProducts);
   return parsedProducts;
 };
+
+export const getPaginatedProduct=async (page:number=1, pageSize=10)=>{
+  //   "use cache";
+  // cacheLife("minutes");
+  console.log("fetching paginated product")
+  const productsPromise = db
+    .select({
+      ...getTableColumns(ProductsTable),
+      images: sql`
+        json_group_array(
+          json_object(
+            'id', ${ProductImagesTable.id},
+            'url', ${ProductImagesTable.url}
+          )
+        )
+      `.as<"images">(),
+    })
+    .from(ProductsTable)
+    .leftJoin(
+      ProductImagesTable,
+      eq(ProductImagesTable.productId, ProductsTable.id),
+    )
+    .limit(pageSize)
+    .offset((page - 1) * pageSize)
+    .groupBy(ProductsTable.id);
+
+    const totalRecordPromise=db.select({count: sql<number>`count(*)`}).from(ProductsTable);
+
+    const [products, totalProducts]=await Promise.all([productsPromise, totalRecordPromise]);
+  const parsedProducts = products.map((product) => ({
+    ...product,
+    images: JSON.parse(product.images as string) as ProductImageType[],
+  }));
+  console.log("products:", parsedProducts);
+  return {products: parsedProducts, total: totalProducts[0]};
+}
 
 export const addCategory = async (category: CategoryInsertType) => {
   try {

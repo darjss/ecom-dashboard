@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import Header from "@/components/header";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { type Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -14,17 +15,17 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className="flex h-screen overflow-hidden">
-      <SidebarProvider>
-        <AppSidebar />
-        <div className="flex flex-1 flex-col">
-          <Header />
-          <main className="flex-1 overflow-y-auto">
-            <div className="">
-              {children}
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <Suspense>
+        <SidebarProvider>
+          <AppSidebar />
+          <div className="flex flex-1 flex-col">
+            <Header />
+            <main className="flex-1 overflow-y-auto">
+              <div className="">{children}</div>
+            </main>
+          </div>
+        </SidebarProvider>
+      </Suspense>
     </div>
   );
 }

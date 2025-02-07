@@ -4,7 +4,6 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
-  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
@@ -17,16 +16,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import {
+  BrandType,
+  CategoryType,
+  getPaginatedProduct,
+  ProductType,
+} from "@/server/queries";
+import RowActions from "./row-actions";
+import { Button } from "@/components/ui/button";
+import { parseAsInteger, useQueryState } from "nuqs";
+import { useState, useTransition } from "react";
+import { parseProductsForTable } from "@/lib/zod/utils";
+import { DataTableSkeleton } from "@/components/skeleton/data-table-skeleton";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  rowCount: number;
 }
-
-import { BrandType, CategoryType, ProductType } from "@/server/queries";
-import { ReceiptEuroIcon } from "lucide-react";
-import RowActions from "./row-actions";
-import { Button } from "@/components/ui/button";
-
 interface TableProductType {
   id: number;
   name: string;
@@ -82,109 +88,123 @@ const columns: ColumnDef<TableProductType>[] = [
 ];
 
 const ProductTable = ({
-  products,
+  initialProducts,
   brands,
   categories,
+  initialTotalProduct,
 }: {
-  products: ProductType[];
+  initialProducts: ProductType[];
   categories: CategoryType;
   brands: BrandType;
+  initialTotalProduct: number;
 }) => {
-  const parsedProducts = products.map((product) => ({
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    status: product.status,
-    stock: product.stock,
-    imageUrl: product.images[0]?.url as string,
-    fullProduct: product,
-    brands: brands,
-    categories: categories,
-  }));
-  return <DataTable columns={columns} data={parsedProducts} />;
-};
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
-function DataTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-  });
-
+  const [products, setProducts] = useState(
+    parseProductsForTable(initialProducts, brands, categories),
+  );
+  const [isPending, startTransition] = useTransition();
+  const [totalProducts, setTotalProducts] = useState(initialTotalProduct);
+  const handlePageChange = (newPage: number) => {
+    startTransition(async () => {
+      setPage(newPage);
+      const newPaginatedProducts = await getPaginatedProduct(page, 3);
+      setProducts(
+        parseProductsForTable(
+          newPaginatedProducts.products,
+          brands,
+          categories,
+        ),
+      );
+      setTotalProducts(newPaginatedProducts.total?.count ?? initialTotalProduct);
+    });
+  };
   return (
     <div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      {isPending ? (
+        <DataTableSkeleton columnCount={5} rowCount={10} />
+      ) : (
+        <DataTable columns={columns} data={products} rowCount={totalProducts} />
+      )}
       <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
+          onClick={() => handlePageChange(page - 1)}
+          disabled={page == 1}
         >
           Previous
         </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
+          onClick={() => handlePageChange(page + 1)}
+          disabled={page == Math.ceil(totalProducts / 3)}
         >
           Next
         </Button>
       </div>
+    </div>
+  );
+};
+
+function DataTable<TData, TValue>({
+  columns,
+  data,
+  rowCount,
+}: DataTableProps<TData, TValue>) {
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    manualPagination: true,
+    rowCount: rowCount,
+  });
+
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                return (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                No results.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }

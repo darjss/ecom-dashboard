@@ -4,16 +4,22 @@ import {
   BrandType,
   getAllBrands,
   getAllCategories,
-  getAllProducts,
+  getPaginatedProduct,
 } from "@/server/queries";
 import { seedDatabase } from "seed";
-import { deleteProduct, ProductType } from "@/server/queries";
-import RowActions from "./_components/row-actions";
 import ProductTable from "./_components/product-table";
 import { Suspense } from "react";
 
-const Page = async () => {
-  const products = await getAllProducts();
+const Page = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) => {
+  console.log("Rendered Products Page");
+  const params = await searchParams;
+  const page = params.page ?? "1";
+  console.log("page number ", page);
+  const paginatedResult = await getPaginatedProduct(parseInt(page), 3);
   const categories = await getAllCategories();
   const brands: BrandType = await getAllBrands();
   // console.log("products", products);\
@@ -59,7 +65,8 @@ const Page = async () => {
       })} */}
       <Suspense>
         <ProductTable
-          products={products}
+          initialProducts={paginatedResult.products}
+          initialTotalProduct={paginatedResult.total?.count ?? 0}
           brands={brands}
           categories={categories}
         />
