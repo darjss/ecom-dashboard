@@ -12,10 +12,11 @@
   - [x] add product
   - [x] edit product
   - [x] delete product
-  - [ ] product table pagination filter
+  - [ ] product table pagination filter sorting
   - [ ] file upload
   - [ ] ai scraper
-- [ ] search
 - [ ] order crud
+- [ ] sales table?
 - [ ] analytics
+- [ ] search
 - [ ] payment confirm

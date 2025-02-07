@@ -108,17 +108,18 @@ const ProductTable = ({
   const handlePageChange = (newPage: number) => {
     startTransition(async () => {
       setPage(newPage);
-      const newPaginatedProducts = await getPaginatedProduct(page, 3);
+      const newPaginatedProducts = await getPaginatedProduct(newPage, 3);
       setProducts(
         parseProductsForTable(
           newPaginatedProducts.products,
           brands,
           categories,
-        ),
+      ),
       );
       setTotalProducts(newPaginatedProducts.total?.count ?? initialTotalProduct);
     });
   };
+  console.log(page, products)
   return (
     <div>
       {isPending ? (

@@ -214,7 +214,7 @@ export const getProductById = async (id: number) => {
 };
 export const updateProduct = async (product: addProductType) => {
   try {
-    console.log("updating product")
+    console.log("updating product");
     if (product.id === undefined) {
       return { message: "Operation Failed", error: "Product id not found" };
     }
@@ -283,23 +283,23 @@ const updateImage = async (newImages: addImageType, productId: number) => {
         }
       }
     }
-      console.log("isDiff");
-      if (isDiff) {
-        const deletePromises = existingImages.map((image) =>
-          db
-            .delete(ProductImagesTable)
-            .where(eq(ProductImagesTable.id, image.id)),
-        );
-        Promise.allSettled(deletePromises);
-        const insertPromises = newImages.map((image, index) =>
-          addImage({
-            productId: productId,
-            url: image.url,
-            isPrimary: index === 0 ? true : false,
-          }),
-        );
-        Promise.allSettled(insertPromises);
-      }
+    console.log("isDiff");
+    if (isDiff) {
+      const deletePromises = existingImages.map((image) =>
+        db
+          .delete(ProductImagesTable)
+          .where(eq(ProductImagesTable.id, image.id)),
+      );
+      Promise.allSettled(deletePromises);
+      const insertPromises = newImages.map((image, index) =>
+        addImage({
+          productId: productId,
+          url: image.url,
+          isPrimary: index === 0 ? true : false,
+        }),
+      );
+      Promise.allSettled(insertPromises);
+    }
   } catch (e) {
     console.log(e);
     return { message: "Operation failed", error: e };
@@ -322,7 +322,7 @@ export const deleteProduct = async (id: number) => {
 export const getAllProducts = async () => {
   "use cache";
   cacheLife("minutes");
-  console.log("fetching product")
+  console.log("fetching product");
   const products = await db
     .select({
       ...getTableColumns(ProductsTable),
@@ -351,10 +351,10 @@ export const getAllProducts = async () => {
   return parsedProducts;
 };
 
-export const getPaginatedProduct=async (page:number=1, pageSize=10)=>{
+export const getPaginatedProduct = async (page: number = 1, pageSize = 10) => {
   //   "use cache";
   // cacheLife("minutes");
-  console.log("fetching paginated product")
+  console.log("fetching paginated product");
   const productsPromise = db
     .select({
       ...getTableColumns(ProductsTable),
@@ -376,16 +376,28 @@ export const getPaginatedProduct=async (page:number=1, pageSize=10)=>{
     .offset((page - 1) * pageSize)
     .groupBy(ProductsTable.id);
 
-    const totalRecordPromise=db.select({count: sql<number>`count(*)`}).from(ProductsTable);
+  const totalRecordPromise = db
+    .select({ count: sql<number>`count(*)` })
+    .from(ProductsTable);
 
-    const [products, totalProducts]=await Promise.all([productsPromise, totalRecordPromise]);
+  const [products, totalProducts] = await Promise.all([
+    productsPromise,
+    totalRecordPromise,
+  ]);
   const parsedProducts = products.map((product) => ({
     ...product,
     images: JSON.parse(product.images as string) as ProductImageType[],
   }));
-  console.log("products:", parsedProducts);
-  return {products: parsedProducts, total: totalProducts[0]};
-}
+  console.log(
+    "page number",
+    page,
+    "pagesize",
+    pageSize,
+    "products:",
+    parsedProducts,
+  );
+  return { products: parsedProducts, total: totalProducts[0] };
+};
 
 export const addCategory = async (category: CategoryInsertType) => {
   try {
