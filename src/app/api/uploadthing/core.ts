@@ -15,12 +15,16 @@ export const ourFileRouter = {
        * @see https://docs.uploadthing.com/file-routes#route-config
        */
       maxFileSize: "4MB",
-      maxFileCount: 1,
+      maxFileCount: 10,
     },
   })
     // Set permissions and file types for this FileRoute
     .middleware(async ({ req }) => {
       // This code runs on your server before upload
+        if (process.env.NODE_ENV === "development") {
+          // console.log("Middleware request:", request);
+            return { userId: 2}
+        }
       const {user} = await getCurrentSession();
 
       // If you throw, the user will not be able to upload

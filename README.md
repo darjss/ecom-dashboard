@@ -12,8 +12,9 @@
   - [x] add product
   - [x] edit product
   - [x] delete product
-  - [ ] product table pagination filter sorting
-  - [ ] file upload
+  - [x] product table pagination 
+  - [ ] product table filter sort
+  - [x] file upload
   - [ ] ai scraper
 - [ ] order crud
 - [ ] sales table?

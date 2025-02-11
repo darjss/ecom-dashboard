@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { XIcon, ImageIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { UploadButton } from "@/lib/uploadthing";
+import { toast } from "sonner";
 
 interface Image {
   url: string;
@@ -42,8 +44,6 @@ export const AddImageForm = ({
       append({ url: "" });
     }
   }, [watchedImages, append, fields.length]);
-
-
 
   return (
     <div className="space-y-4">
@@ -140,6 +140,30 @@ export const AddImageForm = ({
           </Card>
         )}
       </div>
+      <UploadButton
+        endpoint="imageUploader"
+        className="ut-button:bg-primary ut-allowed-content:hidden"
+        content={{
+          button({ ready }) {
+            if (ready) return <div>Upload picture</div>;
+      
+            return "Getting ready...";
+          },
+        }}
+        onClientUploadComplete={(res) => {
+          // Do something with the response
+          console.log("Files: ", res);
+
+          res.map((file) => {
+            append({ url: file.url });
+          });
+          toast.success("Image uploaded successfully");
+        }}
+        onUploadError={(error: Error) => {
+          // Do something with the error.
+          toast.error("Image uploading failed" + error.message);
+        }}
+      />
     </div>
   );
 };
