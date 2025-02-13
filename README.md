@@ -13,11 +13,11 @@
   - [x] edit product
   - [x] delete product
   - [x] product table pagination 
-  - [ ] product table filter sort
+  - [x] product table filter sort
   - [x] file upload
   - [ ] ai scraper
 - [ ] order crud
 - [ ] sales table?
-- [ ] analytics
 - [ ] search
+- [ ] analytics
 - [ ] payment confirm

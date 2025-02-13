@@ -11,6 +11,8 @@ import {
 
 export const status = ["active", "draft", "out_of_stock"] as const;
 
+export const PRODUCT_PER_PAGE=5;
+
 export const sideNavitems = [
   {
     title: "Home",

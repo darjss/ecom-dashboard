@@ -13,15 +13,14 @@ import {
   UserSelectType,
   UsersTable,
 } from "./db/schema";
-import { desc, eq, getTableColumns, sql } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, SQL, sql } from "drizzle-orm";
 import { redis } from "./db";
 import { addImageType, addProductType } from "@/lib/zod/schema";
 import { z } from "zod";
-
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
-import { error } from "console";
 import { revalidatePath } from "next/cache";
-import { L } from "node_modules/@upstash/redis/zmscore-Dc6Llqgr.mjs";
+import { SortingState } from "@tanstack/react-table";
+import { SQLiteColumn } from "drizzle-orm/sqlite-core/columns";
 
 export interface Session {
   id: string;
@@ -257,7 +256,6 @@ export const updateProduct = async (product: addProductType) => {
 
 const updateImage = async (newImages: addImageType, productId: number) => {
   try {
-    console.log("updating image");
     const existingImages = await db
       .select({
         id: ProductImagesTable.id,
@@ -283,7 +281,6 @@ const updateImage = async (newImages: addImageType, productId: number) => {
         }
       }
     }
-    console.log("isDiff");
     if (isDiff) {
       const deletePromises = existingImages.map((image) =>
         db
@@ -351,11 +348,16 @@ export const getAllProducts = async () => {
   return parsedProducts;
 };
 
-export const getPaginatedProduct = async (page: number = 1, pageSize = 10) => {
-  //   "use cache";
-  // cacheLife("minutes");
+export const getPaginatedProduct = async (
+  page: number = 1,
+  pageSize = 10,
+  sorting: SortingState = [],
+  brandId?: number,
+  categoryId?: number,
+) => {
   console.log("fetching paginated product");
-  const productsPromise = db
+
+  let baseQuery = db
     .select({
       ...getTableColumns(ProductsTable),
       images: sql`
@@ -372,18 +374,46 @@ export const getPaginatedProduct = async (page: number = 1, pageSize = 10) => {
       ProductImagesTable,
       eq(ProductImagesTable.productId, ProductsTable.id),
     )
-    .limit(pageSize)
-    .offset((page - 1) * pageSize)
     .groupBy(ProductsTable.id);
 
-  const totalRecordPromise = db
-    .select({ count: sql<number>`count(*)` })
-    .from(ProductsTable);
+  const conditions: SQL<unknown>[] = [];
+
+  if (brandId !== undefined && brandId !== 0) {
+    conditions.push(eq(ProductsTable.brandId, brandId));
+  }
+
+  if (categoryId !== undefined && categoryId !== 0) {
+    conditions.push(eq(ProductsTable.categoryId, categoryId));
+  }
+
+  const queryWithFilters =
+    conditions.length > 0 ? baseQuery.where(and(...conditions)) : baseQuery;
+
+  const orderByConditions: SQL<unknown>[] = sorting
+    .filter((sort) => sort.id === "price" || sort.id === "stock")
+    .map((sort) => {
+      if (sort.id === "price") {
+        return sort.desc ? desc(ProductsTable.price) : asc(ProductsTable.price);
+      } else if (sort.id === "stock") {
+        return sort.desc ? desc(ProductsTable.stock) : asc(ProductsTable.stock);
+      }
+      return null;
+    })
+    .filter((condition): condition is SQL<unknown> => condition !== null);
+
+  const finalQuery =
+    orderByConditions.length > 0
+      ? queryWithFilters
+          .orderBy(...orderByConditions)
+          .offset((page - 1) * pageSize)
+          .limit(pageSize)
+      : queryWithFilters.offset((page - 1) * pageSize).limit(pageSize);
 
   const [products, totalProducts] = await Promise.all([
-    productsPromise,
-    totalRecordPromise,
+    finalQuery,
+    db.select({ count: sql<number>`count(*)` }).from(ProductsTable),
   ]);
+
   const parsedProducts = products.map((product) => ({
     ...product,
     images: JSON.parse(product.images as string) as ProductImageType[],
@@ -395,6 +425,12 @@ export const getPaginatedProduct = async (page: number = 1, pageSize = 10) => {
     pageSize,
     "products:",
     parsedProducts,
+    "sorting:",
+    sorting,
+    "brandId",
+    brandId,
+    "categoryID",
+    categoryId,
   );
   return { products: parsedProducts, total: totalProducts[0] };
 };

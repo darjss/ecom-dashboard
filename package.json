@@ -43,6 +43,7 @@
     "@uploadthing/react": "^7.1.5",
     "@upstash/redis": "^1.34.3",
     "arctic": "^3.1.1",
+    "babel-plugin-react-compiler": "^19.0.0-beta-30d8a17-20250209",
     "cheerio": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

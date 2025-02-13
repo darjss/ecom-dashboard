@@ -293,4 +293,22 @@ const EditProductForm = ({ categories, brands, product, setDialogOpen }: AddProd
   );
 };
 
-export default EditProductForm;
+const withEditForm = (
+  product: ProductType,
+  categories: CategoryType,
+  brands: BrandType,
+) => {
+  const EditForm = (props: { setDialogOpen: Dispatch<SetStateAction<boolean>>}) => {
+    return (
+      <EditProductForm
+        product={product}
+        brands={brands}
+        categories={categories}
+        setDialogOpen={props.setDialogOpen}
+      />
+    );
+  };
+
+  return EditForm;
+};
+export default withEditForm;

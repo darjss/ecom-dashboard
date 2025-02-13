@@ -37,19 +37,33 @@ import {
 } from "@/server/queries";
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
 import { Edit2, MoreVertical, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Dispatch, JSX, SetStateAction, useState } from "react";
 import EditProductForm from "./edit-product-form";
 
 interface RowActionProps {
-  categories: CategoryType;
-  brands: BrandType;
-  product:ProductType
+  id: number;
+  renderEditComponent: (
+    props: { setDialogOpen: Dispatch<SetStateAction<boolean>>; }) => JSX.Element;
+  deleteFunction: (id: number) => Promise<
+    | {
+        message: string;
+        error?: undefined;
+      }
+    | {
+        message: string;
+        error: unknown;
+      }
+  >;
 }
 
-const rowActions = ({ product, categories, brands }: RowActionProps) => {
+const rowActions = ({
+  id,
+  renderEditComponent,
+  deleteFunction,
+}: RowActionProps) => {
   const [isDeleteAlertOpen, setIsDelteAlertOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [deleteAction, isDelLoading] = useAction(deleteProduct);
+  const [deleteAction, isDelLoading] = useAction(deleteFunction);
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger>
@@ -74,13 +88,7 @@ const rowActions = ({ product, categories, brands }: RowActionProps) => {
             <DialogHeader>
               <DialogTitle>Edit product</DialogTitle>
             </DialogHeader>
-
-            <EditProductForm
-              product={product}
-              brands={brands}
-              categories={categories}
-              setDialogOpen={setIsEditDialogOpen}
-            />
+              {renderEditComponent({setDialogOpen:setIsEditDialogOpen})}
           </DialogContent>
         </Dialog>
         <AlertDialog
@@ -113,7 +121,7 @@ const rowActions = ({ product, categories, brands }: RowActionProps) => {
                 <SubmitButton
                   variant={"destructive"}
                   isPending={isDelLoading}
-                  onClick={() => deleteAction(product.id)}
+                  onClick={() => deleteAction(id)}
                 >
                   Delete
                 </SubmitButton>

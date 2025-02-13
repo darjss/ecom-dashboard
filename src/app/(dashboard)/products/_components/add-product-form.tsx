@@ -25,7 +25,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import SubmitButton from "@/components/submit-button";
 import { status } from "@/lib/constants";
 import { AddImageForm } from "./image-form";
-import { useFormContext } from "react-hook-form";
+
 
 interface AddProductFormProps {
   categories: CategoryType;
