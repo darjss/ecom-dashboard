@@ -88,28 +88,28 @@ CREATE INDEX `payment_order_idx` ON `ecommerce-dashboard_payment` (`order_id`);-
 CREATE INDEX `payment_status_idx` ON `ecommerce-dashboard_payment` (`status`);--> statement-breakpoint
 CREATE TABLE `ecommerce-dashboard_product_image` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`product_variant_id` integer NOT NULL,
+	`product_id` integer NOT NULL,
 	`url` text(512) NOT NULL,
 	`is_primary` integer DEFAULT 0 NOT NULL,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
-	FOREIGN KEY (`product_variant_id`) REFERENCES `ecommerce-dashboard_product`(`id`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`product_id`) REFERENCES `ecommerce-dashboard_product`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE INDEX `image_variant_idx` ON `ecommerce-dashboard_product_image` (`product_variant_id`);--> statement-breakpoint
+CREATE INDEX `image_variant_idx` ON `ecommerce-dashboard_product_image` (`product_id`);--> statement-breakpoint
 CREATE TABLE `ecommerce-dashboard_product` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text(256) NOT NULL,
 	`slug` text(256) NOT NULL,
-	`description` text,
+	`description` text NOT NULL,
 	`status` text DEFAULT 'draft' NOT NULL,
-	`discount` integer DEFAULT 0,
-	`amount` text(15),
-	`potency` text(10),
-	`stock` integer DEFAULT 0,
+	`discount` integer DEFAULT 0 NOT NULL,
+	`amount` text(15) NOT NULL,
+	`potency` text(10) NOT NULL,
+	`stock` integer DEFAULT 0 NOT NULL,
 	`price` integer NOT NULL,
-	`daily_intake` integer DEFAULT 0,
-	`category_id` integer,
-	`brand_id` integer,
+	`daily_intake` integer DEFAULT 0 NOT NULL,
+	`category_id` integer NOT NULL,
+	`brand_id` integer NOT NULL,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer,
 	FOREIGN KEY (`category_id`) REFERENCES `ecommerce-dashboard_category`(`id`) ON UPDATE no action ON DELETE no action,

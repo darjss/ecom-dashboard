@@ -63,6 +63,7 @@ export async function GET(request: Request): Promise<Response> {
       },
     });
   }
+  const user = await createUser(googleUserId, username);
 
   return new Response(null, {
     status: 302,
