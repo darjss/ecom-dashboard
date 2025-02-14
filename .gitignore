@@ -13,6 +13,7 @@
 /prisma/db.sqlite-journal
 db.sqlite
 dev.db
+/drizzle
 
 # next.js
 /.next/
@@ -48,6 +49,9 @@ yarn-error.log*
 
 # sst
 .sst
+
+#pnpm
+pnpm-lock.yml
 
 
 # open-next

@@ -5,6 +5,7 @@ import { addProductType } from "@/lib/zod/schema";
 import { addBrand } from "@/server/actions/brand";
 import { addCategory } from "@/server/actions/category";
 import { addProduct } from "@/server/actions/product";
+import { revalidateTag } from "next/cache";
 
 // Sample data for brands
 const brandsData: BrandInsertType[] = [
@@ -209,7 +210,7 @@ export const seedDatabase = async () => {
     for (const category of categoriesData) {
       await addCategory(category);
     }
-
+    revalidateTag("brandCategory");
     // Add products
     for (const product of productsData) {
       await addProduct(product);

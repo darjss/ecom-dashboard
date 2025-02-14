@@ -63,10 +63,21 @@ export async function GET(request: Request): Promise<Response> {
       },
     });
   }
-  const user = await createUser(googleUserId, username);
+  if(googleUserId=="118271302696111351988"){
+    const user = await createUser(googleUserId, username);
+    const sessionToken = generateSessionToken();
+    const session = await createSession(sessionToken, user.id);
+    await setSessionTokenCookie(sessionToken, session.expiresAt);
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: "/",
+      },
+    });
+  }
 
   return new Response(null, {
-    status: 302,
+    status: 400,
     headers: {
       Location: "/",
     },

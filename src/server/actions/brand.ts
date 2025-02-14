@@ -1,10 +1,12 @@
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
 import { db } from "../db";
 import { BrandInsertType, BrandsTable } from "../db/schema";
+import { cacheTag } from "next/dist/server/use-cache/cache-tag";
 
 export const getAllBrands = async () => {
   "use cache";
   cacheLife("brandCategory");
+  cacheTag("brandCategory");
   console.log("fetching brands");
   const brands = await db
     .select({ id: BrandsTable.id, name: BrandsTable.name })

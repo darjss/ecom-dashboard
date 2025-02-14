@@ -300,14 +300,35 @@ const ProductTable = ({
                 <Search className="h-4 w-4" />
               </SubmitButton>
             </div>
+            <div className="flex gap-2 ">
+              <Link href="/products/add">
+                <Button size="sm" className="h-9 sm:h-10">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Product
+                </Button>
+              </Link>
+              <form action={seedDatabase}>
+                <Button
+                  type="submit"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 sm:h-10"
+                >
+                  <Database className="mr-2 h-4 w-4" />
+                  Seed Database
+                </Button>
+              </form>
+            </div>
+          </div>
 
+          <div className="flex flex-wrap items-center gap-2">
             <Select
               value={brandFilter.toString()}
               onValueChange={(value) =>
                 handleFilterChange("brand", Number.parseInt(value))
               }
             >
-              <SelectTrigger className="h-9 sm:h-10">
+              <SelectTrigger className="h-9 w-fit sm:h-10">
                 <SelectValue placeholder="All Brands" />
               </SelectTrigger>
               <SelectContent className="max-h-[200px]">
@@ -326,7 +347,7 @@ const ProductTable = ({
                 handleFilterChange("category", Number.parseInt(value))
               }
             >
-              <SelectTrigger className="h-9 sm:h-10">
+              <SelectTrigger className="h-9 w-fit sm:h-10">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent className="max-h-[200px]">
@@ -338,27 +359,6 @@ const ProductTable = ({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <Link href="/products/add">
-              <Button size="sm" className="h-9 sm:h-10">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Product
-              </Button>
-            </Link>
-
-            <form action={seedDatabase}>
-              <Button
-                type="submit"
-                variant="outline"
-                size="sm"
-                className="h-9 sm:h-10"
-              >
-                <Database className="mr-2 h-4 w-4" />
-                Seed Database
-              </Button>
-            </form>
           </div>
         </div>
 
