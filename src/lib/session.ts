@@ -5,7 +5,7 @@ import {
   insertSession,
   updateSession,
   Session,
-} from "@/server/queries";
+} from "@/server/actions/auth";
 import { sha256 } from "@oslojs/crypto/sha2";
 import {
   encodeBase32LowerCaseNoPadding,
@@ -86,7 +86,7 @@ export async function setSessionTokenCookie(
 }
 
 export async function deleteSessionTokenCookie(): Promise<void> {
-  const cookieStore =await cookies();
+  const cookieStore = await cookies();
   cookieStore.set("session", "", {
     httpOnly: true,
     sameSite: "lax",
@@ -98,7 +98,7 @@ export async function deleteSessionTokenCookie(): Promise<void> {
 
 export const getCurrentSession = cache(
   async (): Promise<SessionValidationResult> => {
-    const cookieStore =await cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("session")?.value ?? null;
 
     if (token === null) {

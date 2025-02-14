@@ -17,6 +17,11 @@
   - [x] file upload
   - [ ] ai scraper
 - [ ] order crud
+  - [ ] add order
+  - [ ] edit order
+  - [ ] delete order
+  - [ ] order table pagination 
+  - [ ] order table filter sort
 - [ ] sales table?
 - [ ] search
 - [ ] analytics

@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { addProductSchema } from "@/lib/zod/schema";
-import {  BrandType, CategoryType, ProductType, updateProduct } from "@/server/queries";
+import {  BrandType, CategoryType, ProductType } from "@/lib/types";
 import { useAction } from "@/hooks/use-action";
 import {
   Select,
@@ -27,6 +27,7 @@ import { status } from "@/lib/constants";
 import { AddImageForm } from "./image-form";
 import { parseProduct } from "@/lib/zod/utils";
 import { useFormContext } from "react-hook-form";
+import { updateProduct } from "@/server/actions/product";
 
 interface AddProductFormProps {
   product: ProductType;

@@ -1,7 +1,10 @@
 "use server";
-import { addProduct, addBrand, addCategory } from "@/server/queries";
+
 import { BrandInsertType, CategoryInsertType } from "@/server/db/schema";
 import { addProductType } from "@/lib/zod/schema";
+import { addBrand } from "@/server/actions/brand";
+import { addCategory } from "@/server/actions/category";
+import { addProduct } from "@/server/actions/product";
 
 // Sample data for brands
 const brandsData: BrandInsertType[] = [

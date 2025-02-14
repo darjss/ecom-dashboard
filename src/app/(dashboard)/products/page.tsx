@@ -1,13 +1,11 @@
 import { Suspense } from "react";
-import {
-  type BrandType,
-  getAllBrands,
-  getAllCategories,
-  getPaginatedProduct,
-} from "@/server/queries";
 import ProductTable from "./_components/product-table";
 import { DataTableSkeleton } from "@/components/skeleton/data-table-skeleton";
 import { PRODUCT_PER_PAGE } from "@/lib/constants";
+import { getPaginatedProduct } from "@/server/actions/product";
+import { getAllCategories } from "@/server/actions/category";
+import { getAllBrands } from "@/server/actions/brand";
+import { BrandType } from "@/lib/types";
 
 const Page = async ({
   searchParams,

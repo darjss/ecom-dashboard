@@ -1,4 +1,4 @@
-import { BrandType, CategoryType, ProductType } from "@/server/queries";
+import { BrandType, CategoryType, ProductType } from "@/lib/types"
 import {
   z,
   ZodSchema,

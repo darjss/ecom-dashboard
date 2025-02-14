@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { addProductSchema } from "@/lib/zod/schema";
-import { addProduct, BrandType, CategoryType } from "@/server/queries";
+import { BrandType, CategoryType } from "@/lib/types";
 import { useAction } from "@/hooks/use-action";
 import {
   Select,
@@ -25,7 +25,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import SubmitButton from "@/components/submit-button";
 import { status } from "@/lib/constants";
 import { AddImageForm } from "./image-form";
-
+import { addProduct } from "@/server/actions/product";
 
 interface AddProductFormProps {
   categories: CategoryType;

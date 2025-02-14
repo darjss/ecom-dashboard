@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 import { decodeIdToken } from "arctic";
 
 import type { OAuth2Tokens } from "arctic";
-import { createUser, getUserFromGoogleId } from "@/server/queries";
+import { createUser, getUserFromGoogleId } from "@/server/actions/auth";
 import { create } from "domain";
 
 export async function GET(request: Request): Promise<Response> {

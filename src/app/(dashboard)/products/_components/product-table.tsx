@@ -31,13 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
-import {
-  type BrandType,
-  type CategoryType,
-  deleteProduct,
-  getPaginatedProduct,
-  type ProductType,
-} from "@/server/queries";
+import { deleteProduct, getPaginatedProduct } from "@/server/actions/product";
 import { seedDatabase } from "seed";
 import RowActions from "./row-actions";
 import { parseProductsForTable } from "@/lib/zod/utils";
@@ -54,7 +48,8 @@ import {
 import withEditForm from "./edit-product-form";
 import SubmitButton from "@/components/submit-button";
 import { useAction } from "@/hooks/use-action";
-import { searchProductByName } from "@/server/queries/product";
+import { searchProductByName } from "@/server/actions/product";
+import { BrandType, CategoryType, ProductType } from "@/lib/types";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -192,9 +187,6 @@ const ProductTable = ({
     parseAsInteger.withDefault(0),
   );
   const [searchAction, isSearchPending] = useAction(searchProductByName);
-  // const filteredProducts = products.filter((product) =>
-  //   product.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  // );
 
   async function fetchProducts(
     newPage: number,
@@ -281,7 +273,13 @@ const ProductTable = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             className="max-w-sm"
           />
-          <SubmitButton onClick={()=>searchAction(searchTerm)} isPending={isSearchPending}>
+          <SubmitButton
+            onClick={async () => {
+              const searchResult = await searchAction(searchTerm);
+              setProducts(parseProductsForTable(searchResult, brands, categories));
+            }}
+            isPending={isSearchPending}
+          >
             <Search className="mr-2 h-4 w-4 text-muted-foreground" />
           </SubmitButton>
         </div>

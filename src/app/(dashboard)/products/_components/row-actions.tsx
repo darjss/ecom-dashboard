@@ -32,9 +32,8 @@ import { useAction } from "@/hooks/use-action";
 import {
   BrandType,
   CategoryType,
-  deleteProduct,
   ProductType,
-} from "@/server/queries";
+} from "@/lib/types";
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
 import { Edit2, MoreVertical, Trash2 } from "lucide-react";
 import { Dispatch, JSX, SetStateAction, useState } from "react";

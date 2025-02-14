@@ -1,5 +1,7 @@
-import { BrandType, getAllBrands, getAllCategories } from "@/server/queries";
+import { BrandType } from "@/lib/types";
 import AddProductForm from "../_components/add-product-form";
+import { getAllCategories } from "@/server/actions/category";
+import { getAllBrands } from "@/server/actions/brand";
 
 export default async function Page() {
   const categories = await getAllCategories();
