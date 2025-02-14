@@ -5,7 +5,7 @@ import { PRODUCT_PER_PAGE } from "@/lib/constants";
 import { getPaginatedProduct } from "@/server/actions/product";
 import { getAllCategories } from "@/server/actions/category";
 import { getAllBrands } from "@/server/actions/brand";
-import { BrandType } from "@/lib/types";
+import type { BrandType } from "@/lib/types";
 
 const Page = async ({
   searchParams,
@@ -22,14 +22,7 @@ const Page = async ({
   const brands: BrandType = await getAllBrands();
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8 space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Products</h1>
-        <p className="text-muted-foreground">
-          Manage your product inventory and add new items.
-        </p>
-      </div>
-
+    <div className="container mx-auto lg:max-w-[1400px] sm:max-w-[480px] px-2 py-4 sm:px-4 lg:px-8">
       <Suspense fallback={<DataTableSkeleton columnCount={6} rowCount={3} />}>
         <ProductTable
           initialProducts={paginatedResult.products}
