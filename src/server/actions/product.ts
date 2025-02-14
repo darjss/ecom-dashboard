@@ -28,21 +28,31 @@ export interface ProductImageType {
 }
 export const searchProductByName = async (searchTerm: string) => {
   console.log(searchTerm);
-  const result = await db
+  const products = await db
     .select({
-      id: ProductsTable.id,
-      name: ProductsTable.name,
-      image: ProductImagesTable.url
+      ...getTableColumns(ProductsTable),
+      images: sql`
+      json_group_array(
+        json_object(
+          'id', ${ProductImagesTable.id},
+          'url', ${ProductImagesTable.url}
+        )
+      )
+    `.as<"images">(),
     })
     .from(ProductsTable)
-    .where(like(ProductsTable.name, `%${searchTerm}%`))
+    .where(like(ProductsTable.name, `%${searchTerm}%`))   
     .leftJoin(
       ProductImagesTable,
       eq(ProductImagesTable.productId, ProductsTable.id),
     )
     .groupBy(ProductsTable.id);
-  console.log(result);
-  return result;
+  console.log(products);
+  const parsedProducts = products.map((product) => ({
+    ...product,
+    images: JSON.parse(product.images as string) as ProductImageType[],
+  }));
+  return parsedProducts;
 };
 
 export const addProduct = async (product: addProductType) => {
