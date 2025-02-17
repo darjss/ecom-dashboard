@@ -72,6 +72,26 @@ interface TableProductType {
 
 const columns: ColumnDef<TableProductType>[] = [
   {
+    id: "actions",
+    header: "",
+    cell: ({ row }) => {
+      const data = row.original;
+      return (
+        <div className="flex justify-end">
+          <RowActions
+            id={data.fullProduct.id}
+            renderEditComponent={withEditForm(
+              data.fullProduct,
+              data.categories,
+              data.brands,
+            )}
+            deleteFunction={deleteProduct}
+          />
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "imageUrl",
     header: () => <div className="text-center">Image</div>,
     cell: ({ row }) => (
@@ -146,26 +166,7 @@ const columns: ColumnDef<TableProductType>[] = [
       );
     },
   },
-  {
-    id: "actions",
-    header: "",
-    cell: ({ row }) => {
-      const data = row.original;
-      return (
-        <div className="flex justify-end">
-          <RowActions
-            id={data.fullProduct.id}
-            renderEditComponent={withEditForm(
-              data.fullProduct,
-              data.categories,
-              data.brands,
-            )}
-            deleteFunction={deleteProduct}
-          />
-        </div>
-      );
-    },
-  },
+
 ];
 
 const ProductTable = ({
