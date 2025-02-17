@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { XIcon, ImageIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { UploadButton } from "@/lib/uploadthing";
 import { toast } from "sonner";
 
 interface Image {
@@ -35,12 +34,10 @@ export const AddImageForm = ({
     control: form.control,
     name: "images",
   });
-  console.log("watched Images", watchedImages);
+
   useEffect(() => {
-    console.log("Use effect running ");
     const nonEmptyImages = watchedImages.filter((img) => img.url);
     if (fields.length <= nonEmptyImages.length) {
-      console.log("Appending url");
       append({ url: "" });
     }
   }, [watchedImages, append, fields.length]);
@@ -140,30 +137,16 @@ export const AddImageForm = ({
           </Card>
         )}
       </div>
-      <UploadButton
-        endpoint="imageUploader"
-        className="ut-button:bg-primary ut-allowed-content:hidden"
-        content={{
-          button({ ready }) {
-            if (ready) return <div>Upload picture</div>;
       
-            return "Getting ready...";
-          },
+      {/* Add your new image upload implementation here */}
+      <Button
+        type="button"
+        onClick={() => {
+          // Implement your new image upload logic here
         }}
-        onClientUploadComplete={(res) => {
-          // Do something with the response
-          console.log("Files: ", res);
-
-          res.map((file) => {
-            append({ url: file.url });
-          });
-          toast.success("Image uploaded successfully");
-        }}
-        onUploadError={(error: Error) => {
-          // Do something with the error.
-          toast.error("Image uploading failed" + error.message);
-        }}
-      />
+      >
+        Upload Image
+      </Button>
     </div>
   );
 };
