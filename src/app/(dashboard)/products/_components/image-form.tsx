@@ -141,6 +141,7 @@ export const AddImageForm = ({
       {/* Add your new image upload implementation here */}
       <Button
         type="button"
+        className="bnt-playful"
         onClick={() => {
           // Implement your new image upload logic here
         }}
