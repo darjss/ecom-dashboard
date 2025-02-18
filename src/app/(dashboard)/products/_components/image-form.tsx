@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { XIcon, ImageIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { toast } from "sonner";
+
 
 interface Image {
   url: string;

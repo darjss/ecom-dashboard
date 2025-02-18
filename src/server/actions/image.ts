@@ -1,3 +1,5 @@
+"use server";
+import "server-only";
 import { addImageType } from "@/lib/zod/schema";
 import { db } from "../db";
 import { ProductImageInsertType, ProductImagesTable } from "../db/schema";

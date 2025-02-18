@@ -7,7 +7,7 @@ import {
   primaryKey,
 } from "drizzle-orm/sqlite-core";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { status } from "@/lib/constants";
+import { orderStatus, paymentProvider, paymentStatus, status } from "@/lib/constants";
 
 export const createTable = sqliteTableCreator(
   (name) => `ecommerce-dashboard_${name}`,
@@ -37,7 +37,7 @@ export const UsersTable = createTable(
 export const CustomersTable = createTable(
   "customer",
   {
-    phone: text("phone", { length: 15 }).notNull().unique().primaryKey(),
+    phone: int("phone", { mode: "number" }).notNull().unique().primaryKey(),
     address: text("address", { length: 256 }),
     createdAt: int("created_at", { mode: "timestamp" })
       .default(sql`(unixepoch())`)
@@ -152,7 +152,7 @@ export const OrdersTable = createTable(
       .references(() => CustomersTable.phone)
       .notNull(),
     status: text("status", {
-      enum: ["pending", "shipped", "delivered", "cancelled"],
+      enum: orderStatus,
     }).notNull(),
     total: int("total", { mode: "number" }).notNull(),
     notes: text("notes"),
@@ -193,9 +193,9 @@ export const PaymentsTable = createTable(
     orderId: int("order_id", { mode: "number" })
       .references(() => OrdersTable.id)
       .notNull(),
-    provider: text("provider", { enum: ["qpay", "transfer"] }).notNull(),
+    provider: text("provider", { enum: paymentProvider }).notNull(),
     status: text("status", {
-      enum: ["pending", "success", "failed"],
+      enum: paymentStatus,
     }).notNull(),
     createdAt: int("created_at", { mode: "timestamp" })
       .default(sql`(unixepoch())`)

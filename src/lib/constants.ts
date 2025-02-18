@@ -11,9 +11,18 @@ import {
 
 export const status = ["active", "draft", "out_of_stock"] as const;
 
-export const orderStatus = ["pending", "shipped", "delivered", "cancelled"] as const;
+export const orderStatus = [
+  "pending",
+  "shipped",
+  "delivered",
+  "cancelled",
+] as const;
 
-export const PRODUCT_PER_PAGE=5;
+export const paymentProvider = ["qpay", "transfer"] as const;
+
+export const paymentStatus = ["pending", "success", "failed"] as const;
+
+export const PRODUCT_PER_PAGE = 5;
 
 export const sideNavitems = [
   {

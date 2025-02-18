@@ -15,6 +15,7 @@
     "checkJs": true,
 
     /* Bundled projects */
+    
     "lib": ["dom", "dom.iterable", "ES2023.Array"],
     "noEmit": true,
     "module": "ESNext",
@@ -22,8 +23,6 @@
     "jsx": "preserve",
     "plugins": [{ "name": "next" }],
     "incremental": true,
-
-    /* Path Aliases */
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

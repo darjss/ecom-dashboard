@@ -1,3 +1,5 @@
+"use server";
+import "server-only";
 import { db, redis } from "../db";
 import { UserSelectType, UsersTable } from "../db/schema";
 import {eq} from "drizzle-orm"

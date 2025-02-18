@@ -9,8 +9,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { addProductSchema } from "@/lib/zod/schema";
-import { BrandType, CategoryType } from "@/lib/types";
+import { addOrderSchema } from "@/lib/zod/schema";
 import { useAction } from "@/hooks/use-action";
 import {
   Select,
@@ -20,37 +19,36 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormWrapper } from "@/components/form-wrapper";
-import { Suspense } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import SubmitButton from "@/components/submit-button";
-import { status } from "@/lib/constants";
-import { addProduct } from "@/server/actions/product";
-
-
+import { orderStatus, paymentStatus, status } from "@/lib/constants";
+import { addOrder } from "@/server/actions/order";
 
 const AddOrderForm = () => {
-  const [action] = useAction(addProduct);
+  const [action] = useAction(addOrder);
 
   return (
     <div className="mx-auto w-full max-w-6xl bg-background p-4 sm:p-6 lg:p-8">
       <FormWrapper
         formAction={action}
-        schema={addProductSchema}
+        schema={addOrderSchema}
         className="space-y-8"
       >
         {(form) => (
           <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
             <Card className="overflow-auto shadow-md transition-shadow duration-300 hover:shadow-lg">
               <CardContent className="space-y-4 p-6">
-                <h3 className="mb-4 text-xl font-semibold">Product Details</h3>
+                <h3 className="mb-4 text-xl font-semibold">
+                  Add Order Details
+                </h3>
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="customerPhone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product Name</FormLabel>
+                      <FormLabel>Phone number</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter product name" {...field} />
+                        <Input placeholder="9999999" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -58,74 +56,17 @@ const AddOrderForm = () => {
                 />
                 <FormField
                   control={form.control}
-                  name="description"
+                  name="address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product Description</FormLabel>
+                      <FormLabel>Address</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Enter product description"
+                          placeholder="Address"
                           {...field}
                           className="h-20 resize-none"
                         />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="brandId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Brand</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value || ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select brand" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {/* {brands.map((brand, index) => (
-                            <SelectItem key={index} value={brand.id.toString()}>
-                              {brand.name}
-                            </SelectItem>
-                          ))} */}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="categoryId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value || ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {/* {categories.map((category, index) => (
-                            <SelectItem
-                              key={index}
-                              value={category.id.toString()}
-                            >
-                              {category.name}
-                            </SelectItem>
-                          ))} */}
-                        </SelectContent>
-                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -138,17 +79,44 @@ const AddOrderForm = () => {
                       <FormLabel>Status</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value || status[0]}
+                        defaultValue={field.value || ""}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue>{field.value}</SelectValue>
+                            <SelectValue placeholder="Order status" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {status.map((statusOption) => (
-                            <SelectItem key={statusOption} value={statusOption}>
-                              {statusOption}
+                          {orderStatus.map((status, index) => (
+                            <SelectItem key={index} value={status}>
+                              {status}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="paymentStatus"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Payment</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value || ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Payment" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {paymentStatus.map((status, index) => (
+                            <SelectItem key={index} value={status}>
+                              {status}
                             </SelectItem>
                           ))}
                         </SelectContent>

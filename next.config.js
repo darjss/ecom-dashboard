@@ -8,10 +8,11 @@
 
 /** @type {import("next").NextConfig} */
 const config = {
+  // serverExternalPackages: ["bun:sqlite"],
   experimental: {
     ppr: "incremental",
    dynamicIO: true,
-  //  reactCompiler: true,
+   reactCompiler: true,
    cacheLife: {
      brandCategory: {
        stale: 60 * 60 * 24,
@@ -19,6 +20,7 @@ const config = {
        expire: 60 * 60 * 24 * 30,
      },
    },
+
   },
   eslint: {
     // Warning: This allows production builds to successfully complete even if

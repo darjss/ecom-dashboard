@@ -1,3 +1,5 @@
+"use server";
+import "server-only";
 import { unstable_cacheLife as cacheLife } from "next/cache";
 import { db } from "../db";
 import { BrandInsertType, BrandsTable } from "../db/schema";
