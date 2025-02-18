@@ -48,7 +48,7 @@ import {
 import withEditForm from "./edit-product-form";
 import SubmitButton from "@/components/submit-button";
 import { useAction } from "@/hooks/use-action";
-import { searchProductByName } from "@/server/actions/product";
+import { searchProductByNameForTable } from "@/server/actions/product";
 import type { BrandType, CategoryType, ProductType } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -166,7 +166,6 @@ const columns: ColumnDef<TableProductType>[] = [
       );
     },
   },
-
 ];
 
 const ProductTable = ({
@@ -196,7 +195,9 @@ const ProductTable = ({
     "category",
     parseAsInteger.withDefault(0),
   );
-  const [searchAction, isSearchPending] = useAction(searchProductByName);
+  const [searchAction, isSearchPending] = useAction(
+    searchProductByNameForTable,
+  );
 
   async function fetchProducts(
     newPage: number,
@@ -301,7 +302,7 @@ const ProductTable = ({
                 <Search className="h-4 w-4" />
               </SubmitButton>
             </div>
-            <div className="flex gap-2 ">
+            <div className="flex gap-2">
               <Link href="/products/add">
                 <Button size="sm" className="h-9 sm:h-10">
                   <PlusCircle className="mr-2 h-4 w-4" />

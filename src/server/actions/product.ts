@@ -2,7 +2,6 @@
 import "server-only";
 import { db } from "@/server/db";
 import { ProductImagesTable, ProductsTable } from "../db/schema";
-
 import {
   and,
   asc,
@@ -15,18 +14,20 @@ import {
 } from "drizzle-orm";
 import { addProductType } from "@/lib/zod/schema";
 import { z } from "zod";
-import { cacheLife } from "next/dist/server/use-cache/cache-life";
+import { unstable_cacheLife as cacheLife } from "next/cache";
 import { revalidatePath } from "next/cache";
 import { SortingState } from "@tanstack/react-table";
 import { getAllBrands } from "./brand";
 import { addImage, updateImage } from "./image";
 import { redirect } from "next/navigation";
+import { unstable_cacheTag as cacheTag } from "next/cache";
+
 
 export interface ProductImageType {
   id: number;
   url: string;
 }
-export const searchProductByName = async (searchTerm: string) => {
+export const searchProductByNameForTable = async (searchTerm: string) => {
   console.log(searchTerm);
   const products = await db
     .select({
@@ -41,7 +42,7 @@ export const searchProductByName = async (searchTerm: string) => {
     `.as<"images">(),
     })
     .from(ProductsTable)
-    .where(like(ProductsTable.name, `%${searchTerm}%`))   
+    .where(like(ProductsTable.name, `%${searchTerm}%`))
     .leftJoin(
       ProductImagesTable,
       eq(ProductImagesTable.productId, ProductsTable.id),
@@ -53,6 +54,17 @@ export const searchProductByName = async (searchTerm: string) => {
     images: JSON.parse(product.images as string) as ProductImageType[],
   }));
   return parsedProducts;
+};
+
+export const searchProductByName = async (searchTerm: string) => {
+  const product = await db
+    .select({
+      id: ProductsTable.id,
+      name: ProductsTable.name,
+    })
+    .from(ProductsTable)
+    .where(like(ProductsTable.name, `%${searchTerm}%`));
+    return product
 };
 
 export const addProduct = async (product: addProductType) => {
@@ -208,7 +220,8 @@ export const deleteProduct = async (id: number) => {
 
 export const getAllProducts = async () => {
   "use cache";
-  cacheLife("minutes");
+  cacheTag("products")
+
   console.log("fetching product");
   const products = await db
     .select({

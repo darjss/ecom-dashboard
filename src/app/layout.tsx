@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "@/components/error/error-boundary";
 import Providers from "@/components/Providers";
 import "@/styles/globals.css";
 
@@ -16,7 +17,9 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable}`}>
       <body className="">
         <Providers>
-          <main>{children}</main>
+          <ErrorBoundary>
+            <main>{children}</main>
+          </ErrorBoundary>
         </Providers>
       </body>
     </html>

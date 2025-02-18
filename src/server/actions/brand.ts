@@ -1,7 +1,7 @@
-import { cacheLife } from "next/dist/server/use-cache/cache-life";
+import { unstable_cacheLife as cacheLife } from "next/cache";
 import { db } from "../db";
 import { BrandInsertType, BrandsTable } from "../db/schema";
-import { cacheTag } from "next/dist/server/use-cache/cache-tag";
+import { unstable_cacheTag as cacheTag } from "next/cache";
 
 export const getAllBrands = async () => {
   "use cache";

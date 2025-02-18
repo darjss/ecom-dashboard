@@ -1,4 +1,3 @@
-// components/AmazonProductSearch.tsx
 "use client";
 
 import React, { useState } from 'react';
@@ -7,7 +6,7 @@ import {
   getProductDetails,
   AmazonScrapeProduct,
   AmazonProductDetails,
-} from '@/lib/scrape'; // Make sure this path is correct
+} from '@/lib/scrape'; 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {

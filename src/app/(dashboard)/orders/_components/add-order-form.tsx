@@ -26,12 +26,9 @@ import SubmitButton from "@/components/submit-button";
 import { status } from "@/lib/constants";
 import { addProduct } from "@/server/actions/product";
 
-interface AddProductFormProps {
-  categories: CategoryType;
-  brands: BrandType;
-}
 
-const AddProductForm = ({ categories, brands }: AddProductFormProps) => {
+
+const AddOrderForm = () => {
   const [action] = useAction(addProduct);
 
   return (
@@ -92,11 +89,11 @@ const AddProductForm = ({ categories, brands }: AddProductFormProps) => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {brands.map((brand, index) => (
+                          {/* {brands.map((brand, index) => (
                             <SelectItem key={index} value={brand.id.toString()}>
                               {brand.name}
                             </SelectItem>
-                          ))}
+                          ))} */}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -119,14 +116,14 @@ const AddProductForm = ({ categories, brands }: AddProductFormProps) => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {categories.map((category, index) => (
+                          {/* {categories.map((category, index) => (
                             <SelectItem
                               key={index}
                               value={category.id.toString()}
                             >
                               {category.name}
                             </SelectItem>
-                          ))}
+                          ))} */}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -271,4 +268,4 @@ const AddProductForm = ({ categories, brands }: AddProductFormProps) => {
   );
 };
 
-export default AddProductForm;
+export default AddOrderForm;

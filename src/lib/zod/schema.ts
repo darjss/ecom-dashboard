@@ -1,9 +1,14 @@
 import { z } from "zod";
-import { status } from "../constants";
+import { orderStatus, status } from "../constants";
 
 const imageSchema = z.object({
   url: z.string(),
   id: z.number().int().positive().finite().optional(),
+});
+
+const productSchema = z.object({
+  productId: z.number().int().positive().finite(),
+  quaninty:z.number().int().positive().finite()
 });
 
 export const addProductSchema = z.object({
@@ -32,6 +37,26 @@ export const addProductSchema = z.object({
   images: z.array(imageSchema).nonempty(),
 });
 
+export const addOrderSchema = z.object({
+  id: z.number().int().positive().finite().optional(),
+  customerPhone: z
+    .string()
+    .length(8)
+    .regex(/^[6789]\d+$/)
+    .transform(Number)
+    .refine((num) => num >= 60000000 && num <= 99999999, {
+      message: "Number must be 8 digits and start with 6, 8, or 9",
+    }),
+  address: z.string().min(10, {
+    message: "Address is too short",
+  }),
+  notes: z.string().min(3, {
+    message: "Notes is too short",
+  }).optional(),
+  status: z.enum(orderStatus),
+  products: z.array(productSchema).nonempty(),
+});
+
 export type addProductType = z.infer<typeof addProductSchema>;
 export type addImageType=addProductType["images"]
-
+export type addOrderType=z.infer<typeof addOrderSchema>
