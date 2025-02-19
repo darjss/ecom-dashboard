@@ -120,7 +120,7 @@ export const addProduct = async (product: addProductType) => {
 
     console.log("Images added successfully");
     revalidateTag("products");
-    redirect("/products");
+    // redirect("/products");
     return { message: "Added product Successfully" };
   } catch (e) {
     console.log(e);
@@ -194,7 +194,7 @@ export const updateProduct = async (product: addProductType) => {
       .where(eq(ProductsTable.id, product.id));
     updateImage(images, product.id);
     revalidateTag("products");
-    redirect("/products");
+    // redirect("/products");
     return { message: "Updated product Successfully" };
   } catch (e) {
     console.log(e);
@@ -207,7 +207,7 @@ export const deleteProduct = async (id: number) => {
       .delete(ProductsTable)
       .where(eq(ProductsTable.id, id));
     revalidateTag("products");
-    redirect("/products");
+    // redirect("/products");
     return { message: "Successfully deleted Product" };
   } catch (e) {
     console.log(e);

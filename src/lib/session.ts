@@ -4,7 +4,6 @@ import {
   getSession as getDbSession,
   insertSession,
   updateSession,
-  Session,
 } from "@/server/actions/auth";
 import { sha256 } from "@oslojs/crypto/sha2";
 import {
@@ -13,6 +12,7 @@ import {
 } from "@oslojs/encoding";
 import { cookies } from "next/headers";
 import { cache } from "react";
+import { Session } from "./types";
 
 export function generateSessionToken(): string {
   const bytes = new Uint8Array(20);
