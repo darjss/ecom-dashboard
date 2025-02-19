@@ -21,7 +21,7 @@ import {
 import { FormWrapper } from "@/components/form-wrapper";
 import { Card, CardContent } from "@/components/ui/card";
 import SubmitButton from "@/components/submit-button";
-import { orderStatus, paymentStatus, status } from "@/lib/constants";
+import { orderStatus, paymentStatus } from "@/lib/constants";
 import { addOrder } from "@/server/actions/order";
 
 const AddOrderForm = () => {
@@ -130,95 +130,8 @@ const AddOrderForm = () => {
 
             <Card className="shadow-md transition-shadow duration-300 hover:shadow-lg">
               <CardContent className="space-y-4 p-6">
-                <h3 className="mb-4 text-xl font-semibold">Pricing & Stock</h3>
-                <FormField
-                  control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Product Price</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step={0.01}
-                          placeholder="Enter price"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseFloat(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="stock"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Product Stock</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Enter stock quantity"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseInt(e.target.value, 10))
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="potency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Product Potency</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., 100mg" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="amount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Product Amount</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., 30 capsules" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="dailyIntake"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Daily Intake</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Enter daily intake"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseInt(e.target.value, 10))
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
+                <h3 className="mb-4 text-xl font-semibold">Products</h3>
+                </CardContent>
             </Card>
 
             <div className="mt-6 flex justify-end lg:col-span-2">

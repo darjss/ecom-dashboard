@@ -1,11 +1,11 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "ca7f4ed6-99a4-498b-8d10-193df3c84ce6",
+  "id": "5fbbaeb3-bf10-45b9-ac2a-c5c0ec31c6ae",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "ecommerce-dashboard_brand": {
-      "name": "ecommerce-dashboard_brand",
+    "ecom_vit_brand": {
+      "name": "ecom_vit_brand",
       "columns": {
         "id": {
           "name": "id",
@@ -45,8 +45,8 @@
         }
       },
       "indexes": {
-        "ecommerce-dashboard_brand_name_unique": {
-          "name": "ecommerce-dashboard_brand_name_unique",
+        "ecom_vit_brand_name_unique": {
+          "name": "ecom_vit_brand_name_unique",
           "columns": [
             "name"
           ],
@@ -65,8 +65,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "ecommerce-dashboard_cart_item": {
-      "name": "ecommerce-dashboard_cart_item",
+    "ecom_vit_cart_item": {
+      "name": "ecom_vit_cart_item",
       "columns": {
         "id": {
           "name": "id",
@@ -129,10 +129,10 @@
         }
       },
       "foreignKeys": {
-        "ecommerce-dashboard_cart_item_cart_id_ecommerce-dashboard_cart_id_fk": {
-          "name": "ecommerce-dashboard_cart_item_cart_id_ecommerce-dashboard_cart_id_fk",
-          "tableFrom": "ecommerce-dashboard_cart_item",
-          "tableTo": "ecommerce-dashboard_cart",
+        "ecom_vit_cart_item_cart_id_ecom_vit_cart_id_fk": {
+          "name": "ecom_vit_cart_item_cart_id_ecom_vit_cart_id_fk",
+          "tableFrom": "ecom_vit_cart_item",
+          "tableTo": "ecom_vit_cart",
           "columnsFrom": [
             "cart_id"
           ],
@@ -142,10 +142,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "ecommerce-dashboard_cart_item_product_variant_id_ecommerce-dashboard_product_id_fk": {
-          "name": "ecommerce-dashboard_cart_item_product_variant_id_ecommerce-dashboard_product_id_fk",
-          "tableFrom": "ecommerce-dashboard_cart_item",
-          "tableTo": "ecommerce-dashboard_product",
+        "ecom_vit_cart_item_product_variant_id_ecom_vit_product_id_fk": {
+          "name": "ecom_vit_cart_item_product_variant_id_ecom_vit_product_id_fk",
+          "tableFrom": "ecom_vit_cart_item",
+          "tableTo": "ecom_vit_product",
           "columnsFrom": [
             "product_variant_id"
           ],
@@ -160,8 +160,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "ecommerce-dashboard_cart": {
-      "name": "ecommerce-dashboard_cart",
+    "ecom_vit_cart": {
+      "name": "ecom_vit_cart",
       "columns": {
         "id": {
           "name": "id",
@@ -200,25 +200,18 @@
             "customer_id"
           ],
           "isUnique": false
-        },
-        "cart_id_idx": {
-          "name": "cart_id_idx",
-          "columns": [
-            "id"
-          ],
-          "isUnique": false
         }
       },
       "foreignKeys": {
-        "ecommerce-dashboard_cart_customer_id_ecommerce-dashboard_customer_id_fk": {
-          "name": "ecommerce-dashboard_cart_customer_id_ecommerce-dashboard_customer_id_fk",
-          "tableFrom": "ecommerce-dashboard_cart",
-          "tableTo": "ecommerce-dashboard_customer",
+        "ecom_vit_cart_customer_id_ecom_vit_customer_phone_fk": {
+          "name": "ecom_vit_cart_customer_id_ecom_vit_customer_phone_fk",
+          "tableFrom": "ecom_vit_cart",
+          "tableTo": "ecom_vit_customer",
           "columnsFrom": [
             "customer_id"
           ],
           "columnsTo": [
-            "id"
+            "phone"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -228,8 +221,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "ecommerce-dashboard_category": {
-      "name": "ecommerce-dashboard_category",
+    "ecom_vit_category": {
+      "name": "ecom_vit_category",
       "columns": {
         "id": {
           "name": "id",
@@ -262,8 +255,8 @@
         }
       },
       "indexes": {
-        "ecommerce-dashboard_category_name_unique": {
-          "name": "ecommerce-dashboard_category_name_unique",
+        "ecom_vit_category_name_unique": {
+          "name": "ecom_vit_category_name_unique",
           "columns": [
             "name"
           ],
@@ -282,20 +275,13 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "ecommerce-dashboard_customer": {
-      "name": "ecommerce-dashboard_customer",
+    "ecom_vit_customer": {
+      "name": "ecom_vit_customer",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
         "phone": {
           "name": "phone",
-          "type": "text(15)",
-          "primaryKey": false,
+          "type": "integer",
+          "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
@@ -323,8 +309,8 @@
         }
       },
       "indexes": {
-        "ecommerce-dashboard_customer_phone_unique": {
-          "name": "ecommerce-dashboard_customer_phone_unique",
+        "ecom_vit_customer_phone_unique": {
+          "name": "ecom_vit_customer_phone_unique",
           "columns": [
             "phone"
           ],
@@ -343,8 +329,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "ecommerce-dashboard_order_detail": {
-      "name": "ecommerce-dashboard_order_detail",
+    "ecom_vit_order_detail": {
+      "name": "ecom_vit_order_detail",
       "columns": {
         "id": {
           "name": "id",
@@ -385,10 +371,10 @@
         }
       },
       "foreignKeys": {
-        "ecommerce-dashboard_order_detail_order_id_ecommerce-dashboard_order_id_fk": {
-          "name": "ecommerce-dashboard_order_detail_order_id_ecommerce-dashboard_order_id_fk",
-          "tableFrom": "ecommerce-dashboard_order_detail",
-          "tableTo": "ecommerce-dashboard_order",
+        "ecom_vit_order_detail_order_id_ecom_vit_order_id_fk": {
+          "name": "ecom_vit_order_detail_order_id_ecom_vit_order_id_fk",
+          "tableFrom": "ecom_vit_order_detail",
+          "tableTo": "ecom_vit_order",
           "columnsFrom": [
             "order_id"
           ],
@@ -398,10 +384,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "ecommerce-dashboard_order_detail_product_variant_id_ecommerce-dashboard_product_id_fk": {
-          "name": "ecommerce-dashboard_order_detail_product_variant_id_ecommerce-dashboard_product_id_fk",
-          "tableFrom": "ecommerce-dashboard_order_detail",
-          "tableTo": "ecommerce-dashboard_product",
+        "ecom_vit_order_detail_product_variant_id_ecom_vit_product_id_fk": {
+          "name": "ecom_vit_order_detail_product_variant_id_ecom_vit_product_id_fk",
+          "tableFrom": "ecom_vit_order_detail",
+          "tableTo": "ecom_vit_product",
           "columnsFrom": [
             "product_variant_id"
           ],
@@ -416,8 +402,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "ecommerce-dashboard_order": {
-      "name": "ecommerce-dashboard_order",
+    "ecom_vit_order": {
+      "name": "ecom_vit_order",
       "columns": {
         "id": {
           "name": "id",
@@ -433,8 +419,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "customer_id": {
-          "name": "customer_id",
+        "customer_phone": {
+          "name": "customer_phone",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -481,7 +467,7 @@
         "order_customer_idx": {
           "name": "order_customer_idx",
           "columns": [
-            "customer_id"
+            "customer_phone"
           ],
           "isUnique": false
         },
@@ -494,15 +480,15 @@
         }
       },
       "foreignKeys": {
-        "ecommerce-dashboard_order_customer_id_ecommerce-dashboard_customer_id_fk": {
-          "name": "ecommerce-dashboard_order_customer_id_ecommerce-dashboard_customer_id_fk",
-          "tableFrom": "ecommerce-dashboard_order",
-          "tableTo": "ecommerce-dashboard_customer",
+        "ecom_vit_order_customer_phone_ecom_vit_customer_phone_fk": {
+          "name": "ecom_vit_order_customer_phone_ecom_vit_customer_phone_fk",
+          "tableFrom": "ecom_vit_order",
+          "tableTo": "ecom_vit_customer",
           "columnsFrom": [
-            "customer_id"
+            "customer_phone"
           ],
           "columnsTo": [
-            "id"
+            "phone"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -512,8 +498,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "ecommerce-dashboard_payment": {
-      "name": "ecommerce-dashboard_payment",
+    "ecom_vit_payment": {
+      "name": "ecom_vit_payment",
       "columns": {
         "id": {
           "name": "id",
@@ -531,7 +517,7 @@
         },
         "provider": {
           "name": "provider",
-          "type": "text(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -576,10 +562,10 @@
         }
       },
       "foreignKeys": {
-        "ecommerce-dashboard_payment_order_id_ecommerce-dashboard_order_id_fk": {
-          "name": "ecommerce-dashboard_payment_order_id_ecommerce-dashboard_order_id_fk",
-          "tableFrom": "ecommerce-dashboard_payment",
-          "tableTo": "ecommerce-dashboard_order",
+        "ecom_vit_payment_order_id_ecom_vit_order_id_fk": {
+          "name": "ecom_vit_payment_order_id_ecom_vit_order_id_fk",
+          "tableFrom": "ecom_vit_payment",
+          "tableTo": "ecom_vit_order",
           "columnsFrom": [
             "order_id"
           ],
@@ -594,8 +580,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "ecommerce-dashboard_product_image": {
-      "name": "ecommerce-dashboard_product_image",
+    "ecom_vit_product_image": {
+      "name": "ecom_vit_product_image",
       "columns": {
         "id": {
           "name": "id",
@@ -645,10 +631,10 @@
         }
       },
       "foreignKeys": {
-        "ecommerce-dashboard_product_image_product_id_ecommerce-dashboard_product_id_fk": {
-          "name": "ecommerce-dashboard_product_image_product_id_ecommerce-dashboard_product_id_fk",
-          "tableFrom": "ecommerce-dashboard_product_image",
-          "tableTo": "ecommerce-dashboard_product",
+        "ecom_vit_product_image_product_id_ecom_vit_product_id_fk": {
+          "name": "ecom_vit_product_image_product_id_ecom_vit_product_id_fk",
+          "tableFrom": "ecom_vit_product_image",
+          "tableTo": "ecom_vit_product",
           "columnsFrom": [
             "product_id"
           ],
@@ -663,8 +649,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "ecommerce-dashboard_product": {
-      "name": "ecommerce-dashboard_product",
+    "ecom_vit_product": {
+      "name": "ecom_vit_product",
       "columns": {
         "id": {
           "name": "id",
@@ -778,8 +764,8 @@
         }
       },
       "indexes": {
-        "ecommerce-dashboard_product_slug_unique": {
-          "name": "ecommerce-dashboard_product_slug_unique",
+        "ecom_vit_product_slug_unique": {
+          "name": "ecom_vit_product_slug_unique",
           "columns": [
             "slug"
           ],
@@ -822,10 +808,10 @@
         }
       },
       "foreignKeys": {
-        "ecommerce-dashboard_product_category_id_ecommerce-dashboard_category_id_fk": {
-          "name": "ecommerce-dashboard_product_category_id_ecommerce-dashboard_category_id_fk",
-          "tableFrom": "ecommerce-dashboard_product",
-          "tableTo": "ecommerce-dashboard_category",
+        "ecom_vit_product_category_id_ecom_vit_category_id_fk": {
+          "name": "ecom_vit_product_category_id_ecom_vit_category_id_fk",
+          "tableFrom": "ecom_vit_product",
+          "tableTo": "ecom_vit_category",
           "columnsFrom": [
             "category_id"
           ],
@@ -835,10 +821,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "ecommerce-dashboard_product_brand_id_ecommerce-dashboard_brand_id_fk": {
-          "name": "ecommerce-dashboard_product_brand_id_ecommerce-dashboard_brand_id_fk",
-          "tableFrom": "ecommerce-dashboard_product",
-          "tableTo": "ecommerce-dashboard_brand",
+        "ecom_vit_product_brand_id_ecom_vit_brand_id_fk": {
+          "name": "ecom_vit_product_brand_id_ecom_vit_brand_id_fk",
+          "tableFrom": "ecom_vit_product",
+          "tableTo": "ecom_vit_brand",
           "columnsFrom": [
             "brand_id"
           ],
@@ -853,8 +839,193 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "ecommerce-dashboard_user": {
-      "name": "ecommerce-dashboard_user",
+    "ecom_vit_purchase": {
+      "name": "ecom_vit_purchase",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity_purchased": {
+          "name": "quantity_purchased",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit_cost": {
+          "name": "unit_cost",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "purchase_product_idx": {
+          "name": "purchase_product_idx",
+          "columns": [
+            "product_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "ecom_vit_purchase_product_id_ecom_vit_product_id_fk": {
+          "name": "ecom_vit_purchase_product_id_ecom_vit_product_id_fk",
+          "tableFrom": "ecom_vit_purchase",
+          "tableTo": "ecom_vit_product",
+          "columnsFrom": [
+            "product_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "ecom_vit_sales": {
+      "name": "ecom_vit_sales",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity_sold": {
+          "name": "quantity_sold",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "product_cost": {
+          "name": "product_cost",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "selling_price": {
+          "name": "selling_price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "discount_applied": {
+          "name": "discount_applied",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "sales_product_idx": {
+          "name": "sales_product_idx",
+          "columns": [
+            "product_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "ecom_vit_sales_product_id_ecom_vit_product_id_fk": {
+          "name": "ecom_vit_sales_product_id_ecom_vit_product_id_fk",
+          "tableFrom": "ecom_vit_sales",
+          "tableTo": "ecom_vit_product",
+          "columnsFrom": [
+            "product_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ecom_vit_sales_order_id_ecom_vit_order_id_fk": {
+          "name": "ecom_vit_sales_order_id_ecom_vit_order_id_fk",
+          "tableFrom": "ecom_vit_sales",
+          "tableTo": "ecom_vit_order",
+          "columnsFrom": [
+            "order_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "ecom_vit_user": {
+      "name": "ecom_vit_user",
       "columns": {
         "id": {
           "name": "id",
@@ -894,8 +1065,8 @@
         }
       },
       "indexes": {
-        "ecommerce-dashboard_user_google_id_unique": {
-          "name": "ecommerce-dashboard_user_google_id_unique",
+        "ecom_vit_user_google_id_unique": {
+          "name": "ecom_vit_user_google_id_unique",
           "columns": [
             "google_id"
           ],

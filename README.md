@@ -23,6 +23,7 @@
   - [ ] order table pagination 
   - [ ] order table filter sort
 - [ ] sales table?
+- [ ] purchase inventory management
 - [ ] search
 - [ ] analytics
 - [ ] payment confirm

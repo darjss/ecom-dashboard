@@ -10,7 +10,7 @@ import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { orderStatus, paymentProvider, paymentStatus, status } from "@/lib/constants";
 
 export const createTable = sqliteTableCreator(
-  (name) => `ecommerce-dashboard_${name}`,
+  (name) => `ecom_vit_${name}`,
 );
 
 // Users (Admin) Table
@@ -227,7 +227,6 @@ export const CartsTable = createTable(
   },
   (table) => [
     index("cart_customer_idx").on(table.customerId),
-    index("cart_id_idx").on(table.id),
   ],
 );
 
@@ -279,7 +278,7 @@ export const SalesTable = createTable(
       () => new Date(),
     ),
   },
-  (table) => [index("purchase_product_idx").on(table.productId)],
+  (table) => [index("sales_product_idx").on(table.productId)],
 );
 
 export const PurchasesTable = createTable(
