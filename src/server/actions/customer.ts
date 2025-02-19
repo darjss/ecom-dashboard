@@ -13,10 +13,12 @@ export const addUser = async (userInfo: CustomerInsertType) => {
 };
 
 export const getCustomerByPhone = async (phone: number) => {
+  console.log("GETTING CUSTOMER BY PHONE")
   const result = await db
     .select(getTableColumns(CustomersTable))
     .from(CustomersTable)
     .where(eq(CustomersTable.phone, phone))
     .limit(1);
+    console.log("RESULT", result);
     return result
 };

@@ -16,8 +16,17 @@ export type PaymentStatusType = (typeof paymentStatus)[number];
 export type TransactionType = SQLiteTransaction<
   "async",
   ResultSet,
-  typeof import("/home/darjs/projects/ecom-dashboard/src/server/db/schema"),
+  typeof import("@/server/db/schema"),
   ExtractTablesWithRelations<
-    typeof import("/home/darjs/projects/ecom-dashboard/src/server/db/schema")
+    typeof import("@/server/db/schema")
   >
 >;
+export interface ProductImageType {
+  id: number;
+  url: string;
+}
+export interface Session {
+  id: string;
+  userId: number;
+  expiresAt: Date;
+}

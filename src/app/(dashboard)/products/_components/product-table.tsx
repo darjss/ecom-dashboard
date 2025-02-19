@@ -32,7 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
 import { deleteProduct, getPaginatedProduct } from "@/server/actions/product";
-import { seedDatabase } from "seed";
+import { seedDatabase } from "@/lib/seed";
 import RowActions from "./row-actions";
 import { parseProductsForTable } from "@/lib/zod/utils";
 import { DataTableSkeleton } from "@/components/skeleton/data-table-skeleton";

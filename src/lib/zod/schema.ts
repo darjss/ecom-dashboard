@@ -10,6 +10,9 @@ const productSchema = z.object({
   productId: z.number().int().positive().finite(),
   quantity: z.number().int().positive().finite(),
   price: z.number().int().min(20000),
+  // name: z.string().min(1, {
+  //   message: "Product name is too short",
+  // }),
 });
 
 export const addProductSchema = z.object({
@@ -41,11 +44,11 @@ export const addProductSchema = z.object({
 export const addOrderSchema = z.object({
   id: z.number().int().positive().finite().optional(),
   customerPhone: z
-  .number()
-  .int() 
-  .refine((num) => num >= 60000000 && num <= 99999999, {
-    message: "Number must be 8 digits and start with 6, 7, 8, or 9",
-  }),
+    .coerce
+    .number()
+    .int()
+    .min(60000000, { message: "Number must be at least 60000000" })
+    .max(99999999, { message: "Number must be at most 99999999" }),
   address: z.string().min(10, {
     message: "Address is too short",
   }),
@@ -57,7 +60,8 @@ export const addOrderSchema = z.object({
     .optional(),
   status: z.enum(orderStatus),
   paymentStatus: z.enum(paymentStatus),
-  products: z.array(productSchema).nonempty(),
+  isNewCustomer:z.boolean(),
+  products: z.array(productSchema),
 });
 
 export type addProductType = z.infer<typeof addProductSchema>;

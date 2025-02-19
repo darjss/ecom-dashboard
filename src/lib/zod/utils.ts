@@ -9,9 +9,9 @@ import {
   ZodNumber,
   ZodBoolean,
   ZodOptional,
+  ZodEnum,
 } from "zod";
 import { addImageType, addProductType } from "./schema";
-
 export const generateDefaultValues = (schema: ZodSchema) => {
   if (!(schema instanceof ZodObject)) {
     throw new Error("Schema must be a ZodObject");
@@ -22,7 +22,6 @@ export const generateDefaultValues = (schema: ZodSchema) => {
 
   Object.keys(shape).forEach((key) => {
     const fieldSchema = shape[key] as ZodTypeAny;
-
     if (fieldSchema instanceof ZodString) {
       defaultValues[key] = "";
     } else if (fieldSchema instanceof ZodNumber) {
@@ -32,39 +31,19 @@ export const generateDefaultValues = (schema: ZodSchema) => {
     } else if (fieldSchema instanceof ZodOptional) {
       defaultValues[key] = undefined;
     } else if (fieldSchema instanceof ZodArray) {
-      const elementSchema = fieldSchema.element;
-
-      if (elementSchema instanceof ZodObject) {
-        // Handle arrays of objects
-        const objectShape = elementSchema.shape;
-        const defaultObject: Record<string, any> = {};
-
-        Object.keys(objectShape).forEach((objectKey) => {
-          const objectFieldSchema = objectShape[objectKey] as ZodTypeAny;
-
-          if (objectFieldSchema instanceof ZodString) {
-            defaultObject[objectKey] = "";
-          } else if (objectFieldSchema instanceof ZodNumber) {
-            defaultObject[objectKey] = 0;
-          } else if (objectFieldSchema instanceof ZodBoolean) {
-            defaultObject[objectKey] = false;
-          } else {
-            defaultObject[objectKey] = undefined;
-          }
-        });
-
-        defaultValues[key] = [defaultObject];
-      } else {
-        defaultValues[key] = [];
-      }
+      // Initialize arrays as empty arrays
+      defaultValues[key] = [];
     } else if (fieldSchema instanceof ZodObject) {
       // Recursively handle nested objects
       defaultValues[key] = generateDefaultValues(fieldSchema);
+    } else if (fieldSchema instanceof ZodEnum) {
+      // Get the first value of the enum
+      defaultValues[key] = fieldSchema.options[0];
     } else {
       defaultValues[key] = undefined;
     }
   });
-
+  // console.log("default",defaultValues)
   return defaultValues;
 };
 

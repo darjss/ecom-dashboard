@@ -26,7 +26,6 @@ import SubmitButton from "@/components/submit-button";
 import { status } from "@/lib/constants";
 import { AddImageForm } from "./image-form";
 import { parseProduct } from "@/lib/zod/utils";
-import { useFormContext } from "react-hook-form";
 import { updateProduct } from "@/server/actions/product";
 
 interface AddProductFormProps {

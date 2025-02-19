@@ -3,16 +3,9 @@ import "server-only";
 import { db, redis } from "../db";
 import { UserSelectType, UsersTable } from "../db/schema";
 import {eq} from "drizzle-orm"
+import { Session } from "@/lib/types";
 
-export interface Session {
-  id: string;
-  userId: number;
-  expiresAt: Date;
-}
-export interface ProductImageType {
-  id: number;
-  url: string;
-}
+
 export const insertSession = async (session: Session) => {
   // Convert Date to ISO string for storage
   const sessionToStore = {

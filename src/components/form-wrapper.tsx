@@ -1,15 +1,14 @@
 "use client";
 
-import { Dispatch, ReactNode, SetStateAction, useCallback, useEffect } from "react";
+import { Dispatch, ReactNode, SetStateAction, useCallback } from "react";
 import {
   useForm,
   UseFormReturn,
   SubmitHandler,
   SubmitErrorHandler,
-  useFieldArray,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ZodSchema, ZodTypeAny } from "zod";
+import { ZodSchema } from "zod";
 import { Form } from "@/components/ui/form";
 import { QueryFunction } from "@/hooks/use-action";
 import { toast } from "sonner";
@@ -32,7 +31,7 @@ export function FormWrapper<T extends ZodSchema>({
   className,
   onSubmit,
   initialData,
-  setDialogOpen
+  setDialogOpen,
 }: FormWrapperProps<T>) {
   // console.log("data",initialData);
   const defaultValues =
@@ -44,7 +43,6 @@ export function FormWrapper<T extends ZodSchema>({
   const onValidSubmit: SubmitHandler<any> = useCallback(
     async (data) => {
       try {
-        console.log("invalid");
         console.log("Form data (valid submission):", data);
         const cleanedData = Object.fromEntries(
           Object.entries(data).map(([key, value]) => [

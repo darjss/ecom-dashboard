@@ -14,19 +14,15 @@ import {
 } from "drizzle-orm";
 import { addProductType } from "@/lib/zod/schema";
 import { z } from "zod";
-import { unstable_cacheLife as cacheLife } from "next/cache";
+import { unstable_cacheLife as cacheLife, revalidateTag } from "next/cache";
 import { revalidatePath } from "next/cache";
 import { SortingState } from "@tanstack/react-table";
 import { getAllBrands } from "./brand";
 import { addImage, updateImage } from "./image";
 import { redirect } from "next/navigation";
 import { unstable_cacheTag as cacheTag } from "next/cache";
+import { ProductImageType } from "@/lib/types";
 
-
-export interface ProductImageType {
-  id: number;
-  url: string;
-}
 export const searchProductByNameForTable = async (searchTerm: string) => {
   console.log(searchTerm);
   const products = await db
@@ -64,7 +60,7 @@ export const searchProductByName = async (searchTerm: string) => {
     })
     .from(ProductsTable)
     .where(like(ProductsTable.name, `%${searchTerm}%`));
-    return product
+  return product;
 };
 
 export const addProduct = async (product: addProductType) => {
@@ -77,6 +73,7 @@ export const addProduct = async (product: addProductType) => {
     return parsed.data;
   });
   const allBrands = await getAllBrands();
+  console.log("brands", allBrands);
   const brandName = allBrands.find(
     (brand) => brand.id === product.brandId,
   )?.name;
@@ -122,6 +119,7 @@ export const addProduct = async (product: addProductType) => {
     await Promise.allSettled(imagePromises);
 
     console.log("Images added successfully");
+    revalidateTag("products");
     redirect("/products");
     return { message: "Added product Successfully" };
   } catch (e) {
@@ -157,10 +155,7 @@ export const getProductById = async (id: number) => {
   console.log(product);
   return {
     ...product,
-    images: JSON.parse(product.images as string) as {
-      id: number;
-      url: string;
-    }[],
+    images: JSON.parse(product.images as string) as ProductImageType[],
   };
 };
 export const updateProduct = async (product: addProductType) => {
@@ -198,7 +193,8 @@ export const updateProduct = async (product: addProductType) => {
       .set({ ...Parsedproduct, slug: slug })
       .where(eq(ProductsTable.id, product.id));
     updateImage(images, product.id);
-    revalidatePath("/products");
+    revalidateTag("products");
+    redirect("/products");
     return { message: "Updated product Successfully" };
   } catch (e) {
     console.log(e);
@@ -210,7 +206,8 @@ export const deleteProduct = async (id: number) => {
     const result = await db
       .delete(ProductsTable)
       .where(eq(ProductsTable.id, id));
-    revalidatePath("/products");
+    revalidateTag("products");
+    redirect("/products");
     return { message: "Successfully deleted Product" };
   } catch (e) {
     console.log(e);
@@ -220,7 +217,7 @@ export const deleteProduct = async (id: number) => {
 
 export const getAllProducts = async () => {
   "use cache";
-  cacheTag("products")
+  cacheTag("products");
 
   console.log("fetching product");
   const products = await db
