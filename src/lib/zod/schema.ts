@@ -43,8 +43,7 @@ export const addProductSchema = z.object({
 
 export const addOrderSchema = z.object({
   id: z.number().int().positive().finite().optional(),
-  customerPhone: z
-    .coerce
+  customerPhone: z.coerce
     .number()
     .int()
     .min(60000000, { message: "Number must be at least 60000000" })
@@ -57,10 +56,11 @@ export const addOrderSchema = z.object({
     .min(3, {
       message: "Notes is too short",
     })
-    .optional(),
+    .optional()
+    .nullable(),
   status: z.enum(orderStatus),
   paymentStatus: z.enum(paymentStatus),
-  isNewCustomer:z.boolean(),
+  isNewCustomer: z.boolean(),
   products: z.array(productSchema),
 });
 

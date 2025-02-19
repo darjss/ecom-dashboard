@@ -120,7 +120,7 @@ export const addProduct = async (product: addProductType) => {
 
     console.log("Images added successfully");
     revalidateTag("products");
-    // redirect("/products");
+    redirect("/products");
     return { message: "Added product Successfully" };
   } catch (e) {
     console.log(e);

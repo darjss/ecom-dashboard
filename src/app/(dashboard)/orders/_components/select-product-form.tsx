@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ProductType } from "@/lib/types";
 
-export const SelectProductForm = ({
+ const SelectProductForm = ({
   form,
   products,
 }: {
@@ -34,7 +34,7 @@ export const SelectProductForm = ({
   };
 
   return (
-    <div className="space-y-6 rounded-lg bg-white p-6 shadow-md">
+    <div className="space-y-4 rounded-lg bg-white p-4 shadow-md sm:p-6">
       <div className="relative">
         <div className="relative">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400" />
@@ -58,7 +58,7 @@ export const SelectProductForm = ({
             {results.map((product) => (
               <button
                 key={product.id}
-                className="flex w-full items-center space-x-3 px-4 py-2 text-left transition duration-200 hover:bg-gray-100"
+                className="flex w-full items-center space-x-2 px-3 py-2 text-left transition duration-200 hover:bg-gray-100 sm:space-x-3 sm:px-4"
                 onClick={() => {
                   append({
                     productId: product.id,
@@ -73,11 +73,11 @@ export const SelectProductForm = ({
                 <img
                   src={product.images[0]?.url || "/placeholder.svg"}
                   alt={product.name}
-                  className="h-12 w-12 rounded-md object-cover"
+                  className="h-10 w-10 rounded-md object-cover sm:h-12 sm:w-12"
                 />
                 <div className="flex-grow">
-                  <p className="font-medium">{product.name}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm font-medium sm:text-base">{product.name}</p>
+                  <p className="text-xs text-gray-500 sm:text-sm">
                     ${product.price.toFixed(2)}
                   </p>
                 </div>
@@ -88,61 +88,66 @@ export const SelectProductForm = ({
       </div>
 
       {fields.length > 0 && (
-        <div className="mt-6">
-          <h2 className="mb-4 flex items-center text-lg font-semibold">
-            <ShoppingCartIcon className="mr-2" /> Selected Products
+        <div className="mt-4 sm:mt-6">
+          <h2 className="mb-3 flex items-center text-base font-semibold sm:mb-4 sm:text-lg">
+            <ShoppingCartIcon className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Selected Products
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {fields.map((field, index) => {
               const product = form.getValues(`products.${index}`);
               return (
                 <div
                   key={field.id}
-                  className="flex items-center space-x-4 rounded-lg bg-gray-50 p-4 shadow-sm transition duration-200 hover:shadow-md"
+                  className="flex flex-col rounded-lg bg-gray-50 p-3 shadow-sm transition duration-200 hover:shadow-md sm:flex-row sm:items-center sm:p-4 sm:space-x-4"
                 >
-                  <img
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    className="h-16 w-16 rounded-md object-cover"
-                  />
-                  <div className="flex-grow">
-                    <p className="font-medium">{product.name}</p>
-                    <p className="text-sm text-gray-500">
-                      ${product.price.toFixed(2)}
-                    </p>
+                  <div className="flex items-center space-x-3 pb-3 sm:pb-0">
+                    <img
+                      src={product.image || "/placeholder.svg"}
+                      alt={product.name}
+                      className="h-12 w-12 rounded-md object-cover sm:h-16 sm:w-16"
+                    />
+                    <div className="flex-grow">
+                      <p className="text-sm font-medium sm:text-base">{product.name}</p>
+                      <p className="text-xs text-gray-500 sm:text-sm">
+                        ${product.price.toFixed(2)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-200 sm:border-t-0 sm:pt-0 sm:ml-auto">
+                    <div className="flex items-center space-x-1 sm:space-x-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleQuantityChange(index, "minus")}
+                        className="h-7 w-7 sm:h-8 sm:w-8"
+                      >
+                        <MinusIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                      </Button>
+                      <span className="w-6 text-center text-sm font-medium sm:w-8 sm:text-base">
+                        {product.quantity}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleQuantityChange(index, "add")}
+                        className="h-7 w-7 sm:h-8 sm:w-8"
+                      >
+                        <PlusIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                      </Button>
+                    </div>
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="ghost"
                       size="icon"
-                      onClick={() => handleQuantityChange(index, "minus")}
-                      className="h-8 w-8"
+                      onClick={() => remove(index)}
+                      className="ml-3 text-red-500 transition duration-200 hover:bg-red-100 hover:text-red-600 h-7 w-7 sm:h-8 sm:w-8"
                     >
-                      <MinusIcon className="h-4 w-4" />
-                    </Button>
-                    <span className="w-8 text-center font-medium">
-                      {product.quantity}
-                    </span>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleQuantityChange(index, "add")}
-                      className="h-8 w-8"
-                    >
-                      <PlusIcon className="h-4 w-4" />
+                      <XIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => remove(index)}
-                    className="text-red-500 transition duration-200 hover:bg-red-100 hover:text-red-600"
-                  >
-                    <XIcon className="h-4 w-4" />
-                  </Button>
                 </div>
               );
             })}
@@ -152,3 +157,4 @@ export const SelectProductForm = ({
     </div>
   );
 };
+export default SelectProductForm

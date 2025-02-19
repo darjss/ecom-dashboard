@@ -213,7 +213,6 @@ export const seedDatabase = async () => {
     revalidateTag("brandCategory");
     // Add products
     setTimeout(async()=>{
-
       for (const product of productsData) {
         await addProduct(product);
       }

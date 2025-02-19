@@ -15,15 +15,37 @@
   - [x] product table pagination 
   - [x] product table filter sort
   - [x] file upload
+  - [ ] detailed product view modal
+  - [ ] change image upload to custom r2 bucket
   - [ ] ai scraper
 - [ ] order crud
-  - [ ] add order
+  - [x] add order
   - [ ] edit order
   - [ ] delete order
+  - [ ] add to sales table/record sale
+  - [x] add to payment table
   - [ ] order table pagination 
+  - [ ] detailed order view modal
   - [ ] order table filter sort
-- [ ] sales table?
-- [ ] purchase inventory management
+-[ ] payment management 
+  - [x] add payment
+  - [ ] edit payment
+  - [ ] delete/cancel order
+  - [ ] payment table pagination 
+  - [ ] detailed payment view modal
+  - [ ] order table filt  er sort
+- [ ] purchase inventory management crud
+  - [ ] add purchase
+  - [ ] edit purchase
+  - [ ] delete/cancell purchase
+  - [ ] connect to sales table/ order process
+  - [ ] purchase table pagination 
+  - [ ] purchase table filter sort  
+  - [ ] detailed product view modal
+  - [ ] running out of stock
 - [ ] search
 - [ ] analytics
-- [ ] payment confirm
+  - [ ] daily, weekly, monthly sale data
+  - [ ] most sold products
+  - [ ] trending fast selling products
+- [ ] connect payment confirm to telegram bot
