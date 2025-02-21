@@ -5,7 +5,7 @@ import { Input } from "../ui/input";
 import { Suspense } from "react";
 
 import Pathname from "./pathname";
-// import UserData from "./user-data";
+import UserData from "./user-data";
 
 const Header = async () => {
   return (
@@ -17,7 +17,7 @@ const Header = async () => {
         </div>
 
         {/* Search bar - hidden on mobile, shown in dropdown */}
-        <div className="hidden md:block relative w-96">
+        <div className="relative hidden w-96 md:block">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
             type="text"
@@ -54,8 +54,14 @@ const Header = async () => {
               </div>
             </PopoverTrigger>
             <PopoverContent className="w-56">
-              <Suspense fallback={<div className="p-4 text-center text-gray-500">Loading...</div>}>
-                {/* <UserData /> */}
+              <Suspense
+                fallback={
+                  <div className="p-4 text-center text-gray-500">
+                    Loading...
+                  </div>
+                }
+              >
+                {process.env.NODE_ENV === "production" && <UserData />}
               </Suspense>
             </PopoverContent>
           </Popover>

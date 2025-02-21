@@ -6,6 +6,7 @@ import { addBrand } from "@/server/actions/brand";
 import { addCategory } from "@/server/actions/category";
 import { addProduct } from "@/server/actions/product";
 import { revalidateTag } from "next/cache";
+import { addOrder } from "@/server/actions/order";
 
 // Sample data for brands
 const brandsData: BrandInsertType[] = [
@@ -197,6 +198,130 @@ const productsData: addProductType[] = [
     status: "active",
   },
 ];
+const ordersData = [
+  {
+    customerPhone: 60123456,
+    address: "123 Main Street, Kuala Lumpur, 50000",
+    notes: "Please call before delivery",
+    status: "pending" as const,
+    paymentStatus: "success" as const,
+    isNewCustomer: true,
+    products: [
+      { productId: 1, quantity: 2, price: 50000 },
+      { productId: 3, quantity: 1, price: 75000 },
+    ],
+  },
+  {
+    customerPhone: 61234567,
+    address: "45 Garden Avenue, Petaling Jaya, 47301",
+    notes: null,
+    status: "pending" as const,
+    paymentStatus: "pending" as const,
+    isNewCustomer: true,
+    products: [
+      { productId: 2, quantity: 3, price: 80000 },
+      { productId: 5, quantity: 1, price: 120000 },
+    ],
+  },
+  {
+    customerPhone: 62345678,
+    address: "78 Jalan Bukit Bintang, Kuala Lumpur, 55100",
+    notes: "Leave with security guard if not at home",
+    status: "delivered" as const,
+    paymentStatus: "success" as const,
+    isNewCustomer: true,
+    products: [
+      { productId: 4, quantity: 1, price: 90000 },
+      { productId: 6, quantity: 2, price: 150000 },
+    ],
+  },
+  {
+    customerPhone: 63456789,
+    address: "221 Jalan Ampang, Ampang, 68000",
+    notes: "Fragile items, handle with care",
+    status: "pending" as const,
+    paymentStatus: "pending" as const,
+    isNewCustomer: true,
+    products: [
+      { productId: 7, quantity: 1, price: 60000 },
+      { productId: 9, quantity: 1, price: 85000 },
+    ],
+  },
+  {
+    customerPhone: 64567890,
+    address: "15 Jalan Tun Razak, Kuala Lumpur, 50400",
+    notes: null,
+    status: "pending" as const,
+    paymentStatus: "failed" as const,
+    isNewCustomer: true,
+    products: [
+      { productId: 8, quantity: 2, price: 70000 },
+      { productId: 10, quantity: 1, price: 100000 },
+    ],
+  },
+  {
+    customerPhone: 65678901,
+    address: "88 Lebuh Armenian, Georgetown, Penang, 10200",
+    notes: "Please deliver after 6pm",
+    status: "delivered" as const,
+    paymentStatus: "success" as const,
+    isNewCustomer: true,
+    products: [
+      { productId: 1, quantity: 1, price: 50000 },
+      { productId: 5, quantity: 1, price: 120000 },
+      { productId: 9, quantity: 1, price: 85000 },
+    ],
+  },
+  {
+    customerPhone: 66789012,
+    address: "32 Jalan Wong Ah Fook, Johor Bahru, 80000",
+    notes: "Contact on WhatsApp before delivery",
+    status: "pending" as const,
+    paymentStatus: "success" as const,
+    isNewCustomer: true,
+    products: [
+      { productId: 2, quantity: 1, price: 80000 },
+      { productId: 4, quantity: 2, price: 90000 },
+    ],
+  },
+  {
+    customerPhone: 67890123,
+    address: "55 Jalan Laksamana, Melaka, 75000",
+    notes: null,
+    status: "pending" as const,
+    paymentStatus: "pending" as const,
+    isNewCustomer: true,
+    products: [
+      { productId: 3, quantity: 3, price: 75000 },
+      { productId: 6, quantity: 1, price: 150000 },
+    ],
+  },
+  {
+    customerPhone: 68901234,
+    address: "101 Jalan Sultan Ismail, Kuala Lumpur, 50250",
+    notes: "Gift wrapping requested",
+    status: "delivered" as const,
+    paymentStatus: "success" as const,
+    isNewCustomer: true,
+    products: [
+      { productId: 7, quantity: 2, price: 60000 },
+      { productId: 10, quantity: 1, price: 100000 },
+    ],
+  },
+  {
+    customerPhone: 69012345,
+    address: "77 Jalan Sri Hartamas, Kuala Lumpur, 50480",
+    notes: "Delivery to office building",
+    status: "pending" as const,
+    paymentStatus: "pending" as const,
+    isNewCustomer: true,
+    products: [
+      { productId: 8, quantity: 1, price: 70000 },
+      { productId: 9, quantity: 1, price: 85000 },
+      { productId: 1, quantity: 1, price: 50000 },
+    ],
+  },
+];
 
 // Seed function to populate the database
 export const seedDatabase = async () => {
@@ -212,13 +337,19 @@ export const seedDatabase = async () => {
     }
     revalidateTag("brandCategory");
     // Add products
-    setTimeout(async()=>{
+    setTimeout(async () => {
       for (const product of productsData) {
         await addProduct(product);
       }
-    },1000)    
+    }, 1000);
 
-    console.log("Database seeding completed successfully.");
+    setTimeout(async () => {
+      for (const order of ordersData) {
+        await addOrder(order);
+      }
+      console.log("Orders seeded successly");
+    }, 1500);
+    console.log("Database seeding delivered successly.");
   } catch (error) {
     console.error("Error during database seeding:", error);
   }

@@ -32,7 +32,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
 import { deleteProduct, getPaginatedProduct } from "@/server/actions/product";
-import { seedDatabase } from "@/lib/seed";
 import RowActions from "./row-actions";
 import { parseProductsForTable } from "@/lib/zod/utils";
 import { DataTableSkeleton } from "@/components/skeleton/data-table-skeleton";
@@ -309,17 +308,7 @@ const ProductTable = ({
                   Add Product
                 </Button>
               </Link>
-              <form action={seedDatabase}>
-                <Button
-                  type="submit"
-                  variant="outline"
-                  size="sm"
-                  className="h-9 sm:h-10"
-                >
-                  <Database className="mr-2 h-4 w-4" />
-                  Seed Database
-                </Button>
-              </form>
+
             </div>
           </div>
 

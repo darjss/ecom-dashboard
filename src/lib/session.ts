@@ -28,7 +28,7 @@ export async function createSession(
   const session: Session = {
     id: sessionId,
     userId: userId as number,
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60),
   };
 
   await insertSession(session);
@@ -55,7 +55,7 @@ export async function validateSessionToken(
   }
 
   // Refresh session if it's close to expiring
-  if (Date.now() >= expiresAt.getTime() - 1000 * 60 * 60 * 24 * 15) {
+  if (Date.now() >= expiresAt.getTime() - 1000 * 60 * 30) {
     const updatedSession = {
       ...session,
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),

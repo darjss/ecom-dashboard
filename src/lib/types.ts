@@ -4,15 +4,16 @@ import { getProductById } from "@/server/actions/product";
 import { paymentProvider, paymentStatus } from "./constants";
 import { ResultSet } from "@libsql/client";
 import { SQLiteTransaction } from "drizzle-orm/sqlite-core";
-import {
-  ExtractTablesWithRelations,
-  getTableColumns,
-  Table,
-} from "drizzle-orm";
+import { ExtractTablesWithRelations } from "drizzle-orm";
+import { getOrderById } from "@/server/actions/order";
 export type BrandType = Awaited<ReturnType<typeof getAllBrands>>;
 export type CategoryType = Awaited<ReturnType<typeof getAllCategories>>;
 export type ProductType = Exclude<
   Exclude<Awaited<ReturnType<typeof getProductById>>, null>,
+  { message: string; error: string }
+>;
+export type OrderType = Exclude<
+  Exclude<Awaited<ReturnType<typeof getOrderById>>, null>,
   { message: string; error: string }
 >;
 export type PaymentProviderType = (typeof paymentProvider)[number];
@@ -38,7 +39,6 @@ export type SortingState<T> = Array<{
   id: keyof T;
   desc?: boolean;
 }>;
-
 
 export interface PaginationOptions<T> {
   page: number;

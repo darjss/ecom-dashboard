@@ -21,7 +21,7 @@ import { getAllBrands } from "./brand";
 import { addImage, updateImage } from "./image";
 import { redirect } from "next/navigation";
 import { unstable_cacheTag as cacheTag } from "next/cache";
-import { ProductImageType } from "@/lib/types";
+import { ProductImageType, TransactionType } from "@/lib/types";
 
 export const searchProductByNameForTable = async (searchTerm: string) => {
   console.log(searchTerm);
@@ -128,6 +128,16 @@ export const addProduct = async (product: addProductType) => {
   }
 };
 
+export const getProductBenchmark = async () => {
+  const startTime = performance.now();
+  const result = await db.query.ProductsTable.findMany({
+    with: {
+      images: true,
+    },
+  });
+  return performance.now() - startTime;
+};
+
 export const getProductById = async (id: number) => {
   console.log("Fetching product with id", id);
   const [product] = await db
@@ -201,6 +211,26 @@ export const updateProduct = async (product: addProductType) => {
     return { message: "Operation failed", error: e };
   }
 };
+
+export const updateStock = async (
+  productId: number,
+  numberToUpdate: number,
+  type: "add" | "minus",
+  tx?: TransactionType,
+) => {
+  try {
+    const result = await (tx || db)
+      .update(ProductsTable)
+      .set({
+        stock: sql`${ProductsTable.stock} ${type === "add" ? "+" : "-"} ${numberToUpdate}`,
+      })
+      .where(eq(ProductsTable.id, productId));
+    return { message: "Updated product Successfully" };
+  } catch (e) {
+    return { message: "Operation failed", error: e };
+  }
+};
+
 export const deleteProduct = async (id: number) => {
   try {
     const result = await db

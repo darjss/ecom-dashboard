@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   index,
   int,
@@ -177,7 +177,7 @@ export const OrderDetailsTable = createTable(
     orderId: int("order_id", { mode: "number" })
       .references(() => OrdersTable.id, { onDelete: "cascade" })
       .notNull(),
-    productId: int("product_variant_id", { mode: "number" })
+    productId: int("product_id", { mode: "number" })
       .references(() => ProductsTable.id)
       .notNull(),
     quantity: int("quantity", { mode: "number" }).notNull(),
@@ -300,6 +300,33 @@ export const PurchasesTable = createTable(
   },
   (table) => [index("purchase_product_idx").on(table.productId)],
 );
+
+export const ordersRelations = relations(OrdersTable, ({ many }) => ({
+  orderDetails: many(OrderDetailsTable),
+}));
+
+export const orderDetailsRelations = relations(OrderDetailsTable, ({ one }) => ({
+  order: one(OrdersTable, {
+    fields: [OrderDetailsTable.orderId],
+    references: [OrdersTable.id],
+  }),
+  product: one(ProductsTable, {
+    fields: [OrderDetailsTable.productId],
+    references: [ProductsTable.id],
+  }),
+}));
+
+export const productsRelations = relations(ProductsTable, ({ many }) => ({
+  images: many(ProductImagesTable),
+}));
+
+export const productImagesRelations = relations(ProductImagesTable, ({ one }) => ({
+  product: one(ProductsTable, {
+    fields: [ProductImagesTable.productId],
+    references: [ProductsTable.id],
+  }),
+}));
+
 
 export type UserSelectType = InferSelectModel<typeof UsersTable>;
 export type CustomerSelectType = InferSelectModel<typeof CustomersTable>;

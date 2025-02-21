@@ -16,6 +16,7 @@ export const orderStatus = [
   "shipped",
   "delivered",
   "cancelled",
+  "refunded"
 ] as const;
 
 export const paymentProvider = ["qpay", "transfer"] as const;
