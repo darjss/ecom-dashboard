@@ -221,7 +221,7 @@ const ProductTable = ({
         ),
       );
       setTotalProducts(
-        newPaginatedProducts.total?.count ?? initialTotalProduct,
+        newPaginatedProducts.total ?? initialTotalProduct,
       );
     } catch (error) {
       console.error("Error fetching products:", error);

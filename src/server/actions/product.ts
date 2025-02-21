@@ -11,11 +11,11 @@ import {
   SQL,
   sql,
   like,
+  InferSelectModel,
 } from "drizzle-orm";
 import { addProductType } from "@/lib/zod/schema";
 import { z } from "zod";
-import { unstable_cacheLife as cacheLife, revalidateTag } from "next/cache";
-import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { SortingState } from "@tanstack/react-table";
 import { getAllBrands } from "./brand";
 import { addImage, updateImage } from "./image";
@@ -53,7 +53,7 @@ export const searchProductByNameForTable = async (searchTerm: string) => {
 };
 
 export const searchProductByName = async (searchTerm: string) => {
-  const product = await db
+  const product = db
     .select({
       id: ProductsTable.id,
       name: ProductsTable.name,

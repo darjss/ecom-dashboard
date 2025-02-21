@@ -44,6 +44,7 @@
   - [ ] detailed product view modal
   - [ ] running out of stock
 - [ ] search
+- [ ] general pagination utility
 - [ ] analytics
   - [ ] daily, weekly, monthly sale data
   - [ ] most sold products
