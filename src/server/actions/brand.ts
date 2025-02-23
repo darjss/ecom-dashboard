@@ -7,7 +7,7 @@ import { unstable_cacheTag as cacheTag } from "next/cache";
 
 export const getAllBrands = async () => {
   "use cache";
-  // cacheLife("brandCategory");
+  cacheLife("brandCategory");
   cacheTag("brandCategory");
   console.log("fetching brands");
   const brands = await db

@@ -8,7 +8,7 @@ import { revalidateTag } from "next/cache";
 
 export const getAllCategories = async () => {
   "use cache";
-  // cacheLife("brandCategory");
+  cacheLife("brandCategory");
   cacheTag("brandCategory");
   console.log("fetching categories");
   const categories = await db
