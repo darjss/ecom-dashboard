@@ -4,8 +4,8 @@ import { db, redis } from "../db";
 import { UserSelectType, UsersTable } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { Session } from "@/lib/types";
-import { unstable_cacheLife as cacheLife } from "next/cache";
-
+import { unstable_cacheLife as cacheLife, revalidateTag } from "next/cache";
+import { unstable_cacheTag as cacheTag } from "next/cache";
 export const insertSession = async (session: Session) => {
   // Convert Date to ISO string for storage
   const sessionToStore = {
@@ -17,10 +17,15 @@ export const insertSession = async (session: Session) => {
 
 export const getSession = async (sessionId: string) => {
   "use cache";
-  cacheLife("minutes");
+  cacheLife({
+    stale: 1800, 
+    revalidate: 60, 
+    expire: 3600,
+  });
+  cacheTag("session")
   console.log("Getting session");
   const session = (await redis.json.get(sessionId)) as Session | null;
-  if (session === null || session === undefined) {  
+  if (session === null || session === undefined) {
     return null;
   }
 
@@ -46,10 +51,14 @@ export const getSession = async (sessionId: string) => {
     user: user.user as UserSelectType,
   };
 };
+
 export const deleteSession = async (sessionId: string) => {
+  revalidateTag("session")
   return await redis.del(sessionId);
+
 };
 export const updateSession = async (session: Session) => {
+  revalidateTag("session")
   return await redis.set(session.id, JSON.stringify(session));
 };
 export const createUser = async (googleId: string, username: string) => {

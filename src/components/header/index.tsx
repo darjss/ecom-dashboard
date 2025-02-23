@@ -61,7 +61,7 @@ const Header = async () => {
                   </div>
                 }
               >
-                {process.env.NODE_ENV === "production" && <UserData />}
+                {process.env.NODE_ENV !== "development" && <UserData />}
               </Suspense>
             </PopoverContent>
           </Popover>

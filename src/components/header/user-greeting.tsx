@@ -1,6 +1,5 @@
 "use client";
-import { logout } from "@/lib/auth";
-import { getCurrentSession } from "@/lib/session";
+import { logout } from "@/lib/auth";        
 import { UserSelectType } from "@/server/db/schema";
 import { useActionState } from "react";
 

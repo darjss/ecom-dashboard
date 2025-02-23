@@ -12,11 +12,16 @@ const config = {
     // reactCompiler: true,b
     useCache: true,
     cacheLife: {
-      //  brandCategory: {
-      //    stale: 60 * 60 * 24,
-      //    revalidate: 60 * 60 * 24,
-      //    expire: 60 * 60 * 24 * 30,
-      //  },
+       brandCategory: {
+         stale: 60 * 60 * 24,
+         revalidate: 60 * 60 * 24,
+         expire: 60 * 60 * 24 * 30,
+       },
+       session: {
+        stale: 900, // 15 minutes
+        revalidate: 60, // 1 minute
+        expire: 1800, // 30 minutes
+      },
     },
   },
   eslint: {

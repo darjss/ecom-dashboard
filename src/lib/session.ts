@@ -96,18 +96,16 @@ export async function deleteSessionTokenCookie(): Promise<void> {
   });
 }
 
-export const getCurrentSession = cache(
-  async (): Promise<SessionValidationResult> => {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("session")?.value ?? null;
+export const getCurrentSession = async (): Promise<SessionValidationResult> => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("session")?.value ?? null;
 
-    if (token === null) {
-      return { session: null, user: null };
-    }
+  if (token === null) {
+    return { session: null, user: null };
+  }
 
-    return await validateSessionToken(token);
-  },
-);
+  return await validateSessionToken(token);
+};
 
 export type SessionValidationResult =
   | { session: Session; user: UserSelectType }
