@@ -1,5 +1,4 @@
 import {
-  generateSessionToken,
   createSession,
   setSessionTokenCookie,
 } from "@/lib/session";
@@ -10,6 +9,7 @@ import { decodeIdToken } from "arctic";
 import type { OAuth2Tokens } from "arctic";
 import { createUser, getUserFromGoogleId } from "@/server/actions/auth";
 import { create } from "domain";
+import { generateSessionToken } from "@/lib/utils";
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);

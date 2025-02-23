@@ -49,9 +49,9 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    if (!(await validateSessionToken(token)).session) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
+    // if (!(await validateSessionToken(token)).session) {
+    //   return NextResponse.redirect(new URL("/login", request.url));
+    // }
 
     // Extend cookie expiration on GET requests
     //   const response = NextResponse.next();
