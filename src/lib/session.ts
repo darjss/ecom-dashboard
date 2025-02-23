@@ -1,5 +1,5 @@
-"use server"
-import "server-only"
+"use server";
+import "server-only";
 
 import { UserSelectType } from "@/server/db/schema";
 import {
@@ -9,13 +9,13 @@ import {
   updateSession,
 } from "@/server/actions/auth";
 import { sha256 } from "@oslojs/crypto/sha2";
-import {
-  encodeHexLowerCase,
-} from "@oslojs/encoding";
+import { encodeHexLowerCase } from "@oslojs/encoding";
 import { cookies } from "next/headers";
 import { Session } from "./types";
-import { unstable_cacheLife as cacheLife, unstable_cacheTag as cacheTag } from "next/cache";
-
+import {
+  unstable_cacheLife as cacheLife,
+  unstable_cacheTag as cacheTag,
+} from "next/cache";
 
 export async function createSession(
   token: string,
@@ -35,9 +35,9 @@ export async function createSession(
 export async function validateSessionToken(
   token: string,
 ): Promise<SessionValidationResult> {
-    "use cache";
-    // cacheLife("session");
-    cacheTag("session")
+  "use cache";
+  // cacheLife("session");
+  // cacheTag("session");
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 
   const result = await getDbSession(sessionId);
