@@ -19,7 +19,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <AppSidebar />
           <div className="flex w-full flex-1 flex-col">
             <Header />
-            <main className="flex-1 overflow-y-auto bg-background">
+            <main className="flex-1 overflow-y-auto">
               <div className="container mx-auto min-h-[calc(100vh-64px)] w-full p-4 md:p-6 lg:p-8">
                 {children}
               </div>

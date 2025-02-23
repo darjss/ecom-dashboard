@@ -4,78 +4,131 @@
 
 @layer base {
   :root {
-    --background: 60 30% 96%;
-    --foreground: 255 20% 20%;
-    --card: 60 30% 98%;
-    --card-foreground: 255 20% 20%;
-    --popover: 60 30% 98%;
-    --popover-foreground: 255 20% 20%;
-    --primary: 175 40% 60%;
-    --primary-foreground: 255 20% 20%;
-    --secondary: 186 40% 80%;
-    --secondary-foreground: 255 20% 20%;
-    --muted: 255 20% 92%;
-    --muted-foreground: 255 20% 45%;
-    --accent: 145 35% 80%;
-    --accent-foreground: 255 20% 20%;
-    --destructive: 0 65% 70%;
+    --main: #ffdc58;
+    --overlay: rgba(0, 0, 0, 0.8);
+
+    --background: 39 100% 95%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 45 100% 67%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 39 100% 95%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 45 100% 67%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 255 20% 85%;
-    --input: 255 20% 85%;
-    --ring: 175 40% 60%;
-    --radius: 0.75rem;
-    
-    --chart-1: 12 56% 71%;
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    --ring: 0 0% 0%;
+
+    --chart-1: 45 100% 67%;
     --chart-2: 173 38% 59%;
     --chart-3: 197 27% 54%;
     --chart-4: 43 54% 76%;
     --chart-5: 27 67% 77%;
-    
-    --sidebar-background: 255 20% 96%;
-    --sidebar-foreground: 255 20% 30%;
-    --sidebar-primary: 175 40% 60%;
-    --sidebar-primary-foreground: 255 20% 20%;
-    --sidebar-accent: 186 40% 85%;
-    --sidebar-accent-foreground: 255 20% 20%;
-    --sidebar-border: 255 20% 85%;
-    --sidebar-ring: 175 40% 60%;
+
+    --sidebar-background: 39 100% 95%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 45 100% 67%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 45 100% 77%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 0 0% 0%;
+    --sidebar-ring: 0 0% 0%;
+
+    --radius: 0.5rem;
+    --box-shadow-x: 3px;
+    --box-shadow-y: 3px;
+    --reverse-box-shadow-x: -3px;
+    --reverse-box-shadow-y: -3px;
+    --base-font-weight: 500;
+    --heading-font-weight: 800;
   }
 
   .dark {
-    --background: 255 20% 15%;
-    --foreground: 60 20% 90%;
-    --card: 255 20% 18%;
-    --card-foreground: 60 20% 90%;
-    --popover: 255 20% 18%;
-    --popover-foreground: 60 20% 90%;
-    --primary: 175 30% 50%;
-    --primary-foreground: 60 20% 90%;
-    --secondary: 186 30% 45%;
-    --secondary-foreground: 60 20% 90%;
-    --muted: 255 15% 25%;
-    --muted-foreground: 255 15% 65%;
-    --accent: 145 25% 45%;
-    --accent-foreground: 60 20% 90%;
-    --destructive: 0 55% 50%;
-    --destructive-foreground: 60 20% 90%;
-    --border: 255 20% 25%;
-    --input: 255 20% 25%;
-    --ring: 175 30% 50%;
+    --background: 215 22% 26%;
+    --foreground: 0 0% 90%;
+    --card: 215 28% 13%;
+    --card-foreground: 0 0% 90%;
+    --popover: 215 28% 13%;
+    --popover-foreground: 0 0% 90%;
+    --primary: 45 100% 67%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 215 22% 26%;
+    --secondary-foreground: 0 0% 90%;
+    --muted: 215 28% 13%;
+    --muted-foreground: 217 19% 27%;
+    --accent: 45 100% 67%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 90%;
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    --ring: 0 0% 100%;
 
-    --chart-1: 220 50% 60%;
+    --chart-1: 45 100% 67%;
     --chart-2: 160 40% 55%;
     --chart-3: 30 60% 65%;
     --chart-4: 280 45% 70%;
     --chart-5: 340 55% 65%;
 
-    --sidebar-background: 255 20% 20%;
-    --sidebar-foreground: 255 15% 80%;
-    --sidebar-primary: 175 30% 50%;
-    --sidebar-primary-foreground: 60 20% 90%;
-    --sidebar-accent: 255 15% 30%;
-    --sidebar-accent-foreground: 255 15% 80%;
-    --sidebar-border: 255 15% 30%;
-    --sidebar-ring: 175 30% 50%;
+    --sidebar-background: 215 28% 13%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 45 100% 67%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 215 22% 26%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 0 0% 0%;
+    --sidebar-ring: 0 0% 100%;
+  }
+}
+
+:root {
+  --bg: #fef2e8;
+  --bw: #fff; /* white and secondary black e.g. utility class variant would be: bg-[#fff] dark:bg-[#212121] */
+  --blank: #000; /* blank black and white */
+  --border: #000;
+  --text: #000;
+  --mtext: #000; /* text that is placed on background with main color e.g. text color of default button */
+  --ring: #000;
+  --ring-offset: #fff;
+
+  --border-radius: 8px;
+  --box-shadow-x: 3px;
+  --box-shadow-y: 3px;
+  --reverse-box-shadow-x: -3px;
+  --reverse-box-shadow-y: -3px;
+  --base-font-weight: 500;
+  --heading-font-weight: 800;
+
+  --shadow: var(--box-shadow-x) var(--box-shadow-y) 0px 0px var(--border);
+}
+
+.dark {
+  --bg: #374151;
+  --bw: #212121;
+  --blank: #fff;
+  --border: #000;
+  --text: #e6e6e6;
+  --mtext: #000;
+  --ring: #fff;
+  --ring-offset: #000;
+
+  --shadow: var(--box-shadow-x) var(--box-shadow-y) 0px 0px var(--border);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
@@ -85,26 +138,5 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%239C92AC' fill-opacity='0.1' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
-  }
-}
-
-@layer components {
-  .btn-playful {
-    @apply relative overflow-hidden transition-all duration-300 
-           shadow-[3px_3px_0_0_var(--tw-shadow-color)] 
-           hover:shadow-[1px_1px_0_0_var(--tw-shadow-color)] 
-           hover:translate-x-[2px] hover:translate-y-[2px]
-           active:shadow-none active:translate-x-[3px] active:translate-y-[3px];
-  }
-
-  .card-playful {
-    @apply border-2 shadow-[5px_5px_0_0_var(--tw-shadow-color)] 
-           transition-all duration-300 hover:shadow-[8px_8px_0_0_var(--tw-shadow-color)];
-  }
-
-  .input-playful {
-    @apply border-2 transition-all duration-300
-           focus:shadow-[3px_3px_0_0_var(--tw-shadow-color)];
   }
 }

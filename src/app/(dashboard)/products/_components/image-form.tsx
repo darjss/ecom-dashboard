@@ -13,7 +13,6 @@ import { useEffect } from "react";
 import { XIcon, ImageIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-
 interface Image {
   url: string;
   id?: number;
@@ -62,7 +61,7 @@ export const AddImageForm = ({
                       {index !== fields.length - 1 && (
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="neutral"
                           size="icon"
                           onClick={() => remove(index)}
                           className="transition-colors duration-300 hover:bg-destructive hover:text-destructive-foreground"
@@ -137,11 +136,10 @@ export const AddImageForm = ({
           </Card>
         )}
       </div>
-      
+
       {/* Add your new image upload implementation here */}
       <Button
         type="button"
-        className="bnt-playful"
         onClick={() => {
           // Implement your new image upload logic here
         }}

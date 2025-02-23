@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ProductType } from "@/lib/types";
 
- const SelectProductForm = ({
+const SelectProductForm = ({
   form,
   products,
 }: {
@@ -76,7 +76,9 @@ import type { ProductType } from "@/lib/types";
                   className="h-10 w-10 rounded-md object-cover sm:h-12 sm:w-12"
                 />
                 <div className="flex-grow">
-                  <p className="text-sm font-medium sm:text-base">{product.name}</p>
+                  <p className="text-sm font-medium sm:text-base">
+                    {product.name}
+                  </p>
                   <p className="text-xs text-gray-500 sm:text-sm">
                     ${product.price.toFixed(2)}
                   </p>
@@ -90,7 +92,8 @@ import type { ProductType } from "@/lib/types";
       {fields.length > 0 && (
         <div className="mt-4 sm:mt-6">
           <h2 className="mb-3 flex items-center text-base font-semibold sm:mb-4 sm:text-lg">
-            <ShoppingCartIcon className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Selected Products
+            <ShoppingCartIcon className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Selected
+            Products
           </h2>
           <div className="space-y-3 sm:space-y-4">
             {fields.map((field, index) => {
@@ -98,7 +101,7 @@ import type { ProductType } from "@/lib/types";
               return (
                 <div
                   key={field.id}
-                  className="flex flex-col rounded-lg bg-gray-50 p-3 shadow-sm transition duration-200 hover:shadow-md sm:flex-row sm:items-center sm:p-4 sm:space-x-4"
+                  className="flex flex-col rounded-lg bg-gray-50 p-3 shadow-sm transition duration-200 hover:shadow-md sm:flex-row sm:items-center sm:space-x-4 sm:p-4"
                 >
                   <div className="flex items-center space-x-3 pb-3 sm:pb-0">
                     <img
@@ -107,14 +110,16 @@ import type { ProductType } from "@/lib/types";
                       className="h-12 w-12 rounded-md object-cover sm:h-16 sm:w-16"
                     />
                     <div className="flex-grow">
-                      <p className="text-sm font-medium sm:text-base">{product.name}</p>
+                      <p className="text-sm font-medium sm:text-base">
+                        {product.name}
+                      </p>
                       <p className="text-xs text-gray-500 sm:text-sm">
                         ${product.price.toFixed(2)}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-200 sm:border-t-0 sm:pt-0 sm:ml-auto">
+                  <div className="flex items-center justify-between border-t border-gray-200 pt-2 sm:ml-auto sm:border-t-0 sm:pt-0">
                     <div className="flex items-center space-x-1 sm:space-x-2">
                       <Button
                         type="button"
@@ -140,10 +145,10 @@ import type { ProductType } from "@/lib/types";
                     </div>
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="neutral"
                       size="icon"
                       onClick={() => remove(index)}
-                      className="ml-3 text-red-500 transition duration-200 hover:bg-red-100 hover:text-red-600 h-7 w-7 sm:h-8 sm:w-8"
+                      className="ml-3 h-7 w-7 text-red-500 transition duration-200 hover:bg-red-100 hover:text-red-600 sm:h-8 sm:w-8"
                     >
                       <XIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
@@ -157,4 +162,4 @@ import type { ProductType } from "@/lib/types";
     </div>
   );
 };
-export default SelectProductForm
+export default SelectProductForm;

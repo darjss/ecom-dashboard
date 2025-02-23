@@ -12,7 +12,7 @@ interface SubmitButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     | "destructive"
     | "outline"
     | "secondary"
-    | "ghost"
+    | "neutral"
     | "link"
     | null
     | undefined;
