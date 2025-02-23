@@ -1,14 +1,14 @@
 "use server";
 import "server-only";
 import {
+  auth,
   deleteSessionTokenCookie,
-  getCurrentSession,
   invalidateSession,
 } from "./session";
 import { redirect } from "next/navigation";
 
 export const logout = async () => {
-  const { session } = await getCurrentSession();
+  const { session } = await auth();
   if (!session) {
     return;
   }

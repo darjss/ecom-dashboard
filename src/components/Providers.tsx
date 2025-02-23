@@ -1,5 +1,6 @@
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "@/components/ui/sonner";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 
 const Providers = ({ children }: Readonly<{ children: React.ReactNode }>) => {
@@ -7,6 +8,7 @@ const Providers = ({ children }: Readonly<{ children: React.ReactNode }>) => {
     <NuqsAdapter>
       {children}
       <Toaster />
+      <SpeedInsights/>
     </NuqsAdapter>
   );
 };

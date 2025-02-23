@@ -1,5 +1,5 @@
 "use server";
-
+import "server-only";
 import { BrandInsertType, CategoryInsertType } from "@/server/db/schema";
 import { addProductType } from "@/lib/zod/schema";
 import { addBrand } from "@/server/actions/brand";
@@ -343,12 +343,12 @@ export const seedDatabase = async () => {
       }
     }, 1000);
 
-    setTimeout(async () => {
-      for (const order of ordersData) {
-        await addOrder(order);
-      }
-      console.log("Orders seeded successly");
-    }, 1500);
+    // setTimeout(async () => {
+    for (const order of ordersData) {
+      await addOrder(order);
+    }
+    //   console.log("Orders seeded successly");
+    // }, 1500);
     console.log("Database seeding delivered successly.");
   } catch (error) {
     console.error("Error during database seeding:", error);

@@ -1,6 +1,8 @@
+import "server-only"
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { TokenBucket } from "@/lib/rate-limit";
+import { validateSessionToken } from "./lib/session";
 
 const getRequestBucket = new TokenBucket<string>(100, 1);
 const postRequestBucket = new TokenBucket<string>(30, 1);
@@ -15,7 +17,7 @@ const publicPaths = [
 ];
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
-  console.log("Middleware")
+  console.log("Middleware");
   if (process.env.NODE_ENV === "development") {
     // console.log("Middleware request:", request);
     return NextResponse.next();
@@ -35,7 +37,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // Handle GET requests - cookie extension and auth check
   if (request.method === "GET") {
     // Skip auth for public paths
-    console.log("GET REQUEST MIDDLEWARE")
+    console.log("GET REQUEST MIDDLEWARE");
     if (publicPaths.some((publicPath) => path.startsWith(publicPath))) {
       return NextResponse.next();
     }
@@ -47,17 +49,21 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    // Extend cookie expiration on GET requests
-    const response = NextResponse.next();
-    response.cookies.set("session", token, {
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-      sameSite: "lax",
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-    });
+    if (!(await validateSessionToken(token)).session) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
 
-    return response;
+    // Extend cookie expiration on GET requests
+    //   const response = NextResponse.next();
+    //   response.cookies.set("session", token, {
+    //     path: "/",
+    //     maxAge: 60 * 60 * 24 * 30, // 30 days
+    //     sameSite: "lax",
+    //     httpOnly: true,
+    //     secure: process.env.NODE_ENV === "production",
+    //   });
+
+    //   return response;
   }
 
   // Handle non-GET requests - CORS check
@@ -89,7 +95,6 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   return NextResponse.next();
 }
-
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

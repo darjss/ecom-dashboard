@@ -19,7 +19,7 @@ export const getSession = async (sessionId: string) => {
   "use cache";
   cacheLife({
     stale: 1800, 
-    revalidate: 60, 
+    revalidate: 900, 
     expire: 3600,
   });
   cacheTag("session")

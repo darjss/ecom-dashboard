@@ -1,3 +1,6 @@
+"use server"
+import "server-only"
+
 import { UserSelectType } from "@/server/db/schema";
 import {
   deleteSession,
@@ -7,18 +10,11 @@ import {
 } from "@/server/actions/auth";
 import { sha256 } from "@oslojs/crypto/sha2";
 import {
-  encodeBase32LowerCaseNoPadding,
   encodeHexLowerCase,
 } from "@oslojs/encoding";
 import { cookies } from "next/headers";
-import { cache } from "react";
 import { Session } from "./types";
 
-export function generateSessionToken(): string {
-  const bytes = new Uint8Array(20);
-  crypto.getRandomValues(bytes);
-  return encodeBase32LowerCaseNoPadding(bytes);
-}
 
 export async function createSession(
   token: string,
@@ -96,7 +92,7 @@ export async function deleteSessionTokenCookie(): Promise<void> {
   });
 }
 
-export const getCurrentSession = async (): Promise<SessionValidationResult> => {
+export const auth = async (): Promise<SessionValidationResult> => {
   const cookieStore = await cookies();
   const token = cookieStore.get("session")?.value ?? null;
 
