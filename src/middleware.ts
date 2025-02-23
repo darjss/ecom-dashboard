@@ -49,21 +49,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    // if (!(await validateSessionToken(token)).session) {
-    //   return NextResponse.redirect(new URL("/login", request.url));
-    // }
+    if (!(await validateSessionToken(token)).session) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
 
-    // Extend cookie expiration on GET requests
-    //   const response = NextResponse.next();
-    //   response.cookies.set("session", token, {
-    //     path: "/",
-    //     maxAge: 60 * 60 * 24 * 30, // 30 days
-    //     sameSite: "lax",
-    //     httpOnly: true,
-    //     secure: process.env.NODE_ENV === "production",
-    //   });
 
-    //   return response;
+      return NextResponse.next();;
   }
 
   // Handle non-GET requests - CORS check
