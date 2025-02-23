@@ -119,8 +119,8 @@ export const addProduct = async (product: addProductType) => {
     await Promise.allSettled(imagePromises);
 
     console.log("Images added successfully");
-    revalidateTag("products");
-    redirect("/products");
+    // revalidateTag("products");
+    // redirect("/products");
     return { message: "Added product Successfully" };
   } catch (e) {
     console.log(e);

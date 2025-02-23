@@ -1,4 +1,4 @@
-import "server-only"
+import "server-only";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { TokenBucket } from "@/lib/rate-limit";
@@ -49,12 +49,13 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    if (!(await validateSessionToken(token)).session) {
+    const { session } = await validateSessionToken(token);
+
+    if (!session) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
 
-
-      return NextResponse.next();;
+    return NextResponse.next();
   }
 
   // Handle non-GET requests - CORS check
