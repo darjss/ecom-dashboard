@@ -14,6 +14,7 @@ import {
 } from "@oslojs/encoding";
 import { cookies } from "next/headers";
 import { Session } from "./types";
+import { unstable_cacheLife as cacheLife, unstable_cacheTag as cacheTag } from "next/cache";
 
 
 export async function createSession(
@@ -34,6 +35,13 @@ export async function createSession(
 export async function validateSessionToken(
   token: string,
 ): Promise<SessionValidationResult> {
+    "use cache";
+    cacheLife({
+      stale: 1800, 
+      revalidate: 900, 
+      expire: 3600,
+    });
+    cacheTag("session")
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 
   const result = await getDbSession(sessionId);
