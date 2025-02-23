@@ -36,11 +36,7 @@ export async function validateSessionToken(
   token: string,
 ): Promise<SessionValidationResult> {
     "use cache";
-    cacheLife({
-      stale: 1800, 
-      revalidate: 900, 
-      expire: 3600,
-    });
+    cacheLife("session");
     cacheTag("session")
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 

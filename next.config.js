@@ -18,9 +18,9 @@ const config = {
          expire: 60 * 60 * 24 * 30,
        },
        session: {
-        stale: 900, // 15 minutes
-        revalidate: 60, // 1 minute
-        expire: 1800, // 30 minutes
+        stale: 1800, 
+        revalidate: 900, 
+        expire: 3600,
       },
     },
   },
