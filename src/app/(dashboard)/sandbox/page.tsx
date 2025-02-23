@@ -12,7 +12,7 @@ const Page = async () => {
       <form action={seedDatabase}>
         <Button
           type="submit"
-          variant="outline"
+          variant="neutral"
           size="sm"
           className="h-9 sm:h-10"
         >

@@ -20,7 +20,7 @@ export function ErrorPage({ error, reset }: ErrorPageProps) {
           <Link href="/">Go to Home</Link>
         </Button>
         {reset && (
-          <Button variant="outline" onClick={reset}>
+          <Button variant="neutral" onClick={reset}>
             Try Again
           </Button>
         )}

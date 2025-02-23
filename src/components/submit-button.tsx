@@ -10,10 +10,9 @@ interface SubmitButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?:
     | "default"
     | "destructive"
-    | "outline"
-    | "secondary"
     | "neutral"
-    | "link"
+    | "noShadow"
+    | "reverse"
     | null
     | undefined;
 }

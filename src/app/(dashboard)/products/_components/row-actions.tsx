@@ -29,11 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAction } from "@/hooks/use-action";
-import {
-  BrandType,
-  CategoryType,
-  ProductType,
-} from "@/lib/types";
+import { BrandType, CategoryType, ProductType } from "@/lib/types";
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
 import { Edit2, MoreVertical, Trash2 } from "lucide-react";
 import { Dispatch, JSX, SetStateAction, useState } from "react";
@@ -41,8 +37,9 @@ import EditProductForm from "./edit-product-form";
 
 interface RowActionProps {
   id: number;
-  renderEditComponent: (
-    props: { setDialogOpen: Dispatch<SetStateAction<boolean>>; }) => JSX.Element;
+  renderEditComponent: (props: {
+    setDialogOpen: Dispatch<SetStateAction<boolean>>;
+  }) => JSX.Element;
   deleteFunction: (id: number) => Promise<
     | {
         message: string;
@@ -87,7 +84,7 @@ const rowActions = ({
             <DialogHeader>
               <DialogTitle>Edit product</DialogTitle>
             </DialogHeader>
-              {renderEditComponent({setDialogOpen:setIsEditDialogOpen})}
+            {renderEditComponent({ setDialogOpen: setIsEditDialogOpen })}
           </DialogContent>
         </Dialog>
         <AlertDialog
@@ -114,7 +111,7 @@ const rowActions = ({
             </AlertDialogHeader>
             <AlertDialogFooter className="flex gap-4">
               <AlertDialogCancel asChild>
-                <Button variant={"outline"}>Cancel</Button>
+                <Button variant={"neutral"}>Cancel</Button>
               </AlertDialogCancel>
               <AlertDialogAction asChild>
                 <SubmitButton

@@ -123,7 +123,7 @@ const SelectProductForm = ({
                     <div className="flex items-center space-x-1 sm:space-x-2">
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="neutral"
                         size="icon"
                         onClick={() => handleQuantityChange(index, "minus")}
                         className="h-7 w-7 sm:h-8 sm:w-8"
@@ -135,7 +135,7 @@ const SelectProductForm = ({
                       </span>
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="neutral"
                         size="icon"
                         onClick={() => handleQuantityChange(index, "add")}
                         className="h-7 w-7 sm:h-8 sm:w-8"

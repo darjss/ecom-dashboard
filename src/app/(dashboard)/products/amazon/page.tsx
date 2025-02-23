@@ -135,7 +135,7 @@ function AmazonProductSearch() {
           <CardHeader>
             <CardTitle>{selectedProduct.productName}</CardTitle>
               <CardDescription>
-              {loadingDetails ? (<Skeleton className="w-[100px] h-[20px]"/>) : (<Badge variant="secondary">{selectedProduct.price}</Badge>)}
+              {loadingDetails ? (<Skeleton className="w-[100px] h-[20px]"/>) : (<Badge variant="neutral">{selectedProduct.price}</Badge>)}
               </CardDescription>
 
           </CardHeader>
