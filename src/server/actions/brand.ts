@@ -13,7 +13,7 @@ export const getAllBrands = async () => {
   const brands = await db
     .select({ id: BrandsTable.id, name: BrandsTable.name })
     .from(BrandsTable);
-  console.log(brands)
+  // console.log(brands)
   return brands;
 };
 export const addBrand = async (brand: BrandInsertType) => {

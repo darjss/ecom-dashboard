@@ -3,7 +3,8 @@ import "server-only";
 import { addImageType } from "@/lib/zod/schema";
 import { db } from "../db";
 import { ProductImageInsertType, ProductImagesTable } from "../db/schema";
-import { eq} from "drizzle-orm"
+import { eq } from "drizzle-orm";
+import { SQLiteNumericBuilderInitial } from "drizzle-orm/sqlite-core";
 
 export const addImage = async (image: ProductImageInsertType) => {
   try {
@@ -14,8 +15,58 @@ export const addImage = async (image: ProductImageInsertType) => {
   }
   return { message: "Successfully added product" };
 };
+export const uploadImagesFromUrl = async (images: ProductImageInsertType[]) => {
+  try {
+    // Transform ProductImageInsertType[] to { url: string }[]
+    const imageUrls = images.map((image) => ({ url: image.url }));
 
-export const updateImage = async (newImages: addImageType, productId: number) => {
+    const response = await fetch(
+      process.env.BACKEND_URL + "/upload/image/urls",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(imageUrls),
+      },
+    );
+    console.log(response.body);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        "Image upload failed:",
+        response.status,
+        response.statusText,
+        errorText,
+      );
+      throw new Error(
+        `Image upload failed: ${response.status} ${response.statusText} ${errorText}`,
+      );
+    }
+
+    const uploadedImages = (await response.json()) as {
+      images: { url: string }[];
+      status:string,
+      time:number
+    }; 
+
+    const addImagePromises = uploadedImages.images.map((uploadedImage, index) => {
+      return addImage({
+        ...images[index], // Spread the original properties
+        url: uploadedImage.url, // Override with the uploaded URL
+      } as ProductImageInsertType);
+    });
+
+    return await Promise.all(addImagePromises);
+  } catch (e) {
+    console.error("Error in uploadImagesFromUrl:", e);
+    return { message: "Operation failed", error: e };
+  }
+};
+export const updateImage = async (
+  newImages: addImageType,
+  productId: number,
+) => {
   try {
     const existingImages = await db
       .select({

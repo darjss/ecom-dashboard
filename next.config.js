@@ -12,14 +12,14 @@ const config = {
     // reactCompiler: true,b
     useCache: true,
     cacheLife: {
-       brandCategory: {
-         stale: 60 * 60 * 24,
-         revalidate: 60 * 60 * 24,
-         expire: 60 * 60 * 24 * 30,
-       },
-       session: {
-        stale: 1800, 
-        revalidate: 900, 
+      brandCategory: {
+        stale: 60 * 60 * 24,
+        revalidate: 60 * 60 * 24,
+        expire: 60 * 60 * 24 * 30,
+      },
+      session: {
+        stale: 1800,
+        revalidate: 900,
         expire: 3600,
       },
     },

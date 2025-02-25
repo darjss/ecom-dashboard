@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { orderStatus, paymentStatus, status } from "../constants";
 
-const imageSchema = z.object({
+export const imageSchema = z.object({
   url: z.string(),
   id: z.number().int().positive().finite().optional(),
 });
@@ -68,3 +68,4 @@ export type addProductType = z.infer<typeof addProductSchema>;
 export type addImageType = addProductType["images"];
 export type addOrderType = z.infer<typeof addOrderSchema>;
 export type addOrderProdyctType = z.infer<typeof productSchema>;
+export type imageType=z.infer<typeof imageSchema>;

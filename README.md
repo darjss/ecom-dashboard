@@ -15,8 +15,7 @@
     - [x] product table pagination
     - [x] product table filter sort
     - [x] file upload
-    - [ ] detailed product view modal
-    - [ ] change image upload to custom r2 bucket
+    - [ ] detailed product view modal 
   - [ ] order crud
     - [x] add order
     - [ ] edit order

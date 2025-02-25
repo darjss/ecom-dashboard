@@ -49,11 +49,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    const { session } = await validateSessionToken(token);
+    // const { session } = await validateSessionToken(token);
 
-    if (!session) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
+    // if (!session) {
+    //   return NextResponse.redirect(new URL("/login", request.url));
+    // }
 
     return NextResponse.next();
   }

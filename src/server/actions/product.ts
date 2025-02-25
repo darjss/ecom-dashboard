@@ -18,7 +18,7 @@ import { z } from "zod";
 import { revalidateTag } from "next/cache";
 import { SortingState } from "@tanstack/react-table";
 import { getAllBrands } from "./brand";
-import { addImage, updateImage } from "./image";
+import { addImage, updateImage, uploadImagesFromUrl } from "./image";
 import { redirect } from "next/navigation";
 import { unstable_cacheTag as cacheTag } from "next/cache";
 import { ProductImageType, TransactionType } from "@/lib/types";
@@ -109,14 +109,12 @@ export const addProduct = async (product: addProductType) => {
     }
     const productId = productResult.id;
     console.log(`Product added with id: ${productId}`);
-    const imagePromises = product.images.map((image, index) => {
-      return addImage({
-        productId: productId,
-        url: image.url,
-        isPrimary: index === 0 ? true : false,
-      });
-    });
-    await Promise.allSettled(imagePromises);
+    const images = product.images.map((image, index) => ({
+      productId: productId,
+      url: image.url,
+      isPrimary: index === 0 ? true : false,
+    }));
+    await uploadImagesFromUrl(images);
 
     console.log("Images added successfully");
     // revalidateTag("products");
