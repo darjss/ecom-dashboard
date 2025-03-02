@@ -119,7 +119,7 @@ export const getAllorder = async () => {
 
 export const getOrderById = async (id:number) => {
   try {
-    const result = await db.query.OrdersTable.findMany({
+    const result = await db.query.OrdersTable.findFirst({
       where:eq(OrdersTable.id, id),
       with: {
         orderDetails: {
@@ -145,23 +145,26 @@ export const getOrderById = async (id:number) => {
         },
       },
     });
-    const orders = result.map((order) => ({
-      id: order.id,
-      orderNumber: order.orderNumber,
-      customerPhone: order.customerPhone,
-      status: order.status,
-      total: order.total,
-      notes: order.notes,
-      createdAt: order.createdAt,
-      updatedAt: order.updatedAt,
-      products: order.orderDetails.map((orderDetail) => ({
+    if(result===undefined){
+            return { message: "Adding order failed", error: "No order found" };
+    }
+    const order ={
+      id: result.id,
+      orderNumber: result.orderNumber,
+      customerPhone: result.customerPhone,
+      status: result.status,
+      total: result.total,
+      notes: result.notes,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+      products: result.orderDetails.map((orderDetail) => ({
         quantity: orderDetail.quantity,
         name: orderDetail.product.name,
         id: orderDetail.product.id,
         imageUrl: orderDetail.product.images[0]?.url,
       })),
-    }));
-    return orders;
+    };
+    return order;
   } catch (e) {
     if (e instanceof Error) {
       return { message: "Adding order failed", error: e.message };
@@ -169,3 +172,4 @@ export const getOrderById = async (id:number) => {
     console.log("error", e);
   }
 };
+

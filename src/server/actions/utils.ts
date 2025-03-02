@@ -1,91 +1,115 @@
-import { SQL, and, eq, asc, desc } from "drizzle-orm/sql";
-import {
-  SQLiteSelectQueryBuilder,
-  SQLiteSelectDynamic,
-} from "drizzle-orm/sqlite-core";
+import { db } from "@/server/db";
+import { SortingState } from "@tanstack/react-table";
+import { SQL, SQLWrapper, and, asc, desc, eq, sql } from "drizzle-orm";
+import { BaseSQLiteDatabase } from "drizzle-orm/sqlite-core";
+import { LibSQLDatabase } from "drizzle-orm/libsql";
 
-/**
- * A common sorting type that tells you which column to sort
- * and in which order.
- */
-export interface SortingState {
+// Types for our function parameters
+type TableColumn = {
+  name: string;
+  table: { $tableName: string };
+};
+
+type FilterCondition<T extends TableColumn> = {
+  column: T;
+  value: unknown;
+  operator?: "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "like";
+};
+
+type SortableColumn<T extends TableColumn> = {
   id: string;
-  desc?: boolean;
-}
+  column: T;
+};
 
-/**
- * Options for pagination, sorting, and filtering. In addition
- * to page, pageSize, and sorting, you may pass extra filter values.
- */
-export interface PaginationSortFilterOptions {
+type PaginatedQueryOptions<T extends TableColumn> = {
   page?: number;
   pageSize?: number;
-  sorting?: SortingState[];
-  // any extra properties (like brandId, categoryId, or others)
-  // can be added here and will be used via the filterMapping.
-  [key: string]: any;
-}
+  sorting?: SortingState;
+  sortableColumns?: SortableColumn<T>[];
+  filterConditions?: FilterCondition<T>[];
+  countTable: { name: string };
+};
 
-/**
- * A generic helper that enhances any dynamic SQLite query builder
- * with filtering, sorting, and pagination. You may pass in a
- * filtering mapping and a sorting mapping to customize which table
- * columns are used.
- *
- * @param qb             A query builder (static) that we'll convert to dynamic.
- * @param options        Pagination, sorting, and filtering options.
- * @param filterMapping  An optional record mapping filter option keys to table columns.
- * @param sortingMapping An optional record mapping sort ids to table columns.
- *
- * @returns A dynamic query builder with the modifications applied.
- */
-export function withPaginationSortFilter<
-  T extends SQLiteSelectQueryBuilder,
-  FilterMapping extends Record<string, any> = {},
-  SortingMapping extends Record<string, any> = {},
+export async function executePaginatedQuery<
+  TQuery extends ReturnType<LibSQLDatabase["select"]> | ReturnType<LibSQLDatabase["$dynamic"]["select"]>,
+  TResult
 >(
-  qb: T,
-  options: PaginationSortFilterOptions,
-  filterMapping?: FilterMapping,
-  sortingMapping?: SortingMapping,
-): SQLiteSelectDynamic<T> {
-  const { page = 1, pageSize = 10, sorting = [] } = options;
+  baseQuery: TQuery,
+  options: PaginatedQueryOptions<TableColumn>,
+  resultTransformer?: (results: any[]) => TResult[]
+): Promise<{
+  results: TResult[];
+  total: number;
+}> {
+  const {
+    page = 1,
+    pageSize = 10,
+    sorting = [],
+    sortableColumns = [],
+    filterConditions = [],
+    countTable,
+  } = options;
 
-  // Convert to dynamic mode.
-  let query = qb.$dynamic() as SQLiteSelectDynamic<T>;
+  console.log(`Executing paginated query for page ${page}, size ${pageSize}`);
 
-  // Filtering: iterate over the keys from filterMapping.
-  if (filterMapping) {
-    const conditions: SQL<unknown>[] = [];
-    for (const key in filterMapping) {
-      const value = options[key];
-      if (value !== undefined && value !== 0) {
-        conditions.push(eq(filterMapping[key], value));
+  // Apply filters
+  let queryWithFilters = baseQuery;
+  
+  const conditions: SQL<unknown>[] = filterConditions
+    .filter(condition => condition.value !== undefined && condition.value !== 0)
+    .map(({ column, value, operator = "eq" }) => {
+      switch (operator) {
+        case "eq":
+          return eq(column, value);
+        // Add other operators as needed
+        default:
+          return eq(column, value);
       }
-    }
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as SQLiteSelectDynamic<T>;
-    }
+    });
+
+  if (conditions.length > 0) {
+    // @ts-ignore - Drizzle typing issue
+    queryWithFilters = queryWithFilters.where(and(...conditions));
   }
 
-  // Sorting: build order conditions if a sorting mapping is provided.
-  if (sortingMapping && sorting.length) {
-    const orderByConditions: SQL<unknown>[] = sorting
-      .map((sort) => {
-        const column = sortingMapping[sort.id];
-        if (column) {
-          return sort.desc ? desc(column) : asc(column);
-        }
-        return null;
-      })
-      .filter((cond): cond is SQL<unknown> => cond !== null);
-    if (orderByConditions.length > 0) {
-      query = query.orderBy(...orderByConditions) as SQLiteSelectDynamic<T>;
-    }
+  // Apply sorting
+  const orderByConditions: SQL<unknown>[] = sorting
+    .map(sort => {
+      const sortableColumn = sortableColumns.find(col => col.id === sort.id);
+      if (!sortableColumn) return null;
+      
+      return sort.desc 
+        ? desc(sortableColumn.column) 
+        : asc(sortableColumn.column);
+    })
+    .filter((condition): condition is SQL<unknown> => condition !== null);
+
+  let finalQuery = queryWithFilters;
+  
+  if (orderByConditions.length > 0) {
+    // @ts-ignore - Drizzle typing issue
+    finalQuery = finalQuery.orderBy(...orderByConditions);
   }
 
-  // Pagination: set LIMIT and OFFSET.
-query = (query.limit(pageSize) as any).offset((page - 1) * pageSize);
+  // Apply pagination
+  // @ts-ignore - Drizzle typing issue
+  finalQuery = finalQuery
+    .offset((page - 1) * pageSize)
+    .limit(pageSize);
 
-  return query;
+  // Execute query and count total
+  const [results, totalResults] = await Promise.all([
+    finalQuery,
+    db.select({ count: sql<number>`count(*)` }).from(countTable),
+  ]);
+
+  // Transform results if needed
+  const transformedResults = resultTransformer 
+    ? resultTransformer(results) 
+    : (results as unknown as TResult[]);
+
+  return {
+    results: transformedResults,
+    total: totalResults[0].count,
+  };
 }

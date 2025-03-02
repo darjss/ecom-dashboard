@@ -27,6 +27,7 @@ export type TransactionType = SQLiteTransaction<
 export interface ProductImageType {
   id: number;
   url: string;
+  isPrimary: boolean
 }
 export interface Session {
   id: string;

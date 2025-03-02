@@ -12,6 +12,7 @@ import {
   sql,
   like,
   InferSelectModel,
+  Placeholder,
 } from "drizzle-orm";
 import { addProductType } from "@/lib/zod/schema";
 import { z } from "zod";
@@ -138,33 +139,22 @@ export const getProductBenchmark = async () => {
 
 export const getProductById = async (id: number) => {
   console.log("Fetching product with id", id);
-  const [product] = await db
-    .select({
-      ...getTableColumns(ProductsTable),
-      images: sql`
-        json_group_array(
-          json_object(
-            'id', ${ProductImagesTable.id},
-            'url', ${ProductImagesTable.url}
-          )
-        )
-      `.as<"images">(),
-    })
-    .from(ProductsTable)
-    .leftJoin(
-      ProductImagesTable,
-      eq(ProductImagesTable.productId, ProductsTable.id),
-    )
-    .where(eq(ProductsTable.id, id))
-    .groupBy(ProductsTable.id);
+  const product = await db.query.ProductsTable.findFirst({
+    with: {
+      images: {
+        columns: {
+          id: true,
+          url: true,
+          isPrimary: true,
+        },
+      },
+    },
+  });
   if (product === undefined) {
     return { message: "Operation failed", error: "Product not found" };
   }
   console.log(product);
-  return {
-    ...product,
-    images: JSON.parse(product.images as string) as ProductImageType[],
-  };
+  return product;
 };
 export const updateProduct = async (product: addProductType) => {
   try {
@@ -248,34 +238,19 @@ export const getAllProducts = async () => {
   cacheTag("products");
 
   console.log("fetching product");
-  const products = await db
-    .select({
-      ...getTableColumns(ProductsTable),
-      images: sql`
-        json_group_array(
-          json_object(
-            'id', ${ProductImagesTable.id},
-            'url', ${ProductImagesTable.url}
-          )
-        )
-      `.as<"images">(),
-    })
-    .from(ProductsTable)
-    .leftJoin(
-      ProductImagesTable,
-      eq(ProductImagesTable.productId, ProductsTable.id),
-    )
-    .groupBy(ProductsTable.id);
-  console.log("images", products[0]?.images);
-
-  const parsedProducts = products.map((product) => ({
-    ...product,
-    images: JSON.parse(product.images as string) as ProductImageType[],
-  }));
-  // console.log("products:", parsedProducts);
-  return parsedProducts;
+  const products = await db.query.ProductsTable.findMany({
+    with: {
+      images: {
+        columns: {
+          id: true,
+          url: true,
+          isPrimary: true,
+        },
+      },
+    },
+  });
+  return products;
 };
-
 export const getPaginatedProduct = async (
   page: number = 1,
   pageSize = 10,
@@ -346,13 +321,58 @@ export const getPaginatedProduct = async (
     ...product,
     images: JSON.parse(product.images as string) as ProductImageType[],
   }));
+
+  return { products: parsedProducts, total: totalProducts[0] };
+};
+
+export const paginated = async (
+  page: number = 1,
+  pageSize = 10,
+  sorting: SortingState = [],
+  brandId?: number,
+  categoryId?: number,
+) => {
+  const orderByConditions: SQL<unknown>[] = sorting
+    .filter((sort) => sort.id === "price" || sort.id === "stock")
+    .map((sort) => {
+      if (sort.id === "price") {
+        return sort.desc ? desc(ProductsTable.price) : asc(ProductsTable.price);
+      } else if (sort.id === "stock") {
+        return sort.desc ? desc(ProductsTable.stock) : asc(ProductsTable.stock);
+      }
+      return null;
+    })
+    .filter((condition): condition is SQL<unknown> => condition !== null);
+
+  const conditions: SQL<unknown>[] = [];
+
+  if (brandId !== undefined && brandId !== 0) {
+    conditions.push(eq(ProductsTable.brandId, brandId));
+  }
+
+  if (categoryId !== undefined && categoryId !== 0) {
+    conditions.push(eq(ProductsTable.categoryId, categoryId));
+  }
+
+  let products = await db.query.ProductsTable.findMany({
+    extras: {
+      count: sql<number>`count(*)`.as("count"),
+    },
+    offset: (page - 1) * pageSize,
+    limit: pageSize,
+    orderBy: orderByConditions,
+    where: and(...conditions),
+    with: {
+      images: true,
+    },
+  });
   console.log(
     "page number",
     page,
     "pagesize",
     pageSize,
     "products:",
-    parsedProducts,
+    products,
     "sorting:",
     sorting,
     "brandId",
@@ -360,5 +380,5 @@ export const getPaginatedProduct = async (
     "categoryID",
     categoryId,
   );
-  return { products: parsedProducts, total: totalProducts[0] };
+  return products;
 };
