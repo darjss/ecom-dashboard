@@ -23,41 +23,24 @@ import { ProductImageType, TransactionType } from "@/lib/types";
 
 export const searchProductByNameForTable = async (searchTerm: string) => {
   console.log(searchTerm);
-  const products = await db
-    .select({
-      ...getTableColumns(ProductsTable),
-      images: sql`
-      json_group_array(
-        json_object(
-          'id', ${ProductImagesTable.id},
-          'url', ${ProductImagesTable.url}
-        )
-      )
-    `.as<"images">(),
-    })
-    .from(ProductsTable)
-    .where(like(ProductsTable.name, `%${searchTerm}%`))
-    .leftJoin(
-      ProductImagesTable,
-      eq(ProductImagesTable.productId, ProductsTable.id),
-    )
-    .groupBy(ProductsTable.id);
+  const products = await db.query.ProductsTable.findMany({
+    where: like(ProductsTable.name, `%${searchTerm}%`),
+    with: {
+      images: true
+    }
+  });
   console.log(products);
-  const parsedProducts = products.map((product) => ({
-    ...product,
-    images: JSON.parse(product.images as string) as ProductImageType[],
-  }));
-  return parsedProducts;
+  return products;
 };
 
 export const searchProductByName = async (searchTerm: string) => {
-  const product = db
-    .select({
-      id: ProductsTable.id,
-      name: ProductsTable.name,
-    })
-    .from(ProductsTable)
-    .where(like(ProductsTable.name, `%${searchTerm}%`));
+  const product = await db.query.ProductsTable.findMany({
+    columns: {
+      id: true,
+      name: true,
+    },
+    where: like(ProductsTable.name, `%${searchTerm}%`)
+  });
   return product;
 };
 
@@ -137,6 +120,7 @@ export const getProductBenchmark = async () => {
 export const getProductById = async (id: number) => {
   console.log("Fetching product with id", id);
   const product = await db.query.ProductsTable.findFirst({
+    where: eq(ProductsTable.id, id),
     with: {
       images: {
         columns: {
@@ -153,6 +137,7 @@ export const getProductById = async (id: number) => {
   console.log(product);
   return product;
 };
+
 export const updateProduct = async (product: addProductType) => {
   try {
     console.log("updating product");
@@ -248,6 +233,7 @@ export const getAllProducts = async () => {
   });
   return products;
 };
+
 export const getPaginatedProduct = async (
   page: number = 1,
   pageSize = 10,
@@ -257,25 +243,7 @@ export const getPaginatedProduct = async (
 ) => {
   console.log("fetching paginated product");
 
-  let baseQuery = db
-    .select({
-      ...getTableColumns(ProductsTable),
-      images: sql`
-        json_group_array(
-          json_object(
-            'id', ${ProductImagesTable.id},
-            'url', ${ProductImagesTable.url}
-          )
-        )
-      `.as<"images">(),
-    })
-    .from(ProductsTable)
-    .leftJoin(
-      ProductImagesTable,
-      eq(ProductImagesTable.productId, ProductsTable.id),
-    )
-    .groupBy(ProductsTable.id);
-
+  // Build conditions array first
   const conditions: SQL<unknown>[] = [];
 
   if (brandId !== undefined && brandId !== 0) {
@@ -286,9 +254,17 @@ export const getPaginatedProduct = async (
     conditions.push(eq(ProductsTable.categoryId, categoryId));
   }
 
-  const queryWithFilters =
-    conditions.length > 0 ? baseQuery.where(and(...conditions)) : baseQuery;
+  // Get total count with the same conditions
+  const totalCountResult = await db
+    .select({
+      count: sql<number>`count(*)`,
+    })
+    .from(ProductsTable)
+    .where(conditions.length > 0 ? and(...conditions) : undefined);
 
+  const total = totalCountResult[0]?.count || 0;
+
+  // Build order by conditions
   const orderByConditions: SQL<unknown>[] = sorting
     .filter((sort) => sort.id === "price" || sort.id === "stock")
     .map((sort) => {
@@ -301,25 +277,23 @@ export const getPaginatedProduct = async (
     })
     .filter((condition): condition is SQL<unknown> => condition !== null);
 
-  const finalQuery =
-    orderByConditions.length > 0
-      ? queryWithFilters
-          .orderBy(...orderByConditions)
-          .offset((page - 1) * pageSize)
-          .limit(pageSize)
-      : queryWithFilters.offset((page - 1) * pageSize).limit(pageSize);
+  // Add a default sort if none specified
+  if (orderByConditions.length === 0) {
+    orderByConditions.push(asc(ProductsTable.id)); // Default sort by ID
+  }
 
-  const [products, totalProducts] = await Promise.all([
-    finalQuery,
-    db.select({ count: sql<number>`count(*)` }).from(ProductsTable),
-  ]);
+  // Get paginated products
+  const products = await db.query.ProductsTable.findMany({
+    offset: (page - 1) * pageSize,
+    limit: pageSize,
+    orderBy: orderByConditions,
+    where: conditions.length > 0 ? and(...conditions) : undefined,
+    with: {
+      images: true,
+    },
+  });
 
-  const parsedProducts = products.map((product) => ({
-    ...product,
-    images: JSON.parse(product.images as string) as ProductImageType[],
-  }));
-
-  return { products: parsedProducts, total: totalProducts[0] };
+  return { products, total };
 };
 
 export const paginated = async (
@@ -378,23 +352,6 @@ export const paginated = async (
       images: true,
     },
   })
-
-  console.log(
-    "page number:",
-    page,
-    "pagesize:",
-    pageSize,
-    "products count:",
-    products.length,
-    "total count:",
-    totalCount,
-    "sorting:",
-    sorting,
-    "brandId:",
-    brandId,
-    "categoryID:",
-    categoryId,
-  )
 
   // Return both the products and the total count
   return {

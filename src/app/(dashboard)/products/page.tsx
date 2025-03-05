@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import ProductTable from "./_components/product-table"
+import ProductGrid from "./_components/product-grid"
 import { DataTableSkeleton } from "@/components/skeleton/data-table-skeleton"
 import { PRODUCT_PER_PAGE } from "@/lib/constants"
 import { getPaginatedProduct } from "@/server/actions/product"
@@ -20,7 +20,7 @@ const Page = async ({
 
   return (
     <Suspense fallback={<DataTableSkeleton columnCount={6} rowCount={3} />}>
-      <ProductTable
+      <ProductGrid
         initialProducts={paginatedResult.products}
         initialTotalProduct={paginatedResult.total?.count ?? 0}
         brands={brands}
@@ -31,4 +31,3 @@ const Page = async ({
 }
 
 export default Page
-
