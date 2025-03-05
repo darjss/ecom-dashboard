@@ -24,9 +24,9 @@ import {
 import { revalidateTag } from "next/cache";
 import { SortingState } from "@tanstack/react-table";
 import { unstable_cacheTag as cacheTag } from "next/cache";
-import { TransactionType } from "@/lib/types";
 import { updateStock } from "./product";
 import { PRODUCT_PER_PAGE } from "@/lib/constants";
+import { OrderStatusType, PaymentStatusType } from "@/lib/types";
 
 export const addOrder = async (orderInfo: addOrderType) => {
   console.log("addOrder called with", orderInfo);
@@ -122,7 +122,9 @@ export const updateOrder = async (orderInfo: addOrderType) => {
             .where(eq(CustomersTable.phone, orderInfo.customerPhone));
         }
       }
-      
+      if(orderInfo.id==undefined){
+        return
+      }
       // Update order main info
       await tx.update(OrdersTable)
         .set({
@@ -357,7 +359,7 @@ export const getAllOrders = async () => {
 // Get Order By ID
 export const getOrderById = async (id: number) => {
   try {
-    const result = await db.query.OrdersTable.findMany({
+    const result = await db.query.OrdersTable.findFirst({
       where: eq(OrdersTable.id, id),
       with: {
         orderDetails: {
@@ -402,7 +404,7 @@ export const getOrderById = async (id: number) => {
         imageUrl: orderDetail.product.images[0]?.url,
       })),
     }));
-    return orders[0];
+    return order;
   } catch (e) {
     if (e instanceof Error) {
       return { message: "Fetching order failed", error: e.message };
@@ -417,7 +419,8 @@ export const getPaginatedOrders = async (
   page: number = 1,
   pageSize = PRODUCT_PER_PAGE,
   sorting: SortingState = [],
-  statusFilter?: string
+  orderStatus: OrderStatusType,
+  paymentStatus: PaymentStatusType
 ) => {
   console.log("Fetching paginated orders with page:", page, "pageSize:", pageSize);
   

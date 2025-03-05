@@ -16,7 +16,7 @@
 
     /* Bundled projects */
     
-    "lib": ["dom", "dom.iterable", "ES2023.Array"],
+    "lib": ["dom", "dom.iterable", "ES2023.Array", "ES6", "ES5"],
     "noEmit": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",

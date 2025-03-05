@@ -1,7 +1,7 @@
 import { getAllBrands } from "@/server/actions/brand";
 import { getAllCategories } from "@/server/actions/category";
 import { getProductById } from "@/server/actions/product";
-import { paymentProvider, paymentStatus } from "./constants";
+import { orderStatus, paymentProvider, paymentStatus } from "./constants";
 import { ResultSet } from "@libsql/client";
 import { SQLiteTransaction } from "drizzle-orm/sqlite-core";
 import { ExtractTablesWithRelations } from "drizzle-orm";
@@ -55,3 +55,4 @@ export interface PaginatedResult<T> {
   nextPage?: number;
   previousPage?: number;
 }
+export type OrderStatusType=typeof orderStatus[number];

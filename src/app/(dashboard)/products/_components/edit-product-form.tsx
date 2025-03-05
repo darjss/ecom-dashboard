@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { addProductSchema } from "@/lib/zod/schema";
-import {  BrandType, CategoryType, ProductType } from "@/lib/types";
+import { BrandType, CategoryType, ProductType } from "@/lib/types";
 import { useAction } from "@/hooks/use-action";
 import {
   Select,
@@ -35,14 +35,19 @@ interface AddProductFormProps {
   setDialogOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const EditProductForm = ({ categories, brands, product, setDialogOpen }: AddProductFormProps) => {
+const EditProductForm = ({
+  categories,
+  brands,
+  product,
+  setDialogOpen,
+}: AddProductFormProps) => {
   const [action] = useAction(updateProduct);
   const parsedProducts = parseProduct(product);
+  parsedProducts.images = [...parsedProducts.images, { url: "" }];
 
-  
-  console.log("parsed",parsedProducts);
+  console.log("parsed", parsedProducts);
   return (
-    <div className="mx-auto w-full max-w-6xl overflow-auto bg-background p-4 sm:p-6 lg:p-8">
+    <div className="max-w-8xl mx-auto w-full overflow-auto bg-background p-4 sm:p-6 lg:p-8">
       <FormWrapper
         formAction={action}
         schema={addProductSchema}
@@ -298,7 +303,9 @@ const withEditForm = (
   categories: CategoryType,
   brands: BrandType,
 ) => {
-  const EditForm = (props: { setDialogOpen: Dispatch<SetStateAction<boolean>>}) => {
+  const EditForm = (props: {
+    setDialogOpen: Dispatch<SetStateAction<boolean>>;
+  }) => {
     return (
       <EditProductForm
         product={product}

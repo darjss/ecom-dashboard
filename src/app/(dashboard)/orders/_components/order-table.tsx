@@ -36,7 +36,8 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import withEditForm from "./edit-order-form"
-import RowActions from "./row-actions"
+import RowActions from "../../products/_components/row-actions"
+
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]

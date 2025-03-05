@@ -80,7 +80,7 @@ const rowActions = ({
               Edit
             </DropdownMenuItem>
           </DialogTrigger>
-          <DialogContent className="max-h-[90vh] w-[90%] overflow-y-auto">
+          <DialogContent className="max-h-[90vh] max-w-[90%] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit product</DialogTitle>
             </DialogHeader>

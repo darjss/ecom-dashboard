@@ -19,9 +19,10 @@ import SelectProductForm from "./select-product-form"
 
 const AddOrderForm = ({ products }: { products: ProductType[] }) => {
   const [action] = useAction(addOrder)
+  const [searchByPhone, isSearchByLoading] = useAction(getCustomerByPhone);
 
   const handlePhoneChange = useCallback(async (phone: number, form: UseFormReturn<any>) => {
-    const result = await getCustomerByPhone(phone)
+    const result = await searchByPhone(phone);
     if (result.length > 0) {
       form.setValue("isNewCustomer", false)
       form.setValue("address", result[0]?.address, {
@@ -71,7 +72,7 @@ const AddOrderForm = ({ products }: { products: ProductType[] }) => {
                         <FormItem>
                           <FormLabel className="text-sm font-medium">Delivery Address</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Enter delivery address" {...field} className="h-20 resize-none" />
+                            <Textarea disabled={isSearchByLoading} placeholder={isSearchByLoading?"Searching for delivery address ":"Enter delivery address"} {...field} className="h-20 resize-none" />
                           </FormControl>
                           <FormMessage className="text-xs" />
                         </FormItem>

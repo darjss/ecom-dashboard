@@ -10,9 +10,6 @@ const productSchema = z.object({
   productId: z.number().int().positive().finite(),
   quantity: z.number().int().positive().finite(),
   price: z.number().int().min(20000),
-  // name: z.string().min(1, {
-  //   message: "Product name is too short",
-  // }),
 });
 
 export const addProductSchema = z.object({

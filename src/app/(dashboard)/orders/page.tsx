@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { getAllorder } from "@/server/actions/order";
+import { getAllOrders } from "@/server/actions/order";
 import Link from "next/link";
 
 export default async function Page() {
-  const orders = await getAllorder();
+  const orders = await getAllOrders();
   console.log(orders);
   return (
     <div className="">

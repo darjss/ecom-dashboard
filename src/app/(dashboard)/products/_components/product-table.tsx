@@ -187,11 +187,6 @@ const ProductTable = ({
   initialTotalProduct: number;
 }) => {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [products, setProducts] = useState(
-    parseProductsForTable(initialProducts, brands, categories),
-  );
-  const [isPending, startTransition] = useTransition();
-  const [totalProducts, setTotalProducts] = useState(initialTotalProduct);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [searchTerm, setSearchTerm] = useQueryState("query", {
     defaultValue: "",
@@ -207,69 +202,45 @@ const ProductTable = ({
   const [searchAction, isSearchPending] = useAction(
     searchProductByNameForTable,
   );
-  const [data, isLoading] = useQuery(
+  const { data, isLoading } = useQuery<{
+    products: ProductType[];
+    totalCount: number;
+  }>(
     ["products" + page + brandFilter + categoryFilter],
     () =>
       paginated(
         page,
         PRODUCT_PER_PAGE,
         sorting,
-        brandFilter === 0 ? undefined : brandId,
-        categoryFilter === 0 ? undefined : categoryId,
+        brandFilter === 0 ? undefined : brandFilter,
+        categoryFilter === 0 ? undefined : categoryFilter,
       ),
+    {
+      initialData: {
+        products: initialProducts,
+        totalCount: initialTotalProduct,
+      },
+    },
   );
 
-  async function fetchProducts(
-    newPage: number,
-    newSorting: SortingState,
-    brandId?: number,
-    categoryId?: number,
-  ) {
-    try {
-      const newPaginatedProducts = await getPaginatedProduct(
-        newPage,
-        PRODUCT_PER_PAGE,
-        newSorting,
-        brandId === 0 ? undefined : brandId,
-        categoryId === 0 ? undefined : categoryId,
-      );
-      const paginatedP = await paginated(
-        newPage,
-        PRODUCT_PER_PAGE,
-        newSorting,
-        brandId === 0 ? undefined : brandId,
-        categoryId === 0 ? undefined : categoryId,
-      );
-      setProducts(
-        parseProductsForTable(
-          newPaginatedProducts.products,
-          brands,
-          categories,
-        ),
-      );
-      setTotalProducts(
-        newPaginatedProducts.total?.count ?? initialTotalProduct,
-      );
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
+  if(data===undefined){
+    throw new Error("Products Not Found")
   }
-
+  const {products,totalCount}=data
   const table = useReactTable({
-    data: products,
+    data: parseProductsForTable(products, brands, categories),
     columns,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     manualSorting: true,
-    rowCount: totalProducts,
+    rowCount: totalCount,
     onSortingChange: (updater) => {
-      startTransition(() => {
+
         const newSorting =
           typeof updater === "function" ? updater(sorting) : updater;
         setSorting(newSorting);
         setPage(1);
-        fetchProducts(1, newSorting, brandFilter, categoryFilter);
-      });
+    
     },
     getSortedRowModel: getSortedRowModel(),
     state: {
@@ -278,27 +249,18 @@ const ProductTable = ({
   });
 
   async function handlePageChange(newPage: number) {
-    startTransition(async () => {
       await setPage(newPage);
-      fetchProducts(newPage, sorting, brandFilter, categoryFilter);
-    });
   }
 
   async function handleFilterChange(type: "brand" | "category", value: number) {
-    startTransition(async () => {
+
       if (type === "brand") {
         await setBrandFilter(value);
       } else {
         await setCategoryFilter(value);
       }
       await setPage(1);
-      fetchProducts(
-        1,
-        sorting,
-        type === "brand" ? value : brandFilter,
-        type === "category" ? value : categoryFilter,
-      );
-    });
+
   }
   console.log("brand", brandFilter, "category", categoryFilter);
   return (
@@ -319,9 +281,6 @@ const ProductTable = ({
               <SubmitButton
                 onClick={async () => {
                   const searchResult = await searchAction(searchTerm);
-                  setProducts(
-                    parseProductsForTable(searchResult, brands, categories),
-                  );
                 }}
                 isPending={isSearchPending}
                 className="shrink-0"
@@ -380,7 +339,7 @@ const ProductTable = ({
           </div>
         </div>
 
-        {isPending ? (
+        { isLoading ? (
           <DataTableSkeleton columnCount={6} rowCount={3} />
         ) : (
           <div className="overflow-x-auto rounded-md border">
@@ -437,27 +396,60 @@ const ProductTable = ({
 
         <div className="flex flex-col items-center gap-4 px-2 sm:flex-row sm:justify-between sm:px-0">
           <p className="text-center text-xs text-muted-foreground sm:text-left sm:text-sm">
-            Page {page} of {Math.ceil(totalProducts / PRODUCT_PER_PAGE)}
+            Page {page} of{" "}
+            {Math.max(1, Math.ceil(totalCount / PRODUCT_PER_PAGE))}
           </p>
           <Pagination>
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
-                  onClick={() => handlePageChange(page - 1)}
-                  isActive={page !== 1}
+                  onClick={() => page > 1 && handlePageChange(page - 1)}
+                  className={page <= 1 ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
+
+              {/* First page */}
+              {page > 3 && (
+                <PaginationItem>
+                  <PaginationLink onClick={() => handlePageChange(1)}>
+                    1
+                  </PaginationLink>
+                </PaginationItem>
+              )}
+
+              {/* Ellipsis if needed */}
+              {page > 4 && (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
+
+              {/* Pages around current page */}
               {Array.from(
                 {
                   length: Math.min(
-                    5,
-                    Math.ceil(totalProducts / PRODUCT_PER_PAGE),
+                    3,
+                    Math.ceil(totalCount / PRODUCT_PER_PAGE),
                   ),
                 },
                 (_, i) => {
-                  const pageNumber = page <= 3 ? i + 1 : page - 2 + i;
-                  return pageNumber <=
-                    Math.ceil(totalProducts / PRODUCT_PER_PAGE) ? (
+                  const maxPage = Math.max(
+                    1,
+                    Math.ceil(totalCount / PRODUCT_PER_PAGE),
+                  );
+                  let pageNumber;
+
+                  // Calculate which pages to show
+                  if (page <= 2) {
+                    pageNumber = i + 1;
+                  } else if (page >= maxPage - 1) {
+                    pageNumber = maxPage - 2 + i;
+                  } else {
+                    pageNumber = page - 1 + i;
+                  }
+
+                  // Only show if page is valid
+                  return pageNumber > 0 && pageNumber <= maxPage ? (
                     <PaginationItem key={pageNumber}>
                       <PaginationLink
                         onClick={() => handlePageChange(pageNumber)}
@@ -469,33 +461,40 @@ const ProductTable = ({
                   ) : null;
                 },
               )}
-              {Math.ceil(totalProducts / PRODUCT_PER_PAGE) > 5 &&
-                page < Math.ceil(totalProducts / PRODUCT_PER_PAGE) - 2 && (
-                  <PaginationItem>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )}
-              {Math.ceil(totalProducts / PRODUCT_PER_PAGE) > 5 && (
+
+              {/* Ellipsis if needed */}
+              {page < Math.ceil(totalCount / PRODUCT_PER_PAGE) - 3 && (
                 <PaginationItem>
-                  <PaginationLink
-                    onClick={() =>
-                      handlePageChange(
-                        Math.ceil(totalProducts / PRODUCT_PER_PAGE),
-                      )
-                    }
-                    isActive={
-                      page === Math.ceil(totalProducts / PRODUCT_PER_PAGE)
-                    }
-                  >
-                    {Math.ceil(totalProducts / PRODUCT_PER_PAGE)}
-                  </PaginationLink>
+                  <PaginationEllipsis />
                 </PaginationItem>
               )}
+
+              {/* Last page */}
+              {page < Math.ceil(totalCount / PRODUCT_PER_PAGE) - 2 &&
+                Math.ceil(totalCount / PRODUCT_PER_PAGE) > 3 && (
+                  <PaginationItem>
+                    <PaginationLink
+                      onClick={() =>
+                        handlePageChange(
+                          Math.ceil(totalCount / PRODUCT_PER_PAGE),
+                        )
+                      }
+                    >
+                      {Math.ceil(totalCount / PRODUCT_PER_PAGE)}
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+
               <PaginationItem>
                 <PaginationNext
-                  onClick={() => handlePageChange(page + 1)}
-                  isActive={
-                    page !== Math.ceil(totalProducts / PRODUCT_PER_PAGE)
+                  onClick={() =>
+                    page < Math.ceil(totalCount / PRODUCT_PER_PAGE) &&
+                    handlePageChange(page + 1)
+                  }
+                  className={
+                    page >= Math.ceil(totalCount / PRODUCT_PER_PAGE)
+                      ? "pointer-events-none opacity-50"
+                      : ""
                   }
                 />
               </PaginationItem>

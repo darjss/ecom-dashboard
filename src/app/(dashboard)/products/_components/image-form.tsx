@@ -1,83 +1,106 @@
-"use client"
+"use client";
 
-import { useEffect, useCallback } from "react"
-import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { useFieldArray, type UseFormReturn, useWatch } from "react-hook-form"
-import { Button } from "@/components/ui/button"
-import { XIcon, ImageIcon } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { UploadButton } from "@/components/upload-button"
-import { type imageType, imageSchema } from "@/lib/zod/schema"
-import { debounce } from "lodash"
+import { useEffect, useCallback } from "react";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useFieldArray, type UseFormReturn, useWatch } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { XIcon, ImageIcon } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { UploadButton } from "@/components/upload-button";
+import { type imageType, imageSchema } from "@/lib/zod/schema";
+import { debounce } from "lodash";
 
 const isValidUrl = (url: string) => {
   try {
-    new URL(url)
-    return true
+    new URL(url);
+    return true;
   } catch {
-    return false
+    return false;
   }
-}
+};
 
 export const AddImageForm = ({
   form,
   isEdit,
 }: {
-  form: UseFormReturn<{ images: imageType[] }>
-  isEdit: boolean
+  form: UseFormReturn<{ images: imageType[] }>;
+  isEdit: boolean;
 }) => {
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "images",
-  })
+  });
 
   const watchedImages = useWatch({
     control: form.control,
     name: "images",
-  })
+  });
 
-  // Initialize with one empty field if no fields exist
   useEffect(() => {
     if (fields.length === 0) {
-      append({ url: "" })
+      append({ url: "" });
     }
-  }, [fields.length, append])
+  }, [fields.length, append]);
 
   const debouncedAppend = useCallback(
     debounce(() => {
-      append({ url: "" })
+      append({ url: "" });
     }, 100),
     [],
-  )
+  );
+  useEffect(() => {
+    if (isEdit && fields.length > 0) {
+      console.log("this effect is working")
+      const lastField = watchedImages[watchedImages.length - 1];
+      // If the last field has content, add an empty one
+      if (lastField?.url && isValidUrl(lastField.url)) {
+        append({ url: "" });
+      }
+      // If there's no empty field at the end, add one
+      else if (watchedImages.every((img) => img?.url && isValidUrl(img.url))) {
+        append({ url: "" });
+      }
+    }
+  }, [isEdit, fields.length, watchedImages, append]);
 
   // Handle URL validation and new field appending
   useEffect(() => {
-    const lastImage = watchedImages[watchedImages.length - 1]
+    const lastImage = watchedImages[watchedImages.length - 1];
 
     if (lastImage?.url && isValidUrl(lastImage.url)) {
-      const validationResult = imageSchema.safeParse(lastImage)
+      const validationResult = imageSchema.safeParse(lastImage);
 
       if (validationResult.success) {
         const allPreviousFieldsHaveValidUrls = watchedImages
           .slice(0, -1)
-          .every((img) => img?.url && isValidUrl(img.url) && imageSchema.safeParse(img).success)
+          .every(
+            (img) =>
+              img?.url &&
+              isValidUrl(img.url) &&
+              imageSchema.safeParse(img).success,
+          );
 
         if (allPreviousFieldsHaveValidUrls) {
-          debouncedAppend()
+          debouncedAppend();
         }
       }
     }
-  }, [watchedImages, debouncedAppend])
+  }, [watchedImages, debouncedAppend]);
 
   const handleRemove = (index: number) => {
     if (fields.length > 1) {
-      remove(index)
+      remove(index);
     } else {
       // If it's the last field, clear the URL instead of removing
-      form.setValue(`images.${index}.url`, "")
+      form.setValue(`images.${index}.url`, "");
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
@@ -91,7 +114,11 @@ export const AddImageForm = ({
                 <FormItem>
                   <FormControl>
                     <div className="flex items-center space-x-2">
-                      <Input placeholder="Image URL" {...field} className="flex-grow" />
+                      <Input
+                        placeholder="Image URL"
+                        {...field}
+                        className="flex-grow"
+                      />
                       {(index !== fields.length - 1 || fields.length > 1) && (
                         <Button
                           type="button"
@@ -129,7 +156,7 @@ export const AddImageForm = ({
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {watchedImages.map((image, index) => {
           if (!image || !image.url || index === fields.length - 1) {
-            return null
+            return null;
           }
           return (
             <Card
@@ -155,7 +182,7 @@ export const AddImageForm = ({
                 </div>
               </CardContent>
             </Card>
-          )
+          );
         })}
         {fields.length === 1 && !watchedImages[0]?.url && (
           <Card
@@ -171,6 +198,5 @@ export const AddImageForm = ({
       </div>
       <UploadButton append={append} />
     </div>
-  )
-}
-
+  );
+};

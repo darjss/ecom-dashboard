@@ -10,17 +10,14 @@ import {
   getTableColumns,
   SQL,
   sql,
-  like,
-  InferSelectModel,
-  Placeholder,
+  like
 } from "drizzle-orm";
 import { addProductType } from "@/lib/zod/schema";
 import { z } from "zod";
 import { revalidateTag } from "next/cache";
 import { SortingState } from "@tanstack/react-table";
 import { getAllBrands } from "./brand";
-import { addImage, updateImage, uploadImagesFromUrl } from "./image";
-import { redirect } from "next/navigation";
+import { updateImage, uploadImagesFromUrl } from "./image";
 import { unstable_cacheTag as cacheTag } from "next/cache";
 import { ProductImageType, TransactionType } from "@/lib/types";
 
@@ -326,59 +323,82 @@ export const getPaginatedProduct = async (
 };
 
 export const paginated = async (
-  page: number = 1,
+  page = 1,
   pageSize = 10,
   sorting: SortingState = [],
   brandId?: number,
   categoryId?: number,
 ) => {
+  // Build conditions array first
+  const conditions: SQL<unknown>[] = []
+
+  if (brandId !== undefined && brandId !== 0) {
+    conditions.push(eq(ProductsTable.brandId, brandId))
+  }
+
+  if (categoryId !== undefined && categoryId !== 0) {
+    conditions.push(eq(ProductsTable.categoryId, categoryId))
+  }
+
+  // Get total count first with the same conditions
+  const totalCountResult = await db
+    .select({
+      count: sql<number>`count(*)`,
+    })
+    .from(ProductsTable)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+
+  const totalCount = totalCountResult[0]?.count || 0
+
+  // Build order by conditions
   const orderByConditions: SQL<unknown>[] = sorting
     .filter((sort) => sort.id === "price" || sort.id === "stock")
     .map((sort) => {
       if (sort.id === "price") {
-        return sort.desc ? desc(ProductsTable.price) : asc(ProductsTable.price);
+        return sort.desc ? desc(ProductsTable.price) : asc(ProductsTable.price)
       } else if (sort.id === "stock") {
-        return sort.desc ? desc(ProductsTable.stock) : asc(ProductsTable.stock);
+        return sort.desc ? desc(ProductsTable.stock) : asc(ProductsTable.stock)
       }
-      return null;
+      return null
     })
-    .filter((condition): condition is SQL<unknown> => condition !== null);
+    .filter((condition): condition is SQL<unknown> => condition !== null)
 
-  const conditions: SQL<unknown>[] = [];
-
-  if (brandId !== undefined && brandId !== 0) {
-    conditions.push(eq(ProductsTable.brandId, brandId));
+  // Add a default sort if none specified
+  if (orderByConditions.length === 0) {
+    orderByConditions.push(asc(ProductsTable.id)) // Default sort by ID
   }
 
-  if (categoryId !== undefined && categoryId !== 0) {
-    conditions.push(eq(ProductsTable.categoryId, categoryId));
-  }
-
-  let products = await db.query.ProductsTable.findMany({
-    extras: {
-      count: sql<number>`count(*)`.as("count"),
-    },
+  // Get paginated products
+  const products = await db.query.ProductsTable.findMany({
     offset: (page - 1) * pageSize,
     limit: pageSize,
     orderBy: orderByConditions,
-    where: and(...conditions),
+    where: conditions.length > 0 ? and(...conditions) : undefined,
     with: {
       images: true,
     },
-  });
+  })
+
   console.log(
-    "page number",
+    "page number:",
     page,
-    "pagesize",
+    "pagesize:",
     pageSize,
-    "products:",
-    products,
+    "products count:",
+    products.length,
+    "total count:",
+    totalCount,
     "sorting:",
     sorting,
-    "brandId",
+    "brandId:",
     brandId,
-    "categoryID",
+    "categoryID:",
     categoryId,
-  );
-  return products;
-};
+  )
+
+  // Return both the products and the total count
+  return {
+    products,
+    totalCount,
+  }
+}
