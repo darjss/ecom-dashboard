@@ -17,7 +17,7 @@ export type OrderType = Exclude<
   { message: string; error: string }
 >;
 export type PaymentProviderType = (typeof paymentProvider)[number];
-export type PaymentStatusType = (typeof paymentStatus)[number];
+export type PaymentStatusType = (typeof paymentStatus)[number] ;
 export type TransactionType = SQLiteTransaction<
   "async",
   ResultSet,

@@ -18,19 +18,19 @@
     - [ ] detailed product view modal 
   - [ ] order crud
     - [x] add order
-    - [ ] edit order
-    - [ ] delete order
+    - [x] edit order
+    - [x] delete order
     - [ ] add to sales table/record sale
     - [x] add to payment table
-    - [ ] order table pagination
+    - [] order table pagination
     - [ ] detailed order view modal
-    - [ ] order table filter sort -[ ] payment management
+    - [ ] order table filter sort 
+    - [ ] payment management
     - [x] add payment
     - [ ] edit payment
     - [ ] delete/cancel order
     - [ ] payment table pagination
     - [ ] detailed payment view modal
-    - [ ] order table filt er sort
   - [ ] purchase inventory management crud
     - [ ] add purchase
     - [ ] edit purchase

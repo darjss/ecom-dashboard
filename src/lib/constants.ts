@@ -19,7 +19,7 @@ export const orderStatus = [
   "refunded"
 ] as const;
 
-export const paymentProvider = ["qpay", "transfer"] as const;
+export const paymentProvider = ["qpay", "transfer", "cash"] as const;
 
 export const paymentStatus = ["pending", "success", "failed"] as const;
 

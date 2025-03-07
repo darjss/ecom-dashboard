@@ -1,14 +1,12 @@
 "use server";
 import "server-only";
 import { db } from "@/server/db";
-import { ProductImagesTable, ProductsTable } from "../db/schema";
+import { ProductsTable } from "../db/schema";
 import {
   and,
   asc,
   desc,
-  eq,
-  getTableColumns,
-  SQL,
+  eq, SQL,
   sql,
   like
 } from "drizzle-orm";
@@ -19,7 +17,7 @@ import { SortingState } from "@tanstack/react-table";
 import { getAllBrands } from "./brand";
 import { updateImage, uploadImagesFromUrl } from "./image";
 import { unstable_cacheTag as cacheTag } from "next/cache";
-import { ProductImageType, TransactionType } from "@/lib/types";
+import { TransactionType } from "@/lib/types";
 
 export const searchProductByNameForTable = async (searchTerm: string) => {
   console.log(searchTerm);

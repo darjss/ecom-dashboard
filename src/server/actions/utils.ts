@@ -1,115 +1,107 @@
-import { db } from "@/server/db";
-import { SortingState } from "@tanstack/react-table";
-import { SQL, SQLWrapper, and, asc, desc, eq, sql } from "drizzle-orm";
-import { BaseSQLiteDatabase } from "drizzle-orm/sqlite-core";
-import { LibSQLDatabase } from "drizzle-orm/libsql";
-
-// Types for our function parameters
-type TableColumn = {
-  name: string;
-  table: { $tableName: string };
-};
-
-type FilterCondition<T extends TableColumn> = {
-  column: T;
-  value: unknown;
-  operator?: "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "like";
-};
-
-type SortableColumn<T extends TableColumn> = {
-  id: string;
-  column: T;
-};
-
-type PaginatedQueryOptions<T extends TableColumn> = {
-  page?: number;
-  pageSize?: number;
-  sorting?: SortingState;
-  sortableColumns?: SortableColumn<T>[];
-  filterConditions?: FilterCondition<T>[];
-  countTable: { name: string };
-};
-
-export async function executePaginatedQuery<
-  TQuery extends ReturnType<LibSQLDatabase["select"]> | ReturnType<LibSQLDatabase["$dynamic"]["select"]>,
-  TResult
->(
-  baseQuery: TQuery,
-  options: PaginatedQueryOptions<TableColumn>,
-  resultTransformer?: (results: any[]) => TResult[]
-): Promise<{
-  results: TResult[];
+interface OrderResult {
+  id: number;
+  orderNumber: string;
+  customerPhone: number;
+  status: string;
   total: number;
-}> {
-  const {
-    page = 1,
-    pageSize = 10,
-    sorting = [],
-    sortableColumns = [],
-    filterConditions = [],
-    countTable,
-  } = options;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+  orderDetails: Array<{
+    quantity: number;
+    product: {
+      name: string;
+      id: number;
+      images: Array<{
+        url: string;
+      }>;
+    };
+  }>;
+  payments: Array<{
+    status: string;
+    provider: string;
+  }>;
+}
 
-  console.log(`Executing paginated query for page ${page}, size ${pageSize}`);
+interface ShapedOrder {
+  id: number;
+  orderNumber: string;
+  customerPhone: number;
+  status: string;
+  total: number;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+  products: Array<{
+    quantity: number;
+    name: string;
+    id: number;
+    imageUrl: string | undefined;
+  }>;
+  paymentStatus: string[];
+  paymentProvider: string[];
+}
 
-  // Apply filters
-  let queryWithFilters = baseQuery;
-  
-  const conditions: SQL<unknown>[] = filterConditions
-    .filter(condition => condition.value !== undefined && condition.value !== 0)
-    .map(({ column, value, operator = "eq" }) => {
-      switch (operator) {
-        case "eq":
-          return eq(column, value);
-        // Add other operators as needed
-        default:
-          return eq(column, value);
-      }
-    });
+interface OrderError {
+  message: string;
+  error: string;
+}
 
-  if (conditions.length > 0) {
-    // @ts-ignore - Drizzle typing issue
-    queryWithFilters = queryWithFilters.where(and(...conditions));
+export const shapeOrderResult=(
+  result: OrderResult | undefined,
+): ShapedOrder | OrderError =>{
+  if (result === undefined) {
+    return {
+      message: "Adding order failed",
+      error: "No order found",
+    };
   }
-
-  // Apply sorting
-  const orderByConditions: SQL<unknown>[] = sorting
-    .map(sort => {
-      const sortableColumn = sortableColumns.find(col => col.id === sort.id);
-      if (!sortableColumn) return null;
-      
-      return sort.desc 
-        ? desc(sortableColumn.column) 
-        : asc(sortableColumn.column);
-    })
-    .filter((condition): condition is SQL<unknown> => condition !== null);
-
-  let finalQuery = queryWithFilters;
-  
-  if (orderByConditions.length > 0) {
-    // @ts-ignore - Drizzle typing issue
-    finalQuery = finalQuery.orderBy(...orderByConditions);
-  }
-
-  // Apply pagination
-  // @ts-ignore - Drizzle typing issue
-  finalQuery = finalQuery
-    .offset((page - 1) * pageSize)
-    .limit(pageSize);
-
-  // Execute query and count total
-  const [results, totalResults] = await Promise.all([
-    finalQuery,
-    db.select({ count: sql<number>`count(*)` }).from(countTable),
-  ]);
-
-  // Transform results if needed
-  const transformedResults = resultTransformer 
-    ? resultTransformer(results) 
-    : (results as unknown as TResult[]);
 
   return {
-    results: transformedResults,
-    total: totalResults[0].count,
+    id: result.id,
+    orderNumber: result.orderNumber,
+    customerPhone: result.customerPhone,
+    status: result.status,
+    total: result.total,
+    notes: result.notes,
+    createdAt: result.createdAt,
+    updatedAt: result.updatedAt,
+    products: result.orderDetails.map((orderDetail) => ({
+      quantity: orderDetail.quantity,
+      name: orderDetail.product.name,
+      id: orderDetail.product.id,
+      imageUrl: orderDetail.product.images[0]?.url,
+    })),
+    paymentStatus: result.payments.map((payment) => payment.status),
+    paymentProvider: result.payments.map((payment) => payment.provider),
   };
+}
+export const shapeOrderResults=(
+  result: OrderResult[] | undefined,
+): ShapedOrder[] | OrderError =>{
+  if (result === undefined) {
+    return {
+      message: "Adding order failed",
+      error: "No order found",
+    };
+  }
+
+  return result.map((result)=>( {
+    id: result.id,
+    orderNumber: result.orderNumber,
+    customerPhone: result.customerPhone,
+    status: result.status,
+    total: result.total,
+    notes: result.notes,
+    createdAt: result.createdAt,
+    updatedAt: result.updatedAt,
+    products: result.orderDetails.map((orderDetail) => ({
+      quantity: orderDetail.quantity,
+      name: orderDetail.product.name,
+      id: orderDetail.product.id,
+      imageUrl: orderDetail.product.images[0]?.url,
+    })),
+    paymentStatus: result.payments.map((payment) => payment.status),
+    paymentProvider: result.payments.map((payment) => payment.provider),
+  }));
 }

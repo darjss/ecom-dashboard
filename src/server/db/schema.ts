@@ -303,6 +303,7 @@ export const PurchasesTable = createTable(
 
 export const ordersRelations = relations(OrdersTable, ({ many }) => ({
   orderDetails: many(OrderDetailsTable),
+  payments:many(PaymentsTable)
 }));
 
 export const orderDetailsRelations = relations(OrderDetailsTable, ({ one }) => ({
@@ -360,5 +361,5 @@ export type PaymentInsertType = InferInsertModel<typeof PaymentsTable>;
 export type CartInsertType = InferInsertModel<typeof CartsTable>;
 export type CartItemInsertType = InferInsertModel<typeof CartItemsTable>;
 
-export type PurchaseInferType = InferSelectModel<typeof PurchasesTable>;
-export type SalesInferType = InferSelectModel<typeof SalesTable>;
+export type PurchaseInsertType = InferSelectModel<typeof PurchasesTable>;
+export type SalesInsertType = InferSelectModel<typeof SalesTable>;
