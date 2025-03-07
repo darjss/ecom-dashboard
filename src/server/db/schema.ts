@@ -303,7 +303,14 @@ export const PurchasesTable = createTable(
 
 export const ordersRelations = relations(OrdersTable, ({ many }) => ({
   orderDetails: many(OrderDetailsTable),
-  payments:many(PaymentsTable)
+  payments: many(PaymentsTable)
+}));
+
+export const paymentsRelations = relations(PaymentsTable, ({ one }) => ({
+  order: one(OrdersTable, {
+    fields: [PaymentsTable.orderId],
+    references: [OrdersTable.id],
+  })
 }));
 
 export const orderDetailsRelations = relations(OrderDetailsTable, ({ one }) => ({

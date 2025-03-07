@@ -56,7 +56,7 @@ export const AddImageForm = ({
   );
   useEffect(() => {
     if (isEdit && fields.length > 0) {
-      console.log("this effect is working")
+      console.log("this effect is working");
       const lastField = watchedImages[watchedImages.length - 1];
       // If the last field has content, add an empty one
       if (lastField?.url && isValidUrl(lastField.url)) {
@@ -165,7 +165,7 @@ export const AddImageForm = ({
             >
               <CardContent className="p-0">
                 <img
-                  src={image.url || "/placeholder.svg"}
+                  src={image.url || "/placeholder.jpg"}
                   alt={`Product image ${index + 1}`}
                   className="h-40 w-full object-cover transition-transform duration-300 group-hover:scale-110"
                 />

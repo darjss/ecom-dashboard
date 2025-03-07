@@ -104,7 +104,7 @@ const columns: ColumnDef<TableProductType>[] = [
     cell: ({ row }) => (
       <div className="flex justify-center">
         <img
-          src={row.getValue("imageUrl") || "/placeholder.svg"}
+          src={row.getValue("imageUrl") || "/placeholder.jpg"}
           alt={"image"}
           className="h-10 w-10 rounded-full object-cover"
         />
@@ -223,10 +223,10 @@ const ProductTable = ({
     },
   );
 
-  if(data===undefined){
-    throw new Error("Products Not Found")
+  if (data === undefined) {
+    throw new Error("Products Not Found");
   }
-  const {products,totalCount}=data
+  const { products, totalCount } = data;
   const table = useReactTable({
     data: parseProductsForTable(products, brands, categories),
     columns,
@@ -235,12 +235,10 @@ const ProductTable = ({
     manualSorting: true,
     rowCount: totalCount,
     onSortingChange: (updater) => {
-
-        const newSorting =
-          typeof updater === "function" ? updater(sorting) : updater;
-        setSorting(newSorting);
-        setPage(1);
-    
+      const newSorting =
+        typeof updater === "function" ? updater(sorting) : updater;
+      setSorting(newSorting);
+      setPage(1);
     },
     getSortedRowModel: getSortedRowModel(),
     state: {
@@ -249,18 +247,16 @@ const ProductTable = ({
   });
 
   async function handlePageChange(newPage: number) {
-      await setPage(newPage);
+    await setPage(newPage);
   }
 
   async function handleFilterChange(type: "brand" | "category", value: number) {
-
-      if (type === "brand") {
-        await setBrandFilter(value);
-      } else {
-        await setCategoryFilter(value);
-      }
-      await setPage(1);
-
+    if (type === "brand") {
+      await setBrandFilter(value);
+    } else {
+      await setCategoryFilter(value);
+    }
+    await setPage(1);
   }
   console.log("brand", brandFilter, "category", categoryFilter);
   return (
@@ -339,7 +335,7 @@ const ProductTable = ({
           </div>
         </div>
 
-        { isLoading ? (
+        {isLoading ? (
           <DataTableSkeleton columnCount={6} rowCount={3} />
         ) : (
           <div className="overflow-x-auto rounded-md border">
@@ -427,10 +423,7 @@ const ProductTable = ({
               {/* Pages around current page */}
               {Array.from(
                 {
-                  length: Math.min(
-                    3,
-                    Math.ceil(totalCount / PRODUCT_PER_PAGE),
-                  ),
+                  length: Math.min(3, Math.ceil(totalCount / PRODUCT_PER_PAGE)),
                 },
                 (_, i) => {
                   const maxPage = Math.max(

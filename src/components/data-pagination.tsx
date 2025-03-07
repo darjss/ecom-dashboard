@@ -70,8 +70,10 @@ export function DataPagination({
   if(pageNumbers[0]===undefined){
     return;
   }
-  const showStartEllipsis = pageNumbers[0] > 1;
-  const showEndEllipsis = pageNumbers[pageNumbers.length - 1]?? 0 < totalPages;
+  
+  // Don't show ellipsis when there's only one page
+  const showStartEllipsis = totalPages > 1 && pageNumbers[0] > 1;
+  const showEndEllipsis = totalPages > 1 && (pageNumbers[pageNumbers.length - 1] ?? 0) < totalPages;
 
   return (
     <div className={`space-y-4 ${className}`}>

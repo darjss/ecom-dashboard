@@ -56,6 +56,7 @@ const EditOrderForm = ({ products, order }: { products: ProductType[], order:add
         formAction={action}
         schema={addOrderSchema}
         className="space-y-6"
+        initialData={order}
       >
         {(form) => {
           const phone: string = form.watch("customerPhone");

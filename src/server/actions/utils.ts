@@ -1,8 +1,10 @@
+import { OrderStatusType, PaymentStatusType } from "@/lib/types";
+
 interface OrderResult {
   id: number;
   orderNumber: string;
   customerPhone: number;
-  status: string;
+  status: OrderStatusType;
   total: number;
   notes: string | null;
   createdAt: Date;
@@ -18,7 +20,7 @@ interface OrderResult {
     };
   }>;
   payments: Array<{
-    status: string;
+    status: PaymentStatusType;
     provider: string;
   }>;
 }
@@ -27,7 +29,7 @@ interface ShapedOrder {
   id: number;
   orderNumber: string;
   customerPhone: number;
-  status: string;
+  status: OrderStatusType;
   total: number;
   notes: string | null;
   createdAt: Date;
@@ -38,7 +40,7 @@ interface ShapedOrder {
     id: number;
     imageUrl: string | undefined;
   }>;
-  paymentStatus: string[];
+  paymentStatus: PaymentStatusType[];
   paymentProvider: string[];
 }
 

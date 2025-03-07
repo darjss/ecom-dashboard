@@ -25,7 +25,7 @@ const Header = async () => {
             placeholder="Search..."
             className="h-10 w-full pl-10 pr-4"
           />
-          <Button></Button>
+          {/* <Button></Button> */}
         </div>
 
         <div className="flex items-center gap-2">

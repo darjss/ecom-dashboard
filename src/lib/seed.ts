@@ -1,12 +1,13 @@
 "use server";
 import "server-only";
-import { BrandInsertType, CategoryInsertType } from "@/server/db/schema";
+import { BrandInsertType, CategoryInsertType, ProductImagesTable, ProductsTable } from "@/server/db/schema";
 import { addProductType } from "@/lib/zod/schema";
 import { addBrand } from "@/server/actions/brand";
 import { addCategory } from "@/server/actions/category";
 import { addProduct } from "@/server/actions/product";
 import { revalidateTag } from "next/cache";
 import { addOrder } from "@/server/actions/order";
+import { db } from "@/server/db";
 
 // Sample data for brands
 const brandsData: BrandInsertType[] = [
@@ -337,18 +338,58 @@ export const seedDatabase = async () => {
     }
     revalidateTag("brandCategory");
     // Add products
-    // setTimeout(async () => {
-      for (const product of productsData) {
-        await addProduct(product);
+    for (const product of productsData) {
+      // Create a modified version of the addProduct function that doesn't upload images
+      const productResult = await db
+        .insert(ProductsTable)
+        .values({
+          name: product.name,
+          slug: product.name.replace(/\s+/g, "-").toLowerCase(),
+          description: product.description,
+          discount: 0,
+          amount: product.amount,
+          potency: product.potency,
+          stock: product.stock,
+          price: product.price,
+          dailyIntake: product.dailyIntake,
+          categoryId: product.categoryId,
+          brandId: product.brandId,
+          status: "active",
+        })
+        .returning();
+        
+      if (productResult[0]) {
+        const productId = productResult[0].id;
+        // Add images directly to database without uploading
+        const imagePromises = product.images.map((image, index) => 
+          db.insert(ProductImagesTable).values({
+            productId: productId,
+            url: image.url, // Use the URL directly without uploading
+            isPrimary: index === 0 ? true : false,
+          })
+        );
+        await Promise.all(imagePromises);
       }
-    // }, 1000);
-
-    // setTimeout(async () => {
-    for (const order of ordersData) {
-      await addOrder(order);
     }
-    //   console.log("Orders seeded successly");
-    // }, 1500);
+
+    // Wait a moment for the database to be ready after product inserts
+    console.log("Starting to seed orders...");
+    
+    // Wait for products to fully finish processing
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    // Try with just the first order
+    try {
+        setTimeout(async () => {
+          for (const order of ordersData) {
+            await addOrder(order);
+          }
+            console.log("Orders seeded successly");
+          }, 1500);
+    } catch (error) {
+      console.error("Error during order seeding:", error);
+    }
+    console.log("Orders seeded successfully");
     console.log("Database seeding delivered successly.");
   } catch (error) {
     console.error("Error during database seeding:", error);

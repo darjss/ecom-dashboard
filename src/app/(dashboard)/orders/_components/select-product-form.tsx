@@ -71,7 +71,7 @@ const SelectProductForm = ({
                 }}
               >
                 <img
-                  src={product.images[0]?.url || "/placeholder.svg"}
+                  src={product.images[0]?.url || "/placeholder.jpg"}
                   alt={product.name}
                   className="h-10 w-10 rounded-md object-cover sm:h-12 sm:w-12"
                 />
@@ -105,7 +105,7 @@ const SelectProductForm = ({
                 >
                   <div className="flex items-center space-x-3 pb-3 sm:pb-0">
                     <img
-                      src={product.image || "/placeholder.svg"}
+                      src={product.image || "/placeholder.jpg"}
                       alt={product.name}
                       className="h-12 w-12 rounded-md object-cover sm:h-16 sm:w-16"
                     />

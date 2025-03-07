@@ -22,7 +22,7 @@ const Page = async ({
     <Suspense fallback={<DataTableSkeleton columnCount={6} rowCount={3} />}>
       <ProductGrid
         initialProducts={paginatedResult.products}
-        initialTotalProduct={paginatedResult.total?.count ?? 0}
+        initialTotalProduct={paginatedResult.total ?? 0}
         brands={brands}
         categories={categories}
       />

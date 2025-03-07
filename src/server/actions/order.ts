@@ -12,16 +12,11 @@ import {
 } from "../db/schema";
 import { generateOrderNumber } from "@/lib/utils";
 import { createPayment } from "./payment";
-import { eq, like } from "drizzle-orm";
+import { and, eq, like, sql } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
-import { SortingState } from "@tanstack/react-table";
 import { unstable_cacheTag as cacheTag } from "next/cache";
 import { updateStock } from "./product";
-import {
-  paymentProvider,
-  paymentStatus,
-  PRODUCT_PER_PAGE,
-} from "@/lib/constants";
+import { PRODUCT_PER_PAGE } from "@/lib/constants";
 import { OrderStatusType, PaymentStatusType } from "@/lib/types";
 import { shapeOrderResult, shapeOrderResults } from "./utils";
 
@@ -57,7 +52,8 @@ export const addOrder = async (orderInfo: addOrderType) => {
       }
       const orderId = order?.orderId;
 
-      const orderDetailsPromise = orderInfo.products.map(async (product) => {
+      // Handle order details first
+      for (const product of orderInfo.products) {
         await tx.insert(OrderDetailsTable).values({
           orderId: orderId,
           productId: product.productId,
@@ -66,10 +62,22 @@ export const addOrder = async (orderInfo: addOrderType) => {
 
         // Update stock
         await updateStock(product.productId, product.quantity, "minus", tx);
-      });
-
-      const paymentPromise = createPayment(orderId, orderInfo.paymentStatus);
-      await Promise.allSettled([...orderDetailsPromise, paymentPromise]);
+      }
+      
+      // Create payment after all order details are processed
+      // Pass the transaction to createPayment to keep everything in the same transaction
+      try {
+        const paymentResult = await createPayment(
+          orderId, 
+          orderInfo.paymentStatus, 
+          "transfer", // Default provider
+          tx // Pass the transaction object
+        );
+        console.log("Payment created:", paymentResult);
+      } catch (error) {
+        console.error("Error creating payment:", error);
+        throw error; // Re-throw to ensure the transaction fails if payment fails
+      }
       console.log("transaction done");
     });
 
@@ -431,7 +439,7 @@ export const getPaginatedOrders = async (
               with: {
                 images: {
                   columns: {
-                    url: true,
+                    url:   true,
                   },
                   where: eq(ProductImagesTable.isPrimary, true),
                 },
@@ -451,20 +459,39 @@ export const getPaginatedOrders = async (
         },
       },
     });
-    return shapeOrderResults(result);
+    const total = await db
+      .select({ count: sql<number>`count (*)` })
+      .from(OrdersTable)
+      .leftJoin(PaymentsTable, eq(OrdersTable.id, PaymentsTable.orderId))
+      .where(
+        and(
+          orderStatus === undefined
+            ? undefined
+            : eq(OrdersTable.status, orderStatus),
+          paymentStatus === undefined
+            ? undefined
+            : eq(PaymentsTable.status, paymentStatus),
+        ),
+      );
+    const orders = shapeOrderResults(result);
+    console.log("orders", orders);
+    return {
+      orders: orders,
+      total: total[0]?.count,
+    };
   } catch (e) {
     console.log("Error fetching paginated orders:", e);
     if (e instanceof Error) {
       return {
         orders: [],
-        total: { count: 0 },
+        total: 0,
         message: "Fetching orders failed",
         error: e.message,
       };
     }
     return {
       orders: [],
-      total: { count: 0 },
+      total: 0,
       message: "Fetching orders failed",
       error: "Unknown error",
     };

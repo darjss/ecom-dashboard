@@ -4,15 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { SortingState } from "@tanstack/react-table";
 import { parseAsInteger, useQueryState } from "nuqs";
-import {
-  Search,
-  PlusCircle,
-  ArrowUpDown,
-  Edit,
-  Minus,
-  Plus,
-  Package,
-} from "lucide-react";
+import { Search, PlusCircle, ArrowUpDown, Edit, Package } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,7 +49,7 @@ const ProductCard = ({
   const primaryImage =
     product.images.find((img) => img.isPrimary)?.url ||
     product.images[0]?.url ||
-    "/placeholder.svg";
+    "/placeholder.jpg";
   const brand = brands.find((b) => b.id === product.brandId);
   const category = categories.find((c) => c.id === product.categoryId);
 
@@ -92,7 +84,7 @@ const ProductCard = ({
           {/* Image container - always on left side */}
           <div className="flex h-24 w-24 shrink-0 items-center justify-center bg-muted/10 p-2">
             <img
-              src={primaryImage || "/placeholder.svg"}
+              src={primaryImage || "/placeholder.jpg"}
               alt={product.name}
               className="max-h-full max-w-full object-contain"
               loading="lazy"
@@ -133,53 +125,54 @@ const ProductCard = ({
                   ${product.price.toFixed(2)}
                 </div>
               </div>
+              <div>
+                {isEditing ? (
+                  <div className="mt-2 flex items-center gap-1 sm:mt-0">
+                    <Input
+                      className="h-7 w-24 text-center"
+                      value={stockValue}
+                      type="number"
+                      min="0"
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === ""
+                            ? 0
+                            : Number.parseInt(e.target.value);
+                        setStockValue(Math.max(0, value));
+                      }}
+                    />
 
-              {isEditing ? (
-                <div className="mt-2 flex items-center gap-1 sm:mt-0">
-                  <Input
-                    className="h-7 w-24 text-center"
-                    value={stockValue}
-                    type="number"
-                    min="0"
-                    onChange={(e) => {
-                      const value =
-                        e.target.value === ""
-                          ? 0
-                          : Number.parseInt(e.target.value);
-                      setStockValue(Math.max(0, value));
-                    }}
-                  />
-
-                  <Button
-                    onClick={handleSave}
-                    size="sm"
-                    className="ml-1 h-7 text-xs"
-                  >
-                    Save
-                  </Button>
-                </div>
-              ) : (
-                <div className="mt-2 flex gap-1 sm:mt-0">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => setIsEditing(true)}
-                    className="h-7 px-2 text-xs"
-                  >
-                    <Edit className="mr-1 h-3 w-3" />
-                    Edit Stock
-                  </Button>
-                  <RowActions
-                    id={product.id}
-                    renderEditComponent={withEditForm(
-                      product,
-                      categories,
-                      brands,
-                    )}
-                    deleteFunction={deleteProduct}
-                  />
-                </div>
-              )}
+                    <Button
+                      onClick={handleSave}
+                      size="sm"
+                      className="ml-1 h-7 text-xs"
+                    >
+                      Save
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="mt-2 flex gap-4 sm:mt-0">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => setIsEditing(true)}
+                      className="h-7 px-2 text-xs"
+                    >
+                      <Edit className="mr-1 h-3 w-3" />
+                      Edit Stock
+                    </Button>
+                    <RowActions
+                      id={product.id}
+                      renderEditComponent={withEditForm(
+                        product,
+                        categories,
+                        brands,
+                      )}
+                      deleteFunction={deleteProduct}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

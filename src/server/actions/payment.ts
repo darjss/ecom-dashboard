@@ -11,7 +11,8 @@ export const createPayment = async (
   provider: PaymentProviderType = "transfer",
   tx?:TransactionType 
 ) => {
-  const result = (tx || db)
+  // Explicitly use await to ensure the operation completes
+  const result = await (tx || db)
     .insert(PaymentsTable)
     .values({
       orderId: orderId,
