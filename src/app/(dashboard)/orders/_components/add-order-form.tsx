@@ -158,10 +158,10 @@ const AddOrderForm = ({ products }: { products: ProductType[] }) => {
                 </CardContent>
               </Card>
 
-              <Card className="overflow-hidden shadow-sm">
+              <Card className="overflow-visible shadow-sm">
                 <CardContent className="p-4 sm:p-6">
                   <h3 className="mb-4 text-lg font-semibold text-primary">Products</h3>
-                  <SelectProductForm products={products} form={form} />
+                  <SelectProductForm  form={form} />
                 </CardContent>
               </Card>
 

@@ -13,7 +13,6 @@ import {
 import { addProductType } from "@/lib/zod/schema";
 import { z } from "zod";
 import { revalidateTag } from "next/cache";
-import { SortingState } from "@tanstack/react-table";
 import { getAllBrands } from "./brand";
 import { updateImage, uploadImagesFromUrl } from "./image";
 import { unstable_cacheTag as cacheTag } from "next/cache";
@@ -100,7 +99,7 @@ export const addProduct = async (product: addProductType) => {
     // redirect("/products");
     return { message: "Added product Successfully" };
   } catch (e) {
-    console.log(e);
+    console.log(e); 
     return { message: "Operation failed", error: e };
   }
 };
@@ -232,128 +231,67 @@ export const getAllProducts = async () => {
   return products;
 };
 
-export const getPaginatedProduct = async (
-  page: number = 1,
-  pageSize = 10,
-  sorting: SortingState = [],
-  brandId?: number,
-  categoryId?: number,
-) => {
-  console.log("fetching paginated product");
-
-  // Build conditions array first
-  const conditions: SQL<unknown>[] = [];
-
-  if (brandId !== undefined && brandId !== 0) {
-    conditions.push(eq(ProductsTable.brandId, brandId));
-  }
-
-  if (categoryId !== undefined && categoryId !== 0) {
-    conditions.push(eq(ProductsTable.categoryId, categoryId));
-  }
-
-  // Get total count with the same conditions
-  const totalCountResult = await db
-    .select({
-      count: sql<number>`count(*)`,
-    })
-    .from(ProductsTable)
-    .where(conditions.length > 0 ? and(...conditions) : undefined);
-
-  const total = totalCountResult[0]?.count || 0;
-
-  // Build order by conditions
-  const orderByConditions: SQL<unknown>[] = sorting
-    .filter((sort) => sort.id === "price" || sort.id === "stock")
-    .map((sort) => {
-      if (sort.id === "price") {
-        return sort.desc ? desc(ProductsTable.price) : asc(ProductsTable.price);
-      } else if (sort.id === "stock") {
-        return sort.desc ? desc(ProductsTable.stock) : asc(ProductsTable.stock);
-      }
-      return null;
-    })
-    .filter((condition): condition is SQL<unknown> => condition !== null);
-
-  // Add a default sort if none specified
-  if (orderByConditions.length === 0) {
-    orderByConditions.push(asc(ProductsTable.id)); // Default sort by ID
-  }
-
-  // Get paginated products
-  const products = await db.query.ProductsTable.findMany({
-    offset: (page - 1) * pageSize,
-    limit: pageSize,
-    orderBy: orderByConditions,
-    where: conditions.length > 0 ? and(...conditions) : undefined,
-    with: {
-      images: true,
-    },
-  });
-
-  return { products, total };
-};
-
 export const paginated = async (
   page = 1,
   pageSize = 10,
-  sorting: SortingState = [],
+  sortField?: string,
+  sortDirection: "asc" | "desc" = "asc",
   brandId?: number,
   categoryId?: number,
 ) => {
-  // Build conditions array first
-  const conditions: SQL<unknown>[] = []
+  try {
+    // Build conditions array first
+    const conditions: SQL<unknown>[] = [];
 
-  if (brandId !== undefined && brandId !== 0) {
-    conditions.push(eq(ProductsTable.brandId, brandId))
+    if (brandId !== undefined && brandId !== 0) {
+      conditions.push(eq(ProductsTable.brandId, brandId));
+    }
+
+    if (categoryId !== undefined && categoryId !== 0) {
+      conditions.push(eq(ProductsTable.categoryId, categoryId));
+    }
+
+    // Build the order by condition
+    let orderBy;
+    if (sortField === "price") {
+      orderBy = sortDirection === "asc" ? asc(ProductsTable.price) : desc(ProductsTable.price);
+    } else if (sortField === "stock") {
+      orderBy = sortDirection === "asc" ? asc(ProductsTable.stock) : desc(ProductsTable.stock);
+    } else {
+      orderBy = desc(ProductsTable.createdAt); // Default sort
+    }
+
+    // Get total count with the same conditions
+    const totalCountResult = await db
+      .select({
+        count: sql<number>`count(*)`,
+      })
+      .from(ProductsTable)
+      .where(conditions.length > 0 ? and(...conditions) : undefined);
+
+    const totalCount = totalCountResult[0]?.count || 0;
+
+    // Get paginated products
+    const products = await db.query.ProductsTable.findMany({
+      offset: (page - 1) * pageSize,
+      limit: pageSize,
+      orderBy: orderBy,
+      where: conditions.length > 0 ? and(...conditions) : undefined,
+      with: {
+        images: true,
+      },
+    });
+
+    // Return both the products and the total count
+    return {
+      products,
+      totalCount,
+    };
+  } catch (e) {
+    console.error("Error in paginated products:", e);
+    return {
+      products: [],
+      totalCount: 0,
+    };
   }
-
-  if (categoryId !== undefined && categoryId !== 0) {
-    conditions.push(eq(ProductsTable.categoryId, categoryId))
-  }
-
-  // Get total count first with the same conditions
-  const totalCountResult = await db
-    .select({
-      count: sql<number>`count(*)`,
-    })
-    .from(ProductsTable)
-    .where(conditions.length > 0 ? and(...conditions) : undefined)
-
-  const totalCount = totalCountResult[0]?.count || 0
-
-  // Build order by conditions
-  const orderByConditions: SQL<unknown>[] = sorting
-    .filter((sort) => sort.id === "price" || sort.id === "stock")
-    .map((sort) => {
-      if (sort.id === "price") {
-        return sort.desc ? desc(ProductsTable.price) : asc(ProductsTable.price)
-      } else if (sort.id === "stock") {
-        return sort.desc ? desc(ProductsTable.stock) : asc(ProductsTable.stock)
-      }
-      return null
-    })
-    .filter((condition): condition is SQL<unknown> => condition !== null)
-
-  // Add a default sort if none specified
-  if (orderByConditions.length === 0) {
-    orderByConditions.push(asc(ProductsTable.id)) // Default sort by ID
-  }
-
-  // Get paginated products
-  const products = await db.query.ProductsTable.findMany({
-    offset: (page - 1) * pageSize,
-    limit: pageSize,
-    orderBy: orderByConditions,
-    where: conditions.length > 0 ? and(...conditions) : undefined,
-    with: {
-      images: true,
-    },
-  })
-
-  // Return both the products and the total count
-  return {
-    products,
-    totalCount,
-  }
-}
+};

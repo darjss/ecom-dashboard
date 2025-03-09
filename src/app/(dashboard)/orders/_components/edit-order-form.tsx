@@ -29,7 +29,7 @@ import { getCustomerByPhone } from "@/server/actions/customer";
 import type { UseFormReturn } from "react-hook-form";
 import SelectProductForm from "./select-product-form";
 
-const EditOrderForm = ({ products, order }: { products: ProductType[], order:addOrderType }) => {
+const EditOrderForm = ({  order }: {  order:addOrderType }) => {
   const [action] = useAction(addOrder);
   const [searchByPhone, isSearchByLoading] = useAction(getCustomerByPhone);
 
@@ -49,7 +49,8 @@ const EditOrderForm = ({ products, order }: { products: ProductType[], order:add
     },
     [],
   );
-
+  console.log(order);
+  // console.log(products)
   return (
     <div className="mx-auto w-full max-w-3xl bg-background p-4 sm:p-6 md:max-w-4xl lg:max-w-5xl">
       <FormWrapper
@@ -217,7 +218,7 @@ const EditOrderForm = ({ products, order }: { products: ProductType[], order:add
                   <h3 className="mb-4 text-lg font-semibold text-primary">
                     Products
                   </h3>
-                  <SelectProductForm products={products} form={form} />
+                  <SelectProductForm  form={form} />
                 </CardContent>
               </Card>
 

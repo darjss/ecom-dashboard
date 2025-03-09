@@ -12,7 +12,7 @@ import {
 } from "../db/schema";
 import { generateOrderNumber } from "@/lib/utils";
 import { createPayment } from "./payment";
-import { and, eq, like, sql } from "drizzle-orm";
+import { and, eq, like, sql, desc, asc } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { unstable_cacheTag as cacheTag } from "next/cache";
 import { updateStock } from "./product";
@@ -408,6 +408,8 @@ export const getPaginatedOrders = async (
   pageSize = PRODUCT_PER_PAGE,
   paymentStatus?: PaymentStatusType,
   orderStatus?: OrderStatusType,
+  sortField?: string,
+  sortDirection: "asc" | "desc" = "asc",
 ) => {
   console.log(
     "Fetching paginated orders with page:",
@@ -417,10 +419,20 @@ export const getPaginatedOrders = async (
   );
 
   try {
+    // Build the order by condition
+    let orderBy;
+    if (sortField === "total") {
+      orderBy = sortDirection === "asc" ? asc(OrdersTable.total) : desc(OrdersTable.total);
+    } else if (sortField === "createdAt") {
+      orderBy = sortDirection === "asc" ? asc(OrdersTable.createdAt) : desc(OrdersTable.createdAt);
+    } else {
+      orderBy = desc(OrdersTable.createdAt); // Default sort
+    }
+
     const result = await db.query.OrdersTable.findMany({
       offset: (page - 1) * pageSize,
       limit: pageSize,
-      orderBy: OrdersTable.createdAt,
+      orderBy: orderBy,
       where:
         orderStatus === undefined
           ? undefined

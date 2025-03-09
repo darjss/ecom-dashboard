@@ -5,11 +5,10 @@
 
 /** @type {import("next").NextConfig} */
 const config = {
-  // serverExternalPackages: ["bun:sqlite"],
   experimental: {
     ppr: "incremental",
     dynamicIO: true,
-    // reactCompiler: true,b
+    // reactCompiler: true,
     useCache: true,
     cacheLife: {
       brandCategory: {

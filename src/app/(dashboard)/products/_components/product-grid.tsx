@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { SortingState } from "@tanstack/react-table";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { Search, PlusCircle, ArrowUpDown, Edit, Package } from "lucide-react";
 
@@ -193,7 +192,12 @@ const ProductGrid = ({
   initialTotalProduct: number;
 }) => {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sortField, setSortField] = useQueryState("sort", {
+    defaultValue: "",
+  });
+  const [sortDirection, setSortDirection] = useQueryState("dir", {
+    defaultValue: "asc",
+  });
   const [searchTerm, setSearchTerm] = useQueryState("query", {
     defaultValue: "",
   });
@@ -209,16 +213,31 @@ const ProductGrid = ({
     searchProductByNameForTable,
   );
 
-  const { data, isLoading } = useQuery<{
-    products: ProductType[];
-    totalCount: number;
-  }>(
-    ["products" + page + brandFilter + categoryFilter],
+  const handleSort = async (field: string) => {
+    if (sortField === field) {
+      await setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      await setSortField(field);
+      await setSortDirection("asc");
+    }
+    await setPage(1);
+  };
+
+  const { data, isLoading } = useQuery(
+    [
+      "products" +
+        page +
+        brandFilter +
+        categoryFilter +
+        sortField +
+        sortDirection,
+    ],
     () =>
       paginated(
         page,
         PRODUCT_PER_PAGE,
-        sorting,
+        sortField || undefined,
+        sortDirection as "asc" | "desc",
         brandFilter === 0 ? undefined : brandFilter,
         categoryFilter === 0 ? undefined : categoryFilter,
       ),
@@ -329,32 +348,28 @@ const ProductGrid = ({
               <Button
                 variant="default"
                 size="sm"
-                onClick={() => {
-                  const newSorting = sorting.find((s) => s.id === "price")
-                    ? sorting.map((s) =>
-                        s.id === "price" ? { ...s, desc: !s.desc } : s,
-                      )
-                    : [...sorting, { id: "price", desc: false }];
-                  setSorting(newSorting);
-                }}
+                onClick={() => handleSort("price")}
                 className="h-9 px-3"
               >
-                Price <ArrowUpDown className="ml-1 h-4 w-4" />
+                Price{" "}
+                <ArrowUpDown
+                  className={`ml-1 h-4 w-4 ${
+                    sortField === "price" ? "opacity-100" : "opacity-50"
+                  }`}
+                />
               </Button>
               <Button
                 variant="default"
                 size="sm"
-                onClick={() => {
-                  const newSorting = sorting.find((s) => s.id === "stock")
-                    ? sorting.map((s) =>
-                        s.id === "stock" ? { ...s, desc: !s.desc } : s,
-                      )
-                    : [...sorting, { id: "stock", desc: false }];
-                  setSorting(newSorting);
-                }}
+                onClick={() => handleSort("stock")}
                 className="h-9 px-3"
               >
-                Stock <ArrowUpDown className="ml-1 h-4 w-4" />
+                Stock{" "}
+                <ArrowUpDown
+                  className={`ml-1 h-4 w-4 ${
+                    sortField === "stock" ? "opacity-100" : "opacity-50"
+                  }`}
+                />
               </Button>
             </div>
           </div>
