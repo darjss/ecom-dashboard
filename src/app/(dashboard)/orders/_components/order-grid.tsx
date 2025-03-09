@@ -127,9 +127,6 @@ const OrderGrid = ({
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Orders</CardTitle>
-      </CardHeader>
       <CardContent className="space-y-6 p-2 pb-20 sm:p-6">
         <div className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">

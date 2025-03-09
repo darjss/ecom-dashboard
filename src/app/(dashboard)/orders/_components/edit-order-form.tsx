@@ -50,7 +50,6 @@ const EditOrderForm = ({  order }: {  order:addOrderType }) => {
     [],
   );
   console.log(order);
-  // console.log(products)
   return (
     <div className="mx-auto w-full max-w-3xl bg-background p-4 sm:p-6 md:max-w-4xl lg:max-w-5xl">
       <FormWrapper

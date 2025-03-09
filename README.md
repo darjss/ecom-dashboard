@@ -22,9 +22,9 @@
     - [x] delete order
     - [ ] add to sales table/record sale
     - [x] add to payment table
-    - [] order table pagination
+    - [x] order table pagination
     - [ ] detailed order view modal
-    - [ ] order table filter sort 
+    - [x] order table filter sort 
     - [ ] payment management
     - [x] add payment
     - [ ] edit payment

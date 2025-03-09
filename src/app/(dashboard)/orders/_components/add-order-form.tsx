@@ -17,7 +17,7 @@ import { getCustomerByPhone } from "@/server/actions/customer"
 import type { UseFormReturn } from "react-hook-form"
 import SelectProductForm from "./select-product-form"
 
-const AddOrderForm = ({ products }: { products: ProductType[] }) => {
+const AddOrderForm = () => {
   const [action] = useAction(addOrder)
   const [searchByPhone, isSearchByLoading] = useAction(getCustomerByPhone);
 
