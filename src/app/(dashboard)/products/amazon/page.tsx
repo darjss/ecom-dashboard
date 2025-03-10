@@ -40,12 +40,14 @@ function AmazonProductSearch() {
 
   const handleSearch = async () => {
     setLoading(true);
-    setSelectedProduct(null);     try {
+    setSelectedProduct(null); // Clear previous selection
+    try {
       const results = await searchAmazonProducts(searchTerm);
       setProducts(results);
     } catch (error) {
       console.error('Error searching:', error);
-          } finally {
+      // Optionally show a user-friendly error message using a toast or alert
+    } finally {
       setLoading(false);
     }
   };
@@ -57,7 +59,8 @@ function AmazonProductSearch() {
       setSelectedProduct(details);
     } catch (error) {
       console.error('Error fetching details:', error);
-          } finally {
+      // Optionally show a user-friendly error message
+    } finally {
       setLoadingDetails(false);
     }
   };
@@ -80,7 +83,8 @@ function AmazonProductSearch() {
             <>
               <svg
                 className="animate-spin h-5 w-5 mr-3"
-                xmlns="http:                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
                 viewBox="0 0 24 24"
               >
                 <circle
