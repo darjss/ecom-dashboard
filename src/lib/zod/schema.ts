@@ -79,6 +79,19 @@ export const addPurchaseSchema = z.object({
 
 export const editPurchaseSchema = addPurchaseSchema;
 
+export const addBrandSchema = z.object({
+  id: z.number().int().positive().finite().optional(),
+  name: z
+    .string()
+    .min(1, {
+      message: "Brand name is too short",
+    })
+    .max(256),
+  logoUrl: z.string().url().optional().nullable(),
+});
+
+export type addBrandType = z.infer<typeof addBrandSchema>;
+
 export type addProductType = z.infer<typeof addProductSchema>;
 export type addImageType = addProductType["images"];
 export type addOrderType = z.infer<typeof addOrderSchema>;

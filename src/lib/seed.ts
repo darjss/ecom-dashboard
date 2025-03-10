@@ -11,19 +11,19 @@ import { db } from "@/server/db";
 
 // Sample data for brands
 const brandsData: BrandInsertType[] = [
-  { name: "NOW Foods", logoUrl: "https://example.com/now_foods_logo.jpg" },
+  { name: "NOW Foods", logoUrl: "https://picsum.photos/600/400?random=26" },
   {
     name: "Nature's Best",
-    logoUrl: "https://example.com/natures_best_logo.jpg",
+    logoUrl: "https://picsum.photos/600/400?random=27",
   },
   {
     name: "Microingredients",
-    logoUrl: "https://example.com/microingredients_logo.jpg",
+    logoUrl: "https://picsum.photos/600/400?random=28",
   },
-  { name: "NutraCost", logoUrl: "https://example.com/nutracost_logo.jpg" },
+  { name: "NutraCost", logoUrl: "https://picsum.photos/600/400?random=28" },
   {
     name: "Doctor's Best",
-    logoUrl: "https://example.com/doctors_best_logo.jpg",
+    logoUrl: "https://picsum.photos/600/400?random=29",
   },
 ];
 
