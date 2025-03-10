@@ -7,6 +7,7 @@ import {
   FolderTree,
   Users,
   Settings,
+  CreditCard,
 } from "lucide-react";
 
 export const status = ["active", "draft", "out_of_stock"] as const;
@@ -45,6 +46,11 @@ export const sideNavitems = [
     title: "Analytics",
     url: "/analytics",
     icon: BarChart2, // Bar chart for analytics
+  },
+  {
+    title: "Purchases", 
+    url: "/purchases",
+    icon: CreditCard, // Credit card icon for purchases
   },
   {
     title: "Brands",

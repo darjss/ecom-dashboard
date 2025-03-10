@@ -341,6 +341,12 @@ export const productImagesRelations = relations(
     }),
   }),
 );
+export const purchaseRelations = relations(PurchasesTable, ({ one }) => ({
+  product: one(ProductsTable, {
+    fields: [PurchasesTable.productId],
+    references: [ProductsTable.id],
+  }),
+}));
 
 export type UserSelectType = InferSelectModel<typeof UsersTable>;
 export type CustomerSelectType = InferSelectModel<typeof CustomersTable>;
