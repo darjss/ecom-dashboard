@@ -8,6 +8,13 @@
       "when": 1741520642104,
       "tag": "0000_mute_thing",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1741582533243,
+      "tag": "0001_mature_white_tiger",
+      "breakpoints": true
     }
   ]
 }

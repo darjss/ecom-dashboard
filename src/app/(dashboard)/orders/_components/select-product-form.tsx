@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useFieldArray, useWatch, type UseFormReturn } from "react-hook-form";
 import {
   MinusIcon,
@@ -12,24 +12,37 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { ProductType } from "@/lib/types";
+import type { ProductSearchForOrderType, ProductType } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
-import { getAllProducts } from "@/server/actions/product";
+import { getAllProducts, searchProductByNameForOrder } from "@/server/actions/product";
 import { toast } from "sonner";
+import { debounce } from "lodash";
 
 const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["products"],
-    queryFn: () => getAllProducts(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+  // Two separate states: one for input display, one for the actual search query
+  const [inputValue, setInputValue] = useState("");
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState("");
+  
+  // Create a debounced search function that updates the search value for the query
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setDebouncedSearchValue(value);
+    }, 500),
+    []
+  );
+
+  const { data, isFetching, isError, error } = useQuery({
+    queryKey: ["productSearch", debouncedSearchValue],
+    queryFn: () => searchProductByNameForOrder(debouncedSearchValue),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    enabled: !!debouncedSearchValue, // Only run query when there's a search value
   });
 
   const { fields, append, remove, update } = useFieldArray({
     control: form.control,
     name: "products",
   });
-  const [results, setResults] = useState<ProductType[]>([]);
-  const [searchValue, setSearchValue] = useState("");
 
   const handleQuantityChange = (index: number, type: "add" | "minus") => {
     const currentValue = form.getValues(`products.${index}.quantity`);
@@ -38,65 +51,35 @@ const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
     update(index, { ...fields[index], quantity: newQuantity });
   };
 
-  const handleSearch = (value: string) => {
-    setSearchValue(value);
-    if (!data) return;
-
-    const searchLower = value.toLowerCase();
-    setResults(
-      searchLower === ""
-        ? []
-        : data.filter((product) =>
-            product.name.toLowerCase().includes(searchLower),
-          ),
-    );
-  };
-
-  const handleSelectProduct = (product: ProductType) => {
-    // Check if product is already selected
+  const handleSelectProduct = (product: ProductSearchForOrderType) => {
     const existingIndex = fields.findIndex(
-      (field: any) => field.productId === product.id,
+      (field: any) => field.productId === product.id
     );
 
     if (existingIndex >= 0) {
-      // Increment quantity if already selected
       handleQuantityChange(existingIndex, "add");
     } else {
-      // Add new product
       append({
         productId: product.id,
         quantity: 1,
         price: product.price,
         name: product.name,
         imageUrl: product.images[0]?.url,
-        stock: product.stock
+        stock: product.stock,
       });
     }
-
-    // Clear search results
-    setResults([]);
-    setSearchValue("");
+    // Clear both states when a product is selected
+    setInputValue("");
+    setDebouncedSearchValue("");
   };
 
-  // Handle loading state
-  if (isLoading) {
-    return (
-      <div className="flex h-40 items-center justify-center rounded-lg bg-white p-4 shadow-md">
-        <Loader2Icon className="mr-2 h-6 w-6 animate-spin text-primary" />
-        <p>Loading products...</p>
-      </div>
-    );
-  }
-
-  // Handle error state
-  if (isError) {
-    return toast("Error fetching product info add new products");
-  }
-
-  // Handle no data
-  if (!data || data.length === 0) {
-    return toast("Error fetching product info add new products");
-  }
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Update the input value immediately for user feedback
+    setInputValue(value);
+    // Debounce the actual search query
+    debouncedSearch(value);
+  };
 
   return (
     <div className="relative space-y-4 rounded-lg bg-white p-4 shadow-md sm:p-6">
@@ -106,13 +89,19 @@ const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
           <Input
             placeholder="Search products..."
             className="w-full rounded-md border-2 border-gray-200 py-2 pl-10 pr-4 transition duration-200 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
-            value={searchValue}
-            onChange={(e) => handleSearch(e.target.value)}
+            value={inputValue}
+            onChange={handleSearchChange}
           />
         </div>
-        {results.length > 0 && (
+        {isFetching && (
+          <div className="mt-2 flex items-center text-sm text-gray-500">
+            <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+            Searching...
+          </div>
+        )}
+        { data!==undefined&&data?.length > 0 && inputValue && (
           <div className="absolute left-0 right-0 z-[100] mt-1 max-h-[400px] w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
-            {results.map((product) => (
+            {data.map((product) => (
               <button
                 key={product.id}
                 className="flex w-full items-center space-x-2 px-3 py-2 text-left transition duration-200 hover:bg-gray-100 sm:space-x-3 sm:px-4"
@@ -138,6 +127,11 @@ const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
                 </div>
               </button>
             ))}
+          </div>
+        )}
+        {data?.length === 0 && inputValue && !isFetching && (
+          <div className="absolute left-0 right-0 z-[100] mt-1 w-full rounded-md border border-gray-200 bg-white p-3 text-center shadow-lg">
+            No products found matching "{inputValue}"
           </div>
         )}
       </div>
@@ -195,7 +189,7 @@ const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
                         size="icon"
                         onClick={() => handleQuantityChange(index, "add")}
                         className="h-7 w-7 sm:h-8 sm:w-8"
-                        disabled={product.quantity > product.stock}
+                        disabled={product.quantity >= product.stock}
                       >
                         <PlusIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>

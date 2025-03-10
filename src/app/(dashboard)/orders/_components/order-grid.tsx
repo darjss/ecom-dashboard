@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { Search, PlusCircle, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -30,14 +29,9 @@ import { useQuery } from "@tanstack/react-query";
 import { DataPagination } from "@/components/data-pagination";
 import SubmitButton from "@/components/submit-button";
 import OrderCard from "./order-card";
+import OrderSkeleton from "./order-skeleton";
 
-const OrderGrid = ({
-  initialOrders,
-  initialTotalOrder,
-}: {
-  initialOrders: OrderType[];
-  initialTotalOrder: number;
-}) => {
+const OrderGrid = () => {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [sortField, setSortField] = useQueryState("sort", {
     defaultValue: "",
@@ -93,15 +87,20 @@ const OrderGrid = ({
         total: result.total || 0,
       };
     },
-    {
-      initialData: {
-        orders: initialOrders,
-        total: initialTotalOrder,
-      },
-    },
   );
 
-  if (!data) throw new Error("Orders Not Found");
+  if (!data)
+    return (
+      <Card>
+        <CardContent className="space-y-6 p-2 pb-20 sm:p-6">
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <OrderSkeleton key={index} />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
 
   const { orders, total } = data;
 
@@ -217,23 +216,10 @@ const OrderGrid = ({
           </div>
         </div>
 
-        {isLoading ? (
+        {isLoading || data===undefined ? (
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, index) => (
-              <Card key={index} className="overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="flex flex-row">
-                    <div className="w-full flex-1 space-y-2 p-4">
-                      <div className="h-4 w-3/4 animate-pulse rounded bg-muted/50" />
-                      <div className="h-3 w-1/2 animate-pulse rounded bg-muted/50" />
-                      <div className="flex items-center justify-between pt-2">
-                        <div className="h-5 w-16 animate-pulse rounded bg-muted/50" />
-                        <div className="h-7 w-24 animate-pulse rounded bg-muted/50" />
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <OrderSkeleton key={index} />
             ))}
           </div>
         ) : orders.length === 0 ? (

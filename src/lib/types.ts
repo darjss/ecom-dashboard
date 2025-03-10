@@ -1,6 +1,6 @@
 import { getAllBrands } from "@/server/actions/brand";
 import { getAllCategories } from "@/server/actions/category";
-import { getProductById } from "@/server/actions/product";
+import { getProductById, searchProductByNameForOrder } from "@/server/actions/product";
 import { orderStatus, paymentProvider, paymentStatus } from "./constants";
 import { ResultSet } from "@libsql/client";
 import { SQLiteTransaction } from "drizzle-orm/sqlite-core";
@@ -12,6 +12,7 @@ export type ProductType = Exclude<
   Exclude<Awaited<ReturnType<typeof getProductById>>, null>,
   { message: string; error: string }
 >;
+export type ProductSearchForOrderType=Awaited<ReturnType<typeof searchProductByNameForOrder>>[number]
 export type OrderType = Exclude<
   Exclude<Awaited<ReturnType<typeof getOrderById>>, null>,
   { message: string; error: string }

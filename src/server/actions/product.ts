@@ -1,15 +1,8 @@
 "use server";
 import "server-only";
 import { db } from "@/server/db";
-import { ProductsTable } from "../db/schema";
-import {
-  and,
-  asc,
-  desc,
-  eq, SQL,
-  sql,
-  like
-} from "drizzle-orm";
+import { ProductImagesTable, ProductsTable } from "../db/schema";
+import { and, asc, desc, eq, SQL, sql, like } from "drizzle-orm";
 import { addProductType } from "@/lib/zod/schema";
 import { z } from "zod";
 import { revalidateTag } from "next/cache";
@@ -18,27 +11,37 @@ import { updateImage, uploadImagesFromUrl } from "./image";
 import { unstable_cacheTag as cacheTag } from "next/cache";
 import { TransactionType } from "@/lib/types";
 
-export const searchProductByNameForTable = async (searchTerm: string) => {
-  console.log(searchTerm);
+export const searchProductByName = async (searchTerm: string) => {
   const products = await db.query.ProductsTable.findMany({
     where: like(ProductsTable.name, `%${searchTerm}%`),
+    limit: 3,
     with: {
-      images: true
+      images:true,
     }
-  });
-  console.log(products);
+  })
   return products;
 };
 
-export const searchProductByName = async (searchTerm: string) => {
-  const product = await db.query.ProductsTable.findMany({
+export const searchProductByNameForOrder = async (searchTerm: string) => {
+  const products = await db.query.ProductsTable.findMany({
+    where: like(ProductsTable.name, `%${searchTerm}%`),
+    limit: 3,
     columns: {
       id: true,
       name: true,
+      price: true,
+      stock: true,
     },
-    where: like(ProductsTable.name, `%${searchTerm}%`)
+    with: {
+      images: {
+        columns: {
+          url: true,
+        },
+        where: eq(ProductImagesTable.isPrimary, true),
+      },
+    },
   });
-  return product;
+  return products;
 };
 
 export const addProduct = async (product: addProductType) => {
@@ -99,7 +102,7 @@ export const addProduct = async (product: addProductType) => {
     // redirect("/products");
     return { message: "Added product Successfully" };
   } catch (e) {
-    console.log(e); 
+    console.log(e);
     return { message: "Operation failed", error: e };
   }
 };
@@ -231,7 +234,7 @@ export const getAllProducts = async () => {
   return products;
 };
 
-export const paginated = async (
+export const getPaginatedProducts = async (
   page = 1,
   pageSize = 10,
   sortField?: string,
@@ -254,9 +257,15 @@ export const paginated = async (
     // Build the order by condition
     let orderBy;
     if (sortField === "price") {
-      orderBy = sortDirection === "asc" ? asc(ProductsTable.price) : desc(ProductsTable.price);
+      orderBy =
+        sortDirection === "asc"
+          ? asc(ProductsTable.price)
+          : desc(ProductsTable.price);
     } else if (sortField === "stock") {
-      orderBy = sortDirection === "asc" ? asc(ProductsTable.stock) : desc(ProductsTable.stock);
+      orderBy =
+        sortDirection === "asc"
+          ? asc(ProductsTable.stock)
+          : desc(ProductsTable.stock);
     } else {
       orderBy = desc(ProductsTable.createdAt); // Default sort
     }
