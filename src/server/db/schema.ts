@@ -7,11 +7,14 @@ import {
   primaryKey,
 } from "drizzle-orm/sqlite-core";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { orderStatus, paymentProvider, paymentStatus, status } from "@/lib/constants";
+import {
+  orderStatus,
+  paymentProvider,
+  paymentStatus,
+  status,
+} from "@/lib/constants";
 
-export const createTable = sqliteTableCreator(
-  (name) => `ecom_vit_${name}`,
-);
+export const createTable = sqliteTableCreator((name) => `ecom_vit_${name}`);
 
 // Users (Admin) Table
 export const UsersTable = createTable(
@@ -226,9 +229,7 @@ export const CartsTable = createTable(
       () => new Date(),
     ),
   },
-  (table) => [
-    index("cart_customer_idx").on(table.customerId),
-  ],
+  (table) => [index("cart_customer_idx").on(table.customerId)],
 );
 
 // Cart Items Table
@@ -289,7 +290,6 @@ export const PurchasesTable = createTable(
     productId: int("product_id", { mode: "number" })
       .references(() => ProductsTable.id)
       .notNull(),
-
     quantityPurchased: int("quantity_purchased", { mode: "number" }).notNull(),
     unitCost: int("unit_cost", { mode: "number" }).notNull(),
     createdAt: int("created_at", { mode: "timestamp" })
@@ -304,38 +304,43 @@ export const PurchasesTable = createTable(
 
 export const ordersRelations = relations(OrdersTable, ({ many }) => ({
   orderDetails: many(OrderDetailsTable),
-  payments: many(PaymentsTable)
+  payments: many(PaymentsTable),
 }));
 
 export const paymentsRelations = relations(PaymentsTable, ({ one }) => ({
   order: one(OrdersTable, {
     fields: [PaymentsTable.orderId],
     references: [OrdersTable.id],
-  })
+  }),
 }));
 
-export const orderDetailsRelations = relations(OrderDetailsTable, ({ one }) => ({
-  order: one(OrdersTable, {
-    fields: [OrderDetailsTable.orderId],
-    references: [OrdersTable.id],
+export const orderDetailsRelations = relations(
+  OrderDetailsTable,
+  ({ one }) => ({
+    order: one(OrdersTable, {
+      fields: [OrderDetailsTable.orderId],
+      references: [OrdersTable.id],
+    }),
+    product: one(ProductsTable, {
+      fields: [OrderDetailsTable.productId],
+      references: [ProductsTable.id],
+    }),
   }),
-  product: one(ProductsTable, {
-    fields: [OrderDetailsTable.productId],
-    references: [ProductsTable.id],
-  }),
-}));
+);
 
 export const productsRelations = relations(ProductsTable, ({ many }) => ({
   images: many(ProductImagesTable),
 }));
 
-export const productImagesRelations = relations(ProductImagesTable, ({ one }) => ({
-  product: one(ProductsTable, {
-    fields: [ProductImagesTable.productId],
-    references: [ProductsTable.id],
+export const productImagesRelations = relations(
+  ProductImagesTable,
+  ({ one }) => ({
+    product: one(ProductsTable, {
+      fields: [ProductImagesTable.productId],
+      references: [ProductsTable.id],
+    }),
   }),
-}));
-
+);
 
 export type UserSelectType = InferSelectModel<typeof UsersTable>;
 export type CustomerSelectType = InferSelectModel<typeof CustomersTable>;

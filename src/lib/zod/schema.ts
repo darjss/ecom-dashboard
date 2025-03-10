@@ -11,7 +11,14 @@ const productSchema = z.object({
   quantity: z.number().int().positive().finite(),
   price: z.number().int().min(20000),
   name: z.string().optional(),
-  imageUrl:z.string().url().optional()
+  imageUrl: z.string().url().optional(),
+});
+
+const purchaseProductSchema = z.object({
+  productId: z.number().int().positive().finite(),
+  quantity: z.number().int().positive().finite(),
+  unitCost: z.number().int().positive().finite(),
+  name: z.string().optional(),
 });
 
 export const addProductSchema = z.object({
@@ -63,8 +70,20 @@ export const addOrderSchema = z.object({
   products: z.array(productSchema),
 });
 
+export const addPurchaseSchema = z.object({
+  id: z.number().int().positive().finite().optional(),
+  products: z.array(purchaseProductSchema).min(1, {
+    message: "At least one product must be selected",
+  }),
+});
+
+export const editPurchaseSchema = addPurchaseSchema;
+
 export type addProductType = z.infer<typeof addProductSchema>;
 export type addImageType = addProductType["images"];
 export type addOrderType = z.infer<typeof addOrderSchema>;
-export type addOrderProdyctType = z.infer<typeof productSchema>;
-export type imageType=z.infer<typeof imageSchema>;
+export type addOrderProductType = z.infer<typeof productSchema>;
+export type imageType = z.infer<typeof imageSchema>;
+export type addPurchaseType = z.infer<typeof addPurchaseSchema>;
+export type editPurchaseType = z.infer<typeof editPurchaseSchema>;
+export type addPurchaseProductType = z.infer<typeof purchaseProductSchema>;
