@@ -12,7 +12,7 @@ import {
 } from "../db/schema";
 import { generateOrderNumber } from "@/lib/utils";
 import { createPayment } from "./payment";
-import { and, eq, like, sql, desc, asc } from "drizzle-orm";
+import { and, eq, like, sql, desc, asc, or } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { unstable_cacheTag as cacheTag } from "next/cache";
 import { updateStock } from "./product";
@@ -237,10 +237,14 @@ export const deleteOrder = async (id: number) => {
   }
 };
 
-export const searchOrderByNumber = async (searchTerm: string) => {
+export const searchOrder = async (searchTerm: string) => {
   try {
     const orders = await db.query.OrdersTable.findMany({
-      where: like(OrdersTable.orderNumber, `%${searchTerm}%`),
+      where: or(
+        like(OrdersTable.orderNumber, `%${searchTerm}%`),
+        like(OrdersTable.address, `%${searchTerm}%`),
+        like(OrdersTable.customerPhone, `%${searchTerm}%`),
+      ),
       with: {
         orderDetails: {
           columns: {

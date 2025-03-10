@@ -7,6 +7,7 @@ import {
   MapPin,
   CheckCircle,
   Info,
+  Copy,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -22,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 const OrderCard = ({ order }: { order: OrderType }) => {
   const getStatusColor = (status: string) => {
@@ -137,6 +139,10 @@ const OrderCard = ({ order }: { order: OrderType }) => {
             <span className="truncate text-sm font-medium">
               {order.address || "No address provided"}
             </span>
+            <Button size={"icon"} className="w-7 h-7" variant={"noShadow"} onClick={async ()=>{
+              await navigator.clipboard.writeText(order.address)
+              toast("Address Copied")
+            }}>  <Copy className="w-4 h-4"/></Button>
           </div>
         </div>
 

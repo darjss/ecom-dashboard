@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { Search, PlusCircle, ArrowUpDown, Loader2 } from "lucide-react";
+import { Search, PlusCircle, ArrowUpDown, Loader2, X, RotateCcw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
@@ -54,15 +54,6 @@ const ProductGrid = ({
     "category",
     parseAsInteger.withDefault(0),
   );
-  const [searchAction, isSearchPending] = useAction(searchProductByName);
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-  };
-
-  const handleSearch = async () => {
-    await setSearchTerm(inputValue);
-  };
 
   const handleSort = async (field: string) => {
     if (sortField === field) {
@@ -124,9 +115,22 @@ const ProductGrid = ({
     await setPage(1);
   }
 
-  const updateStock = (id: number, newStock: number) => {
-    console.log(`Updating stock for product ${id} to ${newStock}`);
-  };
+  async function handleClearSearch() {
+    setInputValue("");
+    await setSearchTerm("");
+  }
+
+  async function handleResetFilters() {
+    setInputValue("");
+    await setSearchTerm("");
+    await setBrandFilter(0);
+    await setCategoryFilter(0);
+    await setSortField("");
+    await setSortDirection("asc");
+    await setPage(1);
+  }
+
+  const hasActiveFilters = searchTerm !== "" || brandFilter !== 0 || categoryFilter !== 0 || sortField !== "";
 
   return (
     <Card className="w-full">
@@ -137,20 +141,38 @@ const ProductGrid = ({
               <Input
                 placeholder="Search products..."
                 value={inputValue}
-                onChange={handleSearchChange}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setInputValue(e.target.value);
+                }}
                 className="h-9"
               />
-              <Button
-                onClick={handleSearch}
-                className="h-9 w-9 shrink-0 p-0"
-                disabled={isLoadingData}
-              >
-                {isLoadingData ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Search className="h-4 w-4" />
-                )}
-              </Button>
+              {searchTerm ? (
+                <Button
+                  onClick={handleClearSearch}
+                  className="h-9 w-9 shrink-0 p-0"
+                  disabled={isLoadingData}
+                  size={"icon"}
+                  variant={isLoadingData? "default": "destructive"}
+                >
+                  {isLoadingData ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <X className="h-4 w-4 text-white" />
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={async () => await setSearchTerm(inputValue)}
+                  className="h-9 w-9 shrink-0 p-0"
+                  disabled={isLoadingData || !inputValue.trim()}
+                >
+                  {isLoadingData ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Search className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
             </div>
             <Link href="/products/add">
               <Button size="sm" className="h-9 w-full sm:w-auto">
@@ -235,6 +257,18 @@ const ProductGrid = ({
                   }`}
                 />
               </Button>
+              {hasActiveFilters && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleResetFilters}
+                  className="h-9 px-3"
+                  disabled={isLoadingData}
+                >
+                  <RotateCcw className="mr-1 h-4 w-4" />
+                  Reset
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -256,7 +290,6 @@ const ProductGrid = ({
                   product={product}
                   brands={brands}
                   categories={categories}
-                  onUpdateStock={updateStock}
                 />
               ))}
             </div>

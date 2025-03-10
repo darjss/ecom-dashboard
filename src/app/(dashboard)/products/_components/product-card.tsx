@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import type { BrandType, CategoryType, ProductType } from "@/lib/types";
-import { deleteProduct } from "@/server/actions/product";
+import { deleteProduct, setProductStock } from "@/server/actions/product";
 import withEditForm from "./edit-product-form";
 import RowActions from "./row-actions";
 
@@ -15,14 +15,12 @@ interface ProductCardProps {
   product: ProductType;
   brands: BrandType;
   categories: CategoryType;
-  onUpdateStock: (id: number, newStock: number) => void;
 }
 
 const ProductCard = ({
   product,
   brands,
   categories,
-  onUpdateStock,
 }: ProductCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [stockValue, setStockValue] = useState(product.stock);
@@ -35,7 +33,7 @@ const ProductCard = ({
   const category = categories.find((c) => c.id === product.categoryId);
 
   const handleSave = () => {
-    onUpdateStock(product.id, stockValue);
+    setProductStock(product.id, stockValue);
     setIsEditing(false);
   };
 
@@ -59,24 +57,26 @@ const ProductCard = ({
   };
 
   return (
-    <Card className="overflow-hidden transition-all duration-200 hover:shadow-md">
-      <CardContent className="bg-bg p-4">
+    <Card className="overflow-hidden shadow-sm hover:shadow">
+      <CardContent className="p-0">
         <div className="flex flex-row">
-          {/* Image container - always on left side */}
-          <div className="flex h-24 w-24 shrink-0 items-center justify-center bg-muted/10 p-2">
-            <img
-              src={primaryImage || "/placeholder.jpg"}
-              alt={product.name}
-              className="max-h-full max-w-full object-contain"
-              loading="lazy"
-            />
+          {/* Image container with modest enhancements */}
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center border-r bg-gray-50 p-2 sm:h-24 sm:w-24">
+            <div className="h-full w-full overflow-hidden rounded-md border border-gray-200 bg-white">
+              <img
+                src={primaryImage || "/placeholder.jpg"}
+                alt={product.name}
+                className="h-full w-full object-contain p-1"
+                loading="lazy"
+              />
+            </div>
           </div>
 
           {/* Content container */}
-          <div className="flex flex-1 flex-col p-3 sm:p-4">
-            <div className="mb-1 flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <h3 className="line-clamp-1 text-base font-medium">
+          <div className="flex flex-1 flex-col p-2 sm:p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <h3 className="line-clamp-1 text-sm font-medium sm:text-base">
                   {product.name}
                 </h3>
                 <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
@@ -86,74 +86,72 @@ const ProductCard = ({
                 </div>
               </div>
               <Badge
-                className={`${getStatusColor(product.status)} shrink-0 whitespace-nowrap border text-xs`}
+                className={`${getStatusColor(product.status)} whitespace-nowrap border px-1.5 py-0.5 text-xs`}
               >
                 {product.status.replace("_", " ")}
               </Badge>
             </div>
 
-            <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2">
-              {/* Stock section - now more prominent */}
-              <div className="flex items-center gap-2">
-                <div
-                  className={`flex items-center ${getStockColor(product.stock)}`}
-                >
-                  <Package className="mr-1 h-4 w-4" />
-                  <span className="text-base font-medium">{product.stock}</span>
-                  <span className="ml-1 font-medium">in stock</span>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  ${product.price.toFixed(2)}
-                </div>
+            {/* Price and stock info */}
+            <div className="mt-1 flex items-center gap-3">
+              <div className="font-medium text-gray-900">
+                ${product.price.toFixed(2)}
               </div>
-              <div>
-                {isEditing ? (
-                  <div className="mt-2 flex items-center gap-1 sm:mt-0">
-                    <Input
-                      className="h-7 w-24 text-center"
-                      value={stockValue}
-                      type="number"
-                      min="0"
-                      onChange={(e) => {
-                        const value =
-                          e.target.value === ""
-                            ? 0
-                            : Number.parseInt(e.target.value);
-                        setStockValue(Math.max(0, value));
-                      }}
-                    />
+              <div
+                className={`flex items-center ${getStockColor(product.stock)}`}
+              >
+                <Package className="mr-1 h-3.5 w-3.5" />
+                <span className="text-sm font-medium">{product.stock}</span>
+                <span className="ml-1 text-xs sm:text-sm">in stock</span>
+              </div>
+            </div>
 
-                    <Button
-                      onClick={handleSave}
-                      size="sm"
-                      className="ml-1 h-7 text-xs"
-                    >
-                      Save
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="mt-2 flex gap-4 sm:mt-0">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => setIsEditing(true)}
-                      className="h-7 px-2 text-xs"
-                    >
-                      <Edit className="mr-1 h-3 w-3" />
-                      Edit Stock
-                    </Button>
-                    <RowActions
-                      id={product.id}
-                      renderEditComponent={withEditForm(
-                        product,
-                        categories,
-                        brands,
-                      )}
-                      deleteFunction={deleteProduct}
-                    />
-                  </div>
+            {/* Actions row */}
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+              {isEditing ? (
+                <div className="flex items-center gap-1">
+                  <Input
+                    className="h-7 w-20 text-center text-xs"
+                    value={stockValue}
+                    type="number"
+                    min="0"
+                    onChange={(e) => {
+                      const value =
+                        e.target.value === ""
+                          ? 0
+                          : Number.parseInt(e.target.value);
+                      setStockValue(Math.max(0, value));
+                    }}
+                  />
+                  <Button
+                    onClick={handleSave}
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                  >
+                    Save
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="reverse"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  className="h-7 px-2 text-xs"
+                >
+                  <Edit className="mr-1 h-3 w-3" />
+                  Edit Stock
+                </Button>
+              )}
+
+              <RowActions
+                id={product.id}
+                renderEditComponent={withEditForm(
+                  product,
+                  categories,
+                  brands,
                 )}
-              </div>
+                deleteFunction={deleteProduct}
+              />
             </div>
           </div>
         </div>

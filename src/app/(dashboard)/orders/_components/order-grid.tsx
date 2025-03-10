@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { Search, PlusCircle, ArrowUpDown } from "lucide-react";
+import { Search, PlusCircle, ArrowUpDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,10 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import {
-  getPaginatedOrders,
-  searchOrderByNumber,
-} from "@/server/actions/order";
+import { getPaginatedOrders, searchOrder } from "@/server/actions/order";
 import { PRODUCT_PER_PAGE } from "@/lib/constants";
 import { useAction } from "@/hooks/use-action";
 import type {
@@ -30,6 +27,7 @@ import { DataPagination } from "@/components/data-pagination";
 import SubmitButton from "@/components/submit-button";
 import OrderCard from "./order-card";
 import OrderSkeleton from "./order-skeleton";
+import { useState } from "react";
 
 const OrderGrid = () => {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
@@ -39,24 +37,47 @@ const OrderGrid = () => {
   const [sortDirection, setSortDirection] = useQueryState("dir", {
     defaultValue: "asc",
   });
+  const [inputValue, setInputValue] = useState("");
   const [searchTerm, setSearchTerm] = useQueryState("query", {
     defaultValue: "",
   });
   const [orderStatusFilter, setOrderStatusFilter] = useQueryState("status");
   const [paymentStatusFilter, setPaymentStatusFilter] =
     useQueryState("payment");
-  const [searchAction, isSearchPending] = useAction(searchOrderByNumber);
+  // const [isSearching, setIsSearching] = useState(false);
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isFetching } = useQuery(
     [
       "orders" +
         page +
         orderStatusFilter +
         paymentStatusFilter +
         sortField +
-        sortDirection,
+        sortDirection +
+        searchTerm,
     ],
     async () => {
+      if (searchTerm) {
+        // setIsSearching(true);
+        const searchResult = await searchOrder(searchTerm);
+        if ("message" in searchResult && "error" in searchResult) {
+          throw new Error(`Error fetching orders: ${searchResult.error}`);
+        }
+
+        if (!Array.isArray(searchResult)) {
+          return {
+            orders: [] as OrderType[],
+            total: 0,
+          };
+        }
+
+        return {
+          orders: searchResult as OrderType[],
+          total: searchResult.length || 0,
+        };
+      }
+
+      // setIsSearching(false);
       const result = await getPaginatedOrders(
         page,
         PRODUCT_PER_PAGE,
@@ -86,22 +107,25 @@ const OrderGrid = () => {
         total: result.total || 0,
       };
     },
+    {
+      keepPreviousData: true,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      staleTime: Infinity,
+    },
   );
 
-  if (!data)
-    return (
-      <Card>
-        <CardContent className="space-y-6 p-2 pb-20 sm:p-6">
-          <div className="space-y-4">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <OrderSkeleton key={index} />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
+  async function handleSearch() {
+    await setSearchTerm(inputValue);
+    await setPage(1);
+  }
 
-  const { orders, total } = data;
+  async function clearSearch() {
+    setInputValue("");
+    await setSearchTerm("");
+    await setPage(1);
+  }
 
   async function handlePageChange(newPage: number) {
     await setPage(newPage);
@@ -110,6 +134,12 @@ const OrderGrid = () => {
   async function handleFilterChange(type: "status" | "payment", value: string) {
     if (type === "status") await setOrderStatusFilter(value);
     else await setPaymentStatusFilter(value);
+    await setPage(1);
+  }
+
+  async function resetFilters() {
+    await setOrderStatusFilter(null);
+    await setPaymentStatusFilter(null);
     await setPage(1);
   }
 
@@ -131,20 +161,36 @@ const OrderGrid = () => {
             <div className="flex w-full items-center gap-2">
               <Input
                 placeholder="Search order number..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
                 className="h-9"
+                disabled={isFetching}
               />
-              <SubmitButton
-                onClick={async () => await searchAction(searchTerm)}
-                isPending={isSearchPending}
-                className="h-9 w-9 shrink-0 p-0"
-              >
-                <Search className="h-4 w-4" />
-              </SubmitButton>
+              {searchTerm ? (
+                <SubmitButton
+                  onClick={clearSearch}
+                  isPending={isFetching}
+                  className="h-9 w-9 shrink-0 p-0"
+                  variant="destructive"
+                >
+                  <X className="h-4 w-4 text-black" />
+                </SubmitButton>
+              ) : (
+                <SubmitButton
+                  onClick={handleSearch}
+                  isPending={isFetching}
+                  className="h-9 w-9 shrink-0 p-0"
+                >
+                  <Search className="h-4 w-4" />
+                </SubmitButton>
+              )}
             </div>
             <Link href="/orders/add">
-              <Button size="sm" className="h-9 w-full sm:w-auto">
+              <Button
+                size="sm"
+                className="h-9 w-full sm:w-auto"
+                disabled={isFetching}
+              >
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add
               </Button>
@@ -156,6 +202,7 @@ const OrderGrid = () => {
               <Select
                 value={orderStatusFilter || undefined}
                 onValueChange={(value) => handleFilterChange("status", value)}
+                disabled={isFetching}
               >
                 <SelectTrigger className="h-9 w-full sm:w-[140px]">
                   <SelectValue placeholder="All Statuses" />
@@ -172,6 +219,7 @@ const OrderGrid = () => {
               <Select
                 value={paymentStatusFilter || undefined}
                 onValueChange={(value) => handleFilterChange("payment", value)}
+                disabled={isFetching}
               >
                 <SelectTrigger className="h-9 w-full sm:w-[140px]">
                   <SelectValue placeholder="All Payments" />
@@ -182,6 +230,18 @@ const OrderGrid = () => {
                   <SelectItem value="failed">Failed</SelectItem>
                 </SelectContent>
               </Select>
+
+              {(orderStatusFilter || paymentStatusFilter) && (
+                <Button
+                  variant="reverse"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="h-9"
+                  disabled={isFetching}
+                >
+                  Clear Filters
+                </Button>
+              )}
             </div>
 
             <div className="flex gap-2 sm:ml-auto">
@@ -190,6 +250,7 @@ const OrderGrid = () => {
                 size="sm"
                 onClick={() => handleSort("total")}
                 className="h-9 px-3"
+                disabled={isFetching}
               >
                 Total{" "}
                 <ArrowUpDown
@@ -203,6 +264,7 @@ const OrderGrid = () => {
                 size="sm"
                 onClick={() => handleSort("createdAt")}
                 className="h-9 px-3"
+                disabled={isFetching}
               >
                 Date{" "}
                 <ArrowUpDown
@@ -215,33 +277,46 @@ const OrderGrid = () => {
           </div>
         </div>
 
-        {isLoading || data === undefined ? (
+        {searchTerm && (
+          <div className="flex items-center text-sm text-muted-foreground">
+            <span>
+              Search results for:{" "}
+              <span className="font-medium text-primary">{searchTerm}</span>
+            </span>
+          </div>
+        )}
+
+        {isLoading || isFetching ? (
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, index) => (
               <OrderSkeleton key={index} />
             ))}
           </div>
-        ) : orders.length === 0 ? (
+        ) : !data || data.orders.length === 0 ? (
           <div className="py-8 text-center text-muted-foreground">
-            No orders found
+            {searchTerm
+              ? `No orders found matching "${searchTerm}"`
+              : "No orders found"}
           </div>
         ) : (
           <div className="space-y-4">
-            {orders.map((order: OrderType) => (
+            {data.orders.map((order: OrderType) => (
               <OrderCard key={order.id} order={order} />
             ))}
           </div>
         )}
 
-        <div className="space-y-4">
-          <DataPagination
-            currentPage={page}
-            totalItems={total}
-            itemsPerPage={PRODUCT_PER_PAGE}
-            onPageChange={handlePageChange}
-            isLoading={isLoading}
-          />
-        </div>
+        {data && data.total > 0 && (
+          <div className="space-y-4">
+            <DataPagination
+              currentPage={page}
+              totalItems={data.total}
+              itemsPerPage={PRODUCT_PER_PAGE}
+              onPageChange={handlePageChange}
+              isLoading={isLoading || isFetching}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -10,6 +10,7 @@ import { getAllBrands } from "./brand";
 import { updateImage, uploadImagesFromUrl } from "./image";
 import { unstable_cacheTag as cacheTag } from "next/cache";
 import { TransactionType } from "@/lib/types";
+import { redirect } from "next/navigation";
 
 export const searchProductByName = async (searchTerm: string) => {
   const products = await db.query.ProductsTable.findMany({
@@ -294,4 +295,12 @@ export const getPaginatedProducts = async (
       totalCount: 0,
     };
   }
+};
+export const setProductStock = async (id: number, newStock: number) => {
+  const result = await db
+    .update(ProductsTable)
+    .set({ stock: newStock })
+    .where(eq(ProductsTable.id, id));
+    revalidateTag("products")
+    // redirect("/products")
 };
