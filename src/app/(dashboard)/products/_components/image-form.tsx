@@ -58,18 +58,16 @@ export const AddImageForm = ({
     if (isEdit && fields.length > 0) {
       console.log("this effect is working");
       const lastField = watchedImages[watchedImages.length - 1];
-      // If the last field has content, add an empty one
       if (lastField?.url && isValidUrl(lastField.url)) {
         append({ url: "" });
-      }
-      // If there's no empty field at the end, add one
-      else if (watchedImages.every((img) => img?.url && isValidUrl(img.url))) {
+      } else if (
+        watchedImages.every((img) => img?.url && isValidUrl(img.url))
+      ) {
         append({ url: "" });
       }
     }
   }, [isEdit, fields.length, watchedImages, append]);
 
-  // Handle URL validation and new field appending
   useEffect(() => {
     const lastImage = watchedImages[watchedImages.length - 1];
 
@@ -97,7 +95,6 @@ export const AddImageForm = ({
     if (fields.length > 1) {
       remove(index);
     } else {
-      // If it's the last field, clear the URL instead of removing
       form.setValue(`images.${index}.url`, "");
     }
   };

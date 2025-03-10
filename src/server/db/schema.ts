@@ -16,7 +16,6 @@ import {
 
 export const createTable = sqliteTableCreator((name) => `ecom_vit_${name}`);
 
-// Users (Admin) Table
 export const UsersTable = createTable(
   "user",
   {
@@ -36,7 +35,6 @@ export const UsersTable = createTable(
   ],
 );
 
-// Customers Table
 export const CustomersTable = createTable(
   "customer",
   {
@@ -52,7 +50,6 @@ export const CustomersTable = createTable(
   (table) => [index("phone_idx").on(table.phone)],
 );
 
-// Brands Table
 export const BrandsTable = createTable(
   "brand",
   {
@@ -69,7 +66,6 @@ export const BrandsTable = createTable(
   (table) => [index("brand_name_idx").on(table.name)],
 );
 
-// Categories Table
 export const CategoriesTable = createTable(
   "category",
   {
@@ -85,7 +81,6 @@ export const CategoriesTable = createTable(
   (table) => [index("category_name_idx").on(table.name)],
 );
 
-// Products Table
 export const ProductsTable = createTable(
   "product",
   {
@@ -124,7 +119,6 @@ export const ProductsTable = createTable(
   ],
 );
 
-// Product Images Table
 export const ProductImagesTable = createTable(
   "product_image",
   {
@@ -145,7 +139,6 @@ export const ProductImagesTable = createTable(
   (table) => [index("image_variant_idx").on(table.productId)],
 );
 
-// Orders Table
 export const OrdersTable = createTable(
   "order",
   {
@@ -173,7 +166,6 @@ export const OrdersTable = createTable(
   ],
 );
 
-// Order Details Table
 export const OrderDetailsTable = createTable(
   "order_detail",
   {
@@ -189,7 +181,6 @@ export const OrderDetailsTable = createTable(
   (table) => [index("detail_order_idx").on(table.orderId)],
 );
 
-// Payments Table
 export const PaymentsTable = createTable(
   "payment",
   {
@@ -214,7 +205,6 @@ export const PaymentsTable = createTable(
   ],
 );
 
-// Cart Table
 export const CartsTable = createTable(
   "cart",
   {
@@ -232,7 +222,6 @@ export const CartsTable = createTable(
   (table) => [index("cart_customer_idx").on(table.customerId)],
 );
 
-// Cart Items Table
 export const CartItemsTable = createTable(
   "cart_item",
   {

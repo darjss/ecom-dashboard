@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
-import { toast } from "sonner"; // Import toast directly
-
+import { toast } from "sonner";
 type ServerAction<T extends any[], R = any> = (...args: T) => Promise<R>;
 export type QueryFunction<T extends any[], R = any> = ServerAction<T, R>;
 
@@ -11,17 +10,16 @@ export const useAction = <T extends any[], R = any>(
 
   const action = useCallback(
     async (...args: T): Promise<R> => {
-      setIsLoading(true); 
+      setIsLoading(true);
       try {
         const result = await serverAction(...args);
 
-        // Check if the result is an object and has a `message` or `error` property
         if (result && typeof result === "object") {
           if ("message" in result) {
-            toast.success((result as { message: string }).message); // Show success toast
+            toast.success((result as { message: string }).message);
           }
           if ("error" in result) {
-            toast.error((result as { error: string }).error); // Show error toast
+            toast.error((result as { error: string }).error);
           }
         }
 
@@ -36,5 +34,5 @@ export const useAction = <T extends any[], R = any>(
     [serverAction],
   );
 
-  return [action, isLoading]; 
-}
+  return [action, isLoading];
+};

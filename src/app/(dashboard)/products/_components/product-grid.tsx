@@ -125,9 +125,7 @@ const ProductGrid = ({
   }
 
   const updateStock = (id: number, newStock: number) => {
-    // Implement the stock update logic here
     console.log(`Updating stock for product ${id} to ${newStock}`);
-    // You might want to call an API or update the state here
   };
 
   return (
@@ -243,7 +241,6 @@ const ProductGrid = ({
 
         <div className="space-y-4">
           {isLoadingData ? (
-            // Show loading skeletons
             Array.from({ length: 5 }).map((_, index) => (
               <ProductSkeleton key={index} />
             ))

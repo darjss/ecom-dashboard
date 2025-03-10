@@ -16,9 +16,9 @@ export const searchProductByName = async (searchTerm: string) => {
     where: like(ProductsTable.name, `%${searchTerm}%`),
     limit: 3,
     with: {
-      images:true,
-    }
-  })
+      images: true,
+    },
+  });
   return products;
 };
 
@@ -98,8 +98,6 @@ export const addProduct = async (product: addProductType) => {
     await uploadImagesFromUrl(images);
 
     console.log("Images added successfully");
-    // revalidateTag("products");
-    // redirect("/products");
     return { message: "Added product Successfully" };
   } catch (e) {
     console.log(e);
@@ -174,7 +172,6 @@ export const updateProduct = async (product: addProductType) => {
       .where(eq(ProductsTable.id, product.id));
     updateImage(images, product.id);
     revalidateTag("products");
-    // redirect("/products");
     return { message: "Updated product Successfully" };
   } catch (e) {
     console.log(e);
@@ -207,7 +204,6 @@ export const deleteProduct = async (id: number) => {
       .delete(ProductsTable)
       .where(eq(ProductsTable.id, id));
     revalidateTag("products");
-    // redirect("/products");
     return { message: "Successfully deleted Product" };
   } catch (e) {
     console.log(e);
@@ -243,7 +239,6 @@ export const getPaginatedProducts = async (
   categoryId?: number,
 ) => {
   try {
-    // Build conditions array first
     const conditions: SQL<unknown>[] = [];
 
     if (brandId !== undefined && brandId !== 0) {
@@ -254,7 +249,6 @@ export const getPaginatedProducts = async (
       conditions.push(eq(ProductsTable.categoryId, categoryId));
     }
 
-    // Build the order by condition
     let orderBy;
     if (sortField === "price") {
       orderBy =
@@ -267,10 +261,9 @@ export const getPaginatedProducts = async (
           ? asc(ProductsTable.stock)
           : desc(ProductsTable.stock);
     } else {
-      orderBy = desc(ProductsTable.createdAt); // Default sort
+      orderBy = desc(ProductsTable.createdAt);
     }
 
-    // Get total count with the same conditions
     const totalCountResult = await db
       .select({
         count: sql<number>`count(*)`,
@@ -280,7 +273,6 @@ export const getPaginatedProducts = async (
 
     const totalCount = totalCountResult[0]?.count || 0;
 
-    // Get paginated products
     const products = await db.query.ProductsTable.findMany({
       offset: (page - 1) * pageSize,
       limit: pageSize,
@@ -291,7 +283,6 @@ export const getPaginatedProducts = async (
       },
     });
 
-    // Return both the products and the total count
     return {
       products,
       totalCount,

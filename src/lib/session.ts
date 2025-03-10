@@ -35,8 +35,6 @@ export async function createSession(
 export async function validateSessionToken(
   token: string,
 ): Promise<SessionValidationResult> {
-  // cacheLife("session");
-  // cacheTag("session");
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 
   const result = await getDbSession(sessionId);
@@ -53,7 +51,6 @@ export async function validateSessionToken(
     return { session: null, user: null };
   }
 
-  // Refresh session if it's close to expiring
   if (Date.now() >= expiresAt.getTime() - 1000 * 60 * 30) {
     const updatedSession = {
       ...session,

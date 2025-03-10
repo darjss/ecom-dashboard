@@ -19,14 +19,12 @@ const publicPaths = [
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   console.log("Middleware");
   if (process.env.NODE_ENV === "development") {
-    // console.log("Middleware request:", request);
     return NextResponse.next();
   }
 
   const path = request.nextUrl.pathname;
   const clientIP = request.headers.get("X-Forwarded-For") ?? "";
 
-  // Rate limiting
   if (request.method === "GET" && !getRequestBucket.consume(clientIP, 1)) {
     return new NextResponse(null, { status: 429 });
   }
@@ -34,9 +32,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     return new NextResponse(null, { status: 429 });
   }
 
-  // Handle GET requests - cookie extension and auth check
   if (request.method === "GET") {
-    // Skip auth for public paths
     console.log("GET REQUEST MIDDLEWARE");
     if (publicPaths.some((publicPath) => path.startsWith(publicPath))) {
       return NextResponse.next();
@@ -44,21 +40,13 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
     const token = request.cookies.get("session")?.value ?? null;
 
-    // Check auth for protected routes
     if (!token) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    // const { session } = await validateSessionToken(token);
-
-    // if (!session) {
-    //   return NextResponse.redirect(new URL("/login", request.url));
-    // }
-
     return NextResponse.next();
   }
 
-  // Handle non-GET requests - CORS check
   const originHeader = request.headers.get("Origin");
   const hostHeader = request.headers.get("Host");
 
@@ -77,7 +65,6 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     return new NextResponse(null, { status: 403 });
   }
 
-  // Check auth for non-public API routes
   if (!publicPaths.some((publicPath) => path.startsWith(publicPath))) {
     const token = request.cookies.get("session")?.value ?? null;
     if (!token) {

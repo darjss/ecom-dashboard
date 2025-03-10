@@ -6,15 +6,12 @@ import { ChevronRight } from "lucide-react";
 const Pathname = () => {
   const pathname = usePathname();
 
-  // Split the pathname by "/" and filter out empty strings
   const parts = pathname.split("/").filter((part) => part !== "");
 
-  // Capitalize each part
   const capitalizedParts = parts.map(
     (part) => part.charAt(0).toUpperCase() + part.slice(1),
   );
 
-  // Join the parts with spaces
   const capitalizedPathname = capitalizedParts.join("/");
 
   return (

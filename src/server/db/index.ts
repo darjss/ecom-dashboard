@@ -17,9 +17,11 @@ const getDbUrl = () => {
   if (isDevelopment) {
     return "file:dev.db";
   }
- 
+
   if (!process.env.TURSO_CONNECTION_URL) {
-    throw new Error("TURSO_CONNECTION_URL environment variable is not defined in production");
+    throw new Error(
+      "TURSO_CONNECTION_URL environment variable is not defined in production",
+    );
   }
   return process.env.TURSO_CONNECTION_URL;
 };
@@ -28,7 +30,6 @@ export const client =
   globalForDb.client ??
   createClient({
     url: getDbUrl(),
-    // Only include auth token in production
     ...(isDevelopment ? {} : { authToken: process.env.TURSO_AUTH_TOKEN }),
   });
 

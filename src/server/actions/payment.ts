@@ -1,17 +1,19 @@
 "use server";
 import "server-only";
-import { PaymentProviderType, PaymentStatusType, TransactionType } from "@/lib/types";
+import {
+  PaymentProviderType,
+  PaymentStatusType,
+  TransactionType,
+} from "@/lib/types";
 import { db } from "../db";
 import { PaymentsTable } from "../db/schema";
-
 
 export const createPayment = async (
   orderId: number,
   status: PaymentStatusType = "pending",
   provider: PaymentProviderType = "transfer",
-  tx?:TransactionType 
+  tx?: TransactionType,
 ) => {
-  // Explicitly use await to ensure the operation completes
   const result = await (tx || db)
     .insert(PaymentsTable)
     .values({
@@ -22,6 +24,6 @@ export const createPayment = async (
     .returning({ id: PaymentsTable.id });
   return result;
 };
-export const getPayments= async()=>{
-  const result = await db.select().from(PaymentsTable)
-}
+export const getPayments = async () => {
+  const result = await db.select().from(PaymentsTable);
+};

@@ -4,9 +4,12 @@ import { db, redis } from "../db";
 import { UserSelectType, UsersTable } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { Session } from "@/lib/types";
-import { unstable_cacheLife as cacheLife, revalidateTag, unstable_cacheTag as cacheTag } from "next/cache";
+import {
+  unstable_cacheLife as cacheLife,
+  revalidateTag,
+  unstable_cacheTag as cacheTag,
+} from "next/cache";
 export const insertSession = async (session: Session) => {
-  // Convert Date to ISO string for storage
   const sessionToStore = {
     ...session,
     expiresAt: session.expiresAt.toISOString(),
@@ -17,14 +20,13 @@ export const insertSession = async (session: Session) => {
 export const getSession = async (sessionId: string) => {
   "use cache";
   cacheLife("session");
-  cacheTag("session")
+  cacheTag("session");
   console.log("Getting session");
   const session = (await redis.json.get(sessionId)) as Session | null;
   if (session === null || session === undefined) {
     return null;
   }
 
-  // Convert ISO string back to Date
   const sessionWithDate = {
     ...session,
     expiresAt: new Date(session.expiresAt),
@@ -48,12 +50,11 @@ export const getSession = async (sessionId: string) => {
 };
 
 export const deleteSession = async (sessionId: string) => {
-  revalidateTag("session")
+  revalidateTag("session");
   return await redis.del(sessionId);
-
 };
 export const updateSession = async (session: Session) => {
-  revalidateTag("session")
+  revalidateTag("session");
   return await redis.set(session.id, JSON.stringify(session));
 };
 export const createUser = async (googleId: string, username: string) => {

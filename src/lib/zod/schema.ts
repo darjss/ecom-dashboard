@@ -90,7 +90,18 @@ export const addBrandSchema = z.object({
   logoUrl: z.string().url().optional().nullable(),
 });
 
+export const addCategorySchema = z.object({
+  id: z.number().int().positive().finite().optional(),
+  name: z
+    .string()
+    .min(1, {
+      message: "Category name is too short",
+    })
+    .max(256),
+});
+
 export type addBrandType = z.infer<typeof addBrandSchema>;
+export type addCategoryType = z.infer<typeof addCategorySchema>;
 
 export type addProductType = z.infer<typeof addProductSchema>;
 export type addImageType = addProductType["images"];

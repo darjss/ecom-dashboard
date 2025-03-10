@@ -33,7 +33,6 @@ export function FormWrapper<T extends ZodSchema>({
   initialData,
   setDialogOpen,
 }: FormWrapperProps<T>) {
-  // console.log("data",initialData);
   const defaultValues =
     initialData === undefined ? generateDefaultValues(schema) : initialData;
   const form = useForm({
@@ -53,7 +52,6 @@ export function FormWrapper<T extends ZodSchema>({
         const result = await formAction(cleanedData);
         console.log("Form submission result:", result);
         if (result && typeof result === "object" && "message" in result) {
-          // toast.success(result.message);
           console.log(result.message);
         }
         if (onSubmit) {
@@ -66,7 +64,6 @@ export function FormWrapper<T extends ZodSchema>({
       } catch (error) {
         console.error("Form submission error:", error);
         console.log(form.getValues);
-        // toast.error("An error occurred while submitting the form");
       }
     },
     [formAction, form, onSubmit],

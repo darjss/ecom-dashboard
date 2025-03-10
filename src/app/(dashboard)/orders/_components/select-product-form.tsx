@@ -14,21 +14,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ProductSearchForOrderType, ProductType } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
-import { getAllProducts, searchProductByNameForOrder } from "@/server/actions/product";
+import {
+  getAllProducts,
+  searchProductByNameForOrder,
+} from "@/server/actions/product";
 import { toast } from "sonner";
 import { debounce } from "lodash";
 
 const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
-  // Two separate states: one for input display, one for the actual search query
   const [inputValue, setInputValue] = useState("");
   const [debouncedSearchValue, setDebouncedSearchValue] = useState("");
-  
-  // Create a debounced search function that updates the search value for the query
+
   const debouncedSearch = useCallback(
     debounce((value: string) => {
       setDebouncedSearchValue(value);
     }, 500),
-    []
+    [],
   );
 
   const { data, isFetching, isError, error } = useQuery({
@@ -36,7 +37,7 @@ const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
     queryFn: () => searchProductByNameForOrder(debouncedSearchValue),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    enabled: !!debouncedSearchValue, // Only run query when there's a search value
+    enabled: !!debouncedSearchValue,
   });
 
   const { fields, append, remove, update } = useFieldArray({
@@ -53,7 +54,7 @@ const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
 
   const handleSelectProduct = (product: ProductSearchForOrderType) => {
     const existingIndex = fields.findIndex(
-      (field: any) => field.productId === product.id
+      (field: any) => field.productId === product.id,
     );
 
     if (existingIndex >= 0) {
@@ -68,16 +69,13 @@ const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
         stock: product.stock,
       });
     }
-    // Clear both states when a product is selected
     setInputValue("");
     setDebouncedSearchValue("");
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Update the input value immediately for user feedback
     setInputValue(value);
-    // Debounce the actual search query
     debouncedSearch(value);
   };
 
@@ -99,7 +97,7 @@ const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
             Searching...
           </div>
         )}
-        { data!==undefined&&data?.length > 0 && inputValue && (
+        {data !== undefined && data?.length > 0 && inputValue && (
           <div className="absolute left-0 right-0 z-[100] mt-1 max-h-[400px] w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
             {data.map((product) => (
               <button
@@ -153,7 +151,8 @@ const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
                   <div className="flex items-center space-x-3 pb-3 sm:pb-0">
                     <img
                       src={
-                        product.imageUrl || "/placeholder.svg?height=64&width=64"
+                        product.imageUrl ||
+                        "/placeholder.svg?height=64&width=64"
                       }
                       alt={product.name}
                       className="h-12 w-12 rounded-md object-cover sm:h-16 sm:w-16"

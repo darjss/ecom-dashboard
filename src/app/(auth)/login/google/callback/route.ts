@@ -1,7 +1,4 @@
-import {
-  createSession,
-  setSessionTokenCookie,
-} from "@/lib/session";
+import { createSession, setSessionTokenCookie } from "@/lib/session";
 import { google } from "@/lib/oauth";
 import { cookies } from "next/headers";
 import { decodeIdToken } from "arctic";
@@ -38,7 +35,6 @@ export async function GET(request: Request): Promise<Response> {
   try {
     tokens = await google.validateAuthorizationCode(code, codeVerifier);
   } catch (e) {
-    // Invalid code or client credentials
     return new Response(null, {
       status: 400,
     });
@@ -63,7 +59,7 @@ export async function GET(request: Request): Promise<Response> {
       },
     });
   }
-  if(googleUserId=="118271302696111351988"){
+  if (googleUserId == "118271302696111351988") {
     const user = await createUser(googleUserId, username);
     const sessionToken = generateSessionToken();
     const session = await createSession(sessionToken, user.id);

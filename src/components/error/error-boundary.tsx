@@ -26,7 +26,6 @@ export class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // You can log the error to an error reporting service here
     console.error("Uncaught error:", error, errorInfo);
   }
 

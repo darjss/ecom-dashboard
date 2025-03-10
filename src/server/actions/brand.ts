@@ -21,7 +21,6 @@ export const getAllBrands = async () => {
       updatedAt: BrandsTable.updatedAt,
     })
     .from(BrandsTable);
-  // console.log(brands)
   return brands;
 };
 

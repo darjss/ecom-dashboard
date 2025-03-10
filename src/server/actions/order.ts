@@ -45,7 +45,7 @@ export const addOrder = async (orderInfo: addOrderType) => {
           status: orderInfo.status,
           notes: orderInfo.notes,
           total: orderTotal,
-          address:orderInfo.address
+          address: orderInfo.address,
         })
         .returning({ orderId: OrdersTable.id });
       if (order?.orderId === undefined) {
@@ -53,7 +53,6 @@ export const addOrder = async (orderInfo: addOrderType) => {
       }
       const orderId = order?.orderId;
 
-      // Handle order details first
       for (const product of orderInfo.products) {
         await tx.insert(OrderDetailsTable).values({
           orderId: orderId,
@@ -61,23 +60,20 @@ export const addOrder = async (orderInfo: addOrderType) => {
           quantity: product.quantity,
         });
 
-        // Update stock
         await updateStock(product.productId, product.quantity, "minus", tx);
       }
-      
-      // Create payment after all order details are processed
-      // Pass the transaction to createPayment to keep everything in the same transaction
+
       try {
         const paymentResult = await createPayment(
-          orderId, 
-          orderInfo.paymentStatus, 
-          "transfer", // Default provider
-          tx // Pass the transaction object
+          orderId,
+          orderInfo.paymentStatus,
+          "transfer",
+          tx,
         );
         console.log("Payment created:", paymentResult);
       } catch (error) {
         console.error("Error creating payment:", error);
-        throw error; // Re-throw to ensure the transaction fails if payment fails
+        throw error;
       }
       console.log("transaction done");
     });
@@ -94,7 +90,6 @@ export const addOrder = async (orderInfo: addOrderType) => {
   }
 };
 
-// Update Order
 export const updateOrder = async (orderInfo: addOrderType) => {
   try {
     console.log("updating order");
@@ -109,7 +104,6 @@ export const updateOrder = async (orderInfo: addOrderType) => {
     );
 
     await db.transaction(async (tx) => {
-      // Update customer info if needed
       if (orderInfo.isNewCustomer) {
         const userExists = await tx
           .select()
@@ -132,7 +126,6 @@ export const updateOrder = async (orderInfo: addOrderType) => {
       if (orderInfo.id == undefined) {
         return;
       }
-      // Update order main info
       await tx
         .update(OrdersTable)
         .set({
@@ -143,34 +136,28 @@ export const updateOrder = async (orderInfo: addOrderType) => {
         })
         .where(eq(OrdersTable.id, orderInfo.id));
 
-      // Get current order details to handle stock adjustments
       const currentOrderDetails = await tx
         .select()
         .from(OrderDetailsTable)
         .where(eq(OrderDetailsTable.orderId, orderInfo.id))
         .execute();
 
-      // Delete existing order details
       await tx
         .delete(OrderDetailsTable)
         .where(eq(OrderDetailsTable.orderId, orderInfo.id));
 
-      // Add new order details and update stock
       const orderDetailsPromise = orderInfo.products.map(async (product) => {
-        // Add new order detail
         await tx.insert(OrderDetailsTable).values({
           orderId: orderInfo.id!,
           productId: product.productId,
           quantity: product.quantity,
         });
 
-        // Find if product was in the original order
         const existingDetail = currentOrderDetails.find(
           (detail) => detail.productId === product.productId,
         );
 
         if (existingDetail) {
-          // If quantity changed, adjust stock accordingly
           const quantityDiff = product.quantity - existingDetail.quantity;
           if (quantityDiff !== 0) {
             await updateStock(
@@ -181,12 +168,10 @@ export const updateOrder = async (orderInfo: addOrderType) => {
             );
           }
         } else {
-          // New product added to order, reduce stock
           await updateStock(product.productId, product.quantity, "minus", tx);
         }
       });
 
-      // Handle products that were removed from the order
       const removedProducts = currentOrderDetails.filter(
         (detail) =>
           !orderInfo.products.some((p) => p.productId === detail.productId),
@@ -196,7 +181,6 @@ export const updateOrder = async (orderInfo: addOrderType) => {
         updateStock(detail.productId, detail.quantity, "add", tx),
       );
 
-      // Update payment status if needed
       const paymentUpdatePromise = tx
         .update(OrdersTable)
         .set({ status: orderInfo.status })
@@ -220,28 +204,23 @@ export const updateOrder = async (orderInfo: addOrderType) => {
   }
 };
 
-// Delete Order
 export const deleteOrder = async (id: number) => {
   try {
     await db.transaction(async (tx) => {
-      // Get order details to restore stock
       const orderDetails = await tx
         .select()
         .from(OrderDetailsTable)
         .where(eq(OrderDetailsTable.orderId, id))
         .execute();
 
-      // Restore stock for each product
       const restoreStockPromises = orderDetails.map((detail) =>
         updateStock(detail.productId, detail.quantity, "add", tx),
       );
 
-      // Delete order details first (foreign key constraint)
       await tx
         .delete(OrderDetailsTable)
         .where(eq(OrderDetailsTable.orderId, id));
 
-      // Delete the order
       await tx.delete(OrdersTable).where(eq(OrdersTable.id, id));
 
       await Promise.allSettled(restoreStockPromises);
@@ -258,7 +237,6 @@ export const deleteOrder = async (id: number) => {
   }
 };
 
-// Search Orders by Order Number
 export const searchOrderByNumber = async (searchTerm: string) => {
   try {
     const orders = await db.query.OrdersTable.findMany({
@@ -273,8 +251,7 @@ export const searchOrderByNumber = async (searchTerm: string) => {
               columns: {
                 name: true,
                 id: true,
-                price:true
-
+                price: true,
               },
               with: {
                 images: {
@@ -291,7 +268,7 @@ export const searchOrderByNumber = async (searchTerm: string) => {
           columns: {
             provider: true,
             status: true,
-            createdAt:true,
+            createdAt: true,
           },
         },
       },
@@ -304,7 +281,6 @@ export const searchOrderByNumber = async (searchTerm: string) => {
   }
 };
 
-// Get All Orders
 export const getAllOrders = async () => {
   "use cache";
   cacheTag("orders");
@@ -361,7 +337,6 @@ export const getAllOrders = async () => {
   }
 };
 
-// Get Order By ID
 export const getOrderById = async (id: number) => {
   try {
     const result = await db.query.OrdersTable.findFirst({
@@ -376,7 +351,7 @@ export const getOrderById = async (id: number) => {
               columns: {
                 name: true,
                 id: true,
-                price:true
+                price: true,
               },
               with: {
                 images: {
@@ -393,7 +368,7 @@ export const getOrderById = async (id: number) => {
           columns: {
             provider: true,
             status: true,
-            createdAt:true
+            createdAt: true,
           },
         },
       },
@@ -408,7 +383,6 @@ export const getOrderById = async (id: number) => {
   }
 };
 
-// Get Paginated Orders with efficient querying
 export const getPaginatedOrders = async (
   page: number = 1,
   pageSize = PRODUCT_PER_PAGE,
@@ -425,14 +399,19 @@ export const getPaginatedOrders = async (
   );
 
   try {
-    // Build the order by condition
     let orderBy;
     if (sortField === "total") {
-      orderBy = sortDirection === "asc" ? asc(OrdersTable.total) : desc(OrdersTable.total);
+      orderBy =
+        sortDirection === "asc"
+          ? asc(OrdersTable.total)
+          : desc(OrdersTable.total);
     } else if (sortField === "createdAt") {
-      orderBy = sortDirection === "asc" ? asc(OrdersTable.createdAt) : desc(OrdersTable.createdAt);
+      orderBy =
+        sortDirection === "asc"
+          ? asc(OrdersTable.createdAt)
+          : desc(OrdersTable.createdAt);
     } else {
-      orderBy = desc(OrdersTable.createdAt); // Default sort
+      orderBy = desc(OrdersTable.createdAt);
     }
 
     const result = await db.query.OrdersTable.findMany({
@@ -453,12 +432,12 @@ export const getPaginatedOrders = async (
               columns: {
                 name: true,
                 id: true,
-                price:true
+                price: true,
               },
               with: {
                 images: {
                   columns: {
-                    url:   true,
+                    url: true,
                   },
                   where: eq(ProductImagesTable.isPrimary, true),
                 },
@@ -470,7 +449,7 @@ export const getPaginatedOrders = async (
           columns: {
             provider: true,
             status: true,
-            createdAt:true
+            createdAt: true,
           },
           where:
             paymentStatus === undefined

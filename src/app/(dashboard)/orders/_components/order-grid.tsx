@@ -70,7 +70,6 @@ const OrderGrid = () => {
         sortDirection as "asc" | "desc",
       );
 
-      // Ensure we have the right shape of data
       if ("message" in result && "error" in result) {
         throw new Error(`Error fetching orders: ${result.error}`);
       }
@@ -216,7 +215,7 @@ const OrderGrid = () => {
           </div>
         </div>
 
-        {isLoading || data===undefined ? (
+        {isLoading || data === undefined ? (
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, index) => (
               <OrderSkeleton key={index} />

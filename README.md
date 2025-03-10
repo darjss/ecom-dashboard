@@ -8,7 +8,7 @@
   - [x] brand crud
   - [x] category crud
   - [ ] user management
-  - [ ] product crud
+  - [x] product crud
     - [x] add product
     - [x] edit product
     - [x] delete product
@@ -16,7 +16,7 @@
     - [x] product table filter sort
     - [x] file upload
     - [ ] detailed product view modal 
-  - [ ] order crud
+  - [x] order crud
     - [x] add order
     - [x] edit order
     - [x] delete order
@@ -32,18 +32,27 @@
     - [ ] payment table pagination
     - [ ] detailed payment view modal
   - [ ] purchase inventory management crud
-    - [ ] add purchase
-    - [ ] edit purchase
-    - [ ] delete/cancell purchase
+    - [x] add purchase
+    - [x] edit purchase
+    - [x] delete/cancell purchase
     - [ ] connect to sales table/ order process
-    - [ ] purchase table pagination
-    - [ ] purchase table filter sort
+    - [x] purchase table pagination
     - [ ] detailed product view modal
     - [ ] running out of stock
   - [ ] search
-  - [ ] general pagination utility
+  - [x] general pagination utility
   - [ ] analytics
     - [ ] daily, weekly, monthly sale data
     - [ ] most sold products
     - [ ] trending fast selling products
   - [ ] connect payment confirm to telegram bot
+  - [x] brand crud
+  - [x] category crud
+
+
+
+  payment flow:
+  make order 
+  update product stock
+  create payment with status
+  if paid add to sales table

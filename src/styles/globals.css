@@ -33,14 +33,15 @@
     --chart-4: 43 54% 76%;
     --chart-5: 27 67% 77%;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Updated sidebar colors to match the yellow/gold theme */
+    --sidebar-background: 39 100% 98%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 45 100% 67%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 45 80% 90%;
+    --sidebar-accent-foreground: 0 0% 20%;
+    --sidebar-border: 45 30% 80%;
+    --sidebar-ring: 45 100% 67%;
 
     --radius: 0.5rem;
     --box-shadow-x: 3px;
@@ -78,24 +79,25 @@
     --chart-4: 280 45% 70%;
     --chart-5: 340 55% 65%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Updated dark mode sidebar colors to match the theme */
+    --sidebar-background: 215 28% 18%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 45 100% 67%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 215 22% 26%;
+    --sidebar-accent-foreground: 45 100% 67%;
+    --sidebar-border: 215 20% 30%;
+    --sidebar-ring: 45 100% 67%;
   }
 }
 
 :root {
   --bg: #fef2e8;
-  --bw: #fff; /* white and secondary black e.g. utility class variant would be: bg-[#fff] dark:bg-[#212121] */
-  --blank: #000; /* blank black and white */
+  --bw: #fff;
+  --blank: #000;
   --border: #000;
   --text: #000;
-  --mtext: #000; /* text that is placed on background with main color e.g. text color of default button */
+  --mtext: #000;
   --ring: #000;
   --ring-offset: #fff;
 
@@ -121,15 +123,6 @@
   --ring-offset: #000;
 
   --shadow: var(--box-shadow-x) var(--box-shadow-y) 0px 0px var(--border);
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
 }
 
 @layer base {

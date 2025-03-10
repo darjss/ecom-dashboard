@@ -26,52 +26,43 @@ export const paymentStatus = ["pending", "success", "failed"] as const;
 
 export const PRODUCT_PER_PAGE = 5;
 
-export const sideNavitems = [
+export const sideNavItems = [
   {
     title: "Home",
     url: "/",
-    icon: Home, // Home icon for dashboard home
-  },
+    icon: Home,   },
   {
     title: "Orders",
     url: "/orders",
-    icon: ShoppingCart, // Shopping cart for orders
-  },
+    icon: ShoppingCart,   },
   {
     title: "Products",
     url: "/products",
-    icon: Package, // Package icon for products
-  },
+    icon: Package,   },
   {
     title: "Analytics",
     url: "/analytics",
-    icon: BarChart2, // Bar chart for analytics
-  },
+    icon: BarChart2,   },
   {
     title: "Purchases", 
     url: "/purchases",
-    icon: CreditCard, // Credit card icon for purchases
-  },
+    icon: CreditCard,   },
   {
     title: "Brands",
     url: "/brands",
-    icon: Tags, // Tags icon for brands
-  },
+    icon: Tags,   },
   {
     title: "Categories",
     url: "/categories",
-    icon: FolderTree, // Folder tree for categories
-  },
+    icon: FolderTree,   },
   {
     title: "Users",
     url: "/users",
-    icon: Users, // Users icon for user management
-  },
+    icon: Users,   },
   {
     title: "Settings",
     url: "/settings",
-    icon: Settings, // Settings icon remains the same
-  },
+    icon: Settings,   },
 ];
 
 export const amazonHeaders = {
@@ -82,9 +73,8 @@ export const amazonHeaders = {
     "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/jxl,image/webp,image/png,image/svg+xml,*/*;q=0.8",
   "Accept-Language": "en-US,en;q=0.5",
   "Accept-Encoding": "gzip, deflate, br, zstd",
-  Referer: "https://www.amazon.com/",
-  DNT: "1",
-  "Sec-GPC": "1",
+  // Referer: "https:  DNT: "1",
+  // "Sec-GPC": "1",
   Connection: "keep-alive",
   Cookie:
     "csm-sid=440-9292188-2387355; session-id=134-3864391-8956557; session-id-time=2082787201l; i18n-prefs=USD",

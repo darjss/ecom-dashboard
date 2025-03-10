@@ -17,7 +17,6 @@ export const addImage = async (image: ProductImageInsertType) => {
 };
 export const uploadImagesFromUrl = async (images: ProductImageInsertType[]) => {
   try {
-    // Transform ProductImageInsertType[] to { url: string }[]
     const imageUrls = images.map((image) => ({ url: image.url }));
 
     const response = await fetch(
@@ -46,16 +45,18 @@ export const uploadImagesFromUrl = async (images: ProductImageInsertType[]) => {
 
     const uploadedImages = (await response.json()) as {
       images: { url: string }[];
-      status:string,
-      time:number
-    }; 
+      status: string;
+      time: number;
+    };
 
-    const addImagePromises = uploadedImages.images.map((uploadedImage, index) => {
-      return addImage({
-        ...images[index], // Spread the original properties
-        url: uploadedImage.url, // Override with the uploaded URL
-      } as ProductImageInsertType);
-    });
+    const addImagePromises = uploadedImages.images.map(
+      (uploadedImage, index) => {
+        return addImage({
+          ...images[index],
+          url: uploadedImage.url,
+        } as ProductImageInsertType);
+      },
+    );
 
     return await Promise.all(addImagePromises);
   } catch (e) {
