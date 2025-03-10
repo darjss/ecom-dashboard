@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useFieldArray, type UseFormReturn } from "react-hook-form";
+import { useFieldArray, useWatch, type UseFormReturn } from "react-hook-form";
 import {
   MinusIcon,
   PlusIcon,
@@ -18,12 +18,9 @@ import { getAllProducts } from "@/server/actions/product";
 import { toast } from "sonner";
 
 const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
-  // Properly handle all states from the query
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["products"],
     queryFn: () => getAllProducts(),
-    // Add some retry logic and staleTime for better UX
-    // retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -31,7 +28,6 @@ const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
     control: form.control,
     name: "products",
   });
-
   const [results, setResults] = useState<ProductType[]>([]);
   const [searchValue, setSearchValue] = useState("");
 
@@ -72,7 +68,7 @@ const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
         quantity: 1,
         price: product.price,
         name: product.name,
-        image: product.images[0]?.url,
+        imageUrl: product.images[0]?.url,
         stock: product.stock
       });
     }
@@ -163,7 +159,7 @@ const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
                   <div className="flex items-center space-x-3 pb-3 sm:pb-0">
                     <img
                       src={
-                        product.image || "/placeholder.svg?height=64&width=64"
+                        product.imageUrl || "/placeholder.svg?height=64&width=64"
                       }
                       alt={product.name}
                       className="h-12 w-12 rounded-md object-cover sm:h-16 sm:w-16"

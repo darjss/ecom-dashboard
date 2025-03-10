@@ -10,6 +10,8 @@ const productSchema = z.object({
   productId: z.number().int().positive().finite(),
   quantity: z.number().int().positive().finite(),
   price: z.number().int().min(20000),
+  name: z.string().optional(),
+  imageUrl:z.string().url().optional()
 });
 
 export const addProductSchema = z.object({

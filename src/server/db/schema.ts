@@ -154,6 +154,7 @@ export const OrdersTable = createTable(
     status: text("status", {
       enum: orderStatus,
     }).notNull(),
+    address: text("address", { length: 256 }).notNull(),
     total: int("total", { mode: "number" }).notNull(),
     notes: text("notes"),
     createdAt: int("created_at", { mode: "timestamp" })

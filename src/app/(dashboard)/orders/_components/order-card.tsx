@@ -1,41 +1,43 @@
 "use client";
-import { Package, Phone, Calendar, DollarSign } from "lucide-react";
+import { Package, Phone, Calendar, DollarSign, MapPin, CheckCircle, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { OrderType } from "@/lib/types";
 import RowActions from "../../../(dashboard)/products/_components/row-actions";
 import { deleteOrder } from "@/server/actions/order";
 import EditOrderForm from "./edit-order-form";
 import type { Dispatch, SetStateAction } from "react";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const OrderCard = ({ order }: { order: OrderType }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "delivered":
-        return "bg-emerald-200 text-emerald-950 border-emerald-300";
+        return "bg-emerald-100 text-emerald-800 border-emerald-200 font-medium";
       case "pending":
-        return "bg-amber-100 text-amber-950 border-amber-200";
+        return "bg-amber-50 text-amber-800 border-amber-200 font-medium";
       case "shipped":
-        return "bg-sky-100 text-sky-950 border-sky-200";
+        return "bg-sky-50 text-sky-800 border-sky-200 font-medium";
       case "cancelled":
-        return "bg-rose-100 text-rose-950 border-rose-200";
+        return "bg-rose-50 text-rose-800 border-rose-200 font-medium";
       case "refunded":
-        return "bg-slate-200 text-slate-950 border-slate-300";
+        return "bg-slate-100 text-slate-800 border-slate-200 font-medium";
       default:
-        return "bg-slate-200 text-slate-950 border-slate-300";
+        return "bg-slate-100 text-slate-800 border-slate-200 font-medium";
     }
   };
 
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
       case "success":
-        return "border-emerald-200 bg-emerald-100 text-emerald-950";
+        return "border-emerald-200 bg-emerald-50 text-emerald-800";
       case "pending":
-        return "border-amber-200 bg-amber-50 text-amber-950";
+        return "border-amber-200 bg-amber-50 text-amber-800";
       case "failed":
-        return "border-rose-200 bg-rose-100 text-rose-950";
+        return "border-rose-200 bg-rose-50 text-rose-800";
       default:
-        return "border-slate-200 bg-slate-100 text-slate-950";
+        return "border-slate-200 bg-slate-50 text-slate-800";
     }
   };
 
@@ -52,99 +54,82 @@ const OrderCard = ({ order }: { order: OrderType }) => {
     }
   };
 
+
   return (
-    <Card className="overflow-hidden transition-all duration-200 hover:shadow-md">
+    <Card className="overflow-hidden transition-all duration-200 hover:shadow-md border-l-4" style={{ borderLeftColor: order.status === 'delivered' ? '#10b981' : order.status === 'pending' ? '#f59e0b' : order.status === 'shipped' ? '#0ea5e9' : '#f43f5e' }}>
       <CardContent className="p-0">
         {/* Header section */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/10 p-2">
-          <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4 text-primary" />
-            <h3 className="text-base font-semibold">{order.customerPhone}</h3>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Package className="h-3 w-3" />
-              <span>#{order.orderNumber}</span>
+        <div className="flex items-center justify-between gap-2 border-b bg-muted/5 p-3">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <Phone className="h-4 w-4 text-primary" />
+              <h3 className="text-base font-semibold">{order.customerPhone}</h3>
             </div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Package className="h-3 w-3" />
+                <span className="font-medium">#{order.orderNumber}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+              </div>
             </div>
           </div>
 
-          <Badge
-            className={`shrink-0 ${getStatusColor(order.status)} px-2 py-0.5 text-xs`}
-          >
-            {order.status}
-          </Badge>
+          <div className="flex flex-col items-end gap-1">
+            <Badge
+              className={`${getStatusColor(order.status)} px-2 py-0.5 text-xs shadow-sm`}
+            >
+              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+            </Badge>
+            
+            {order.paymentStatus && order.paymentStatus[0] && order.paymentProvider?.[0] && (
+              <Badge
+                className={`flex h-5 items-center gap-1.5 rounded-md px-2 text-[10px] shadow-sm ${getPaymentStatusColor(
+                  order.paymentStatus[0],
+                )}`}
+              >
+                <span>{getPaymentProviderIcon(order.paymentProvider[0])}</span>
+                <span>
+                  {order.paymentStatus[0] === "success"
+                    ? "Paid"
+                    : order.paymentStatus[0] === "failed"
+                      ? "Failed"
+                      : "Pending"}
+                </span>
+              </Badge>
+            )}
+          </div>
+        </div>
+        
+        <div className="border-b bg-muted/5 px-3 py-2">
+          <div className="flex items-center gap-1">
+            <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
+            <span className="text-sm font-medium truncate">{order.address || "No address provided"}</span>
+          </div>
         </div>
 
         {/* Main content */}
-        <div className="p-2">
+        <div className="p-3">
           <div className="flex flex-col sm:flex-row sm:gap-4">
-            <div className="mb-2 sm:mb-0 sm:flex-1">
-              <div className="flex items-center justify-between">
+            <div className="w-full">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <h4 className="text-xs font-medium text-muted-foreground">
-                    Products
-                  </h4>
-                  <RowActions
-                    id={order.id}
-                    renderEditComponent={({
-                      setDialogOpen,
-                    }: {
-                      setDialogOpen: Dispatch<SetStateAction<boolean>>;
-                    }) => (
-                      <EditOrderForm
-                        order={{
-                          id: order.id,
-                          customerPhone: order.customerPhone,
-                          address: "",
-                          isNewCustomer: false,
-                          notes: order.notes || "",
-                          status: order.status,
-                          paymentStatus: order.paymentStatus?.[0] || "pending",
-                          products: order.products.map((p) => ({
-                            productId: p.id,
-                            quantity: p.quantity,
-                            price: 0,
-                          })),
-                        }}
-                      />
-                    )}
-                    deleteFunction={deleteOrder}
-                  />
+                  <h4 className="text-xs font-medium text-muted-foreground">Products</h4>
+                  <span className="text-xs px-1.5 py-0.5 bg-muted/20 rounded-full">{order.products.length}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  {order.paymentStatus &&
-                    order.paymentStatus[0] &&
-                    order.paymentProvider?.[0] && (
-                      <Badge
-                        className={`flex h-5 items-center gap-1.5 rounded-md px-2 text-[12px] ${getPaymentStatusColor(
-                          order.paymentStatus[0],
-                        )}`}
-                      >
-                        <span>
-                          {getPaymentProviderIcon(order.paymentProvider[0])}
-                        </span>
-                        <span>
-                          {order.paymentStatus[0] === "success"
-                            ? "Paid"
-                            : order.paymentStatus[0] === "failed"
-                              ? "Failed"
-                              : "Pending"}
-                        </span>
-                      </Badge>
-                    )}
-                  <span className="flex items-center gap-1 text-sm font-bold text-[#FFDC58]">
-                    ₮{order.total.toFixed(2)}
-                  </span>
-                </div>
+                <span className="flex items-center gap-1 text-sm font-bold text-primary">
+                  <DollarSign className="h-3.5 w-3.5" />
+                  ₮{order.total.toFixed(2)}
+                </span>
               </div>
 
-              <div className="mt-1 flex gap-2 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 sm:overflow-visible">
+              <div className="grid grid-cols-2 gap-1.5 mb-2">
                 {order.products.map((product) => (
                   <div
-                    key={product.id}
-                    className="flex min-w-[150px] items-center gap-1 rounded border p-1 text-xs"
+                    key={product.productId}
+                    className="flex items-center gap-1.5 rounded border p-1.5 text-xs bg-card"
                   >
                     <div className="h-8 w-8 shrink-0 overflow-hidden rounded bg-muted/10">
                       <img
@@ -155,13 +140,41 @@ const OrderCard = ({ order }: { order: OrderType }) => {
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{product.name}</p>
-                      <p className="text-muted-foreground">
-                        x{product.quantity}
-                      </p>
+                      <p className="truncate font-medium text-xs">{product.name}</p>
+                      <span className="text-muted-foreground text-xs">x{product.quantity}</span>
                     </div>
                   </div>
                 ))}
+              </div>
+              
+              
+              <div className="flex items-center gap-2 pt-1 border-t">
+                {/* Action buttons */}
+                <Button 
+                  // onClick={markAsDelivered}
+                  variant="neutral" 
+                  size="sm"
+                  className="h-7 px-2 text-xs gap-1 text-emerald-700 hover:bg-emerald-50 border-emerald-200"
+                  disabled={order.status === "delivered"}
+                >
+                  <CheckCircle className="h-3 w-3" />
+                  <span>Mark Delivered</span>
+                </Button>
+                
+                <RowActions
+                  id={order.id}
+                  renderEditComponent={({
+                    setDialogOpen,
+                  }: {
+                    setDialogOpen: Dispatch<SetStateAction<boolean>>;
+                  }) => (
+                    <EditOrderForm
+                      order={{...order, isNewCustomer:false}}
+                      setDialogOpen={setDialogOpen}
+                    />
+                  )}
+                  deleteFunction={deleteOrder}
+                />
               </div>
             </div>
           </div>

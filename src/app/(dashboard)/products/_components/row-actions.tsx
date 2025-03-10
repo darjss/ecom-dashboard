@@ -11,13 +11,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
+  Dialog, DialogContent, DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogTrigger
 } from "@/components/ui/dialog";
 
 import {
@@ -29,11 +25,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAction } from "@/hooks/use-action";
-import { BrandType, CategoryType, ProductType } from "@/lib/types";
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
 import { Edit2, MoreVertical, Trash2 } from "lucide-react";
 import { Dispatch, JSX, SetStateAction, useState } from "react";
-import EditProductForm from "./edit-product-form";
 
 interface RowActionProps {
   id: number;

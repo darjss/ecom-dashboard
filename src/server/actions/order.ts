@@ -45,6 +45,7 @@ export const addOrder = async (orderInfo: addOrderType) => {
           status: orderInfo.status,
           notes: orderInfo.notes,
           total: orderTotal,
+          address:orderInfo.address
         })
         .returning({ orderId: OrdersTable.id });
       if (order?.orderId === undefined) {
@@ -272,6 +273,8 @@ export const searchOrderByNumber = async (searchTerm: string) => {
               columns: {
                 name: true,
                 id: true,
+                price:true
+
               },
               with: {
                 images: {
@@ -288,6 +291,7 @@ export const searchOrderByNumber = async (searchTerm: string) => {
           columns: {
             provider: true,
             status: true,
+            createdAt:true,
           },
         },
       },
@@ -372,6 +376,7 @@ export const getOrderById = async (id: number) => {
               columns: {
                 name: true,
                 id: true,
+                price:true
               },
               with: {
                 images: {
@@ -388,6 +393,7 @@ export const getOrderById = async (id: number) => {
           columns: {
             provider: true,
             status: true,
+            createdAt:true
           },
         },
       },
@@ -447,6 +453,7 @@ export const getPaginatedOrders = async (
               columns: {
                 name: true,
                 id: true,
+                price:true
               },
               with: {
                 images: {
@@ -463,6 +470,7 @@ export const getPaginatedOrders = async (
           columns: {
             provider: true,
             status: true,
+            createdAt:true
           },
           where:
             paymentStatus === undefined

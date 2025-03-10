@@ -22,3 +22,6 @@ export const createPayment = async (
     .returning({ id: PaymentsTable.id });
   return result;
 };
+export const getPayments= async()=>{
+  const result = await db.select().from(PaymentsTable)
+}

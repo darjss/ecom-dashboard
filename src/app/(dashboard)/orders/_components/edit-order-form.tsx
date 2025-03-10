@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, Dispatch, SetStateAction } from "react";
 import {
   FormControl,
   FormField,
@@ -23,14 +23,13 @@ import { FormWrapper } from "@/components/form-wrapper";
 import { Card, CardContent } from "@/components/ui/card";
 import SubmitButton from "@/components/submit-button";
 import { orderStatus, paymentStatus } from "@/lib/constants";
-import { addOrder } from "@/server/actions/order";
-import type { ProductType } from "@/lib/types";
+import { updateOrder } from "@/server/actions/order";
 import { getCustomerByPhone } from "@/server/actions/customer";
 import type { UseFormReturn } from "react-hook-form";
 import SelectProductForm from "./select-product-form";
 
-const EditOrderForm = ({  order }: {  order:addOrderType }) => {
-  const [action] = useAction(addOrder);
+const EditOrderForm = ({  order, setDialogOpen }: {  order:addOrderType, setDialogOpen:Dispatch<SetStateAction<boolean>> }) => {
+  const [action] = useAction(updateOrder);
   const [searchByPhone, isSearchByLoading] = useAction(getCustomerByPhone);
 
   const handlePhoneChange = useCallback(
@@ -57,6 +56,7 @@ const EditOrderForm = ({  order }: {  order:addOrderType }) => {
         schema={addOrderSchema}
         className="space-y-6"
         initialData={order}
+        setDialogOpen={setDialogOpen}
       >
         {(form) => {
           const phone: string = form.watch("customerPhone");
@@ -226,7 +226,7 @@ const EditOrderForm = ({  order }: {  order:addOrderType }) => {
                   isPending={form.formState.isSubmitting}
                   className="w-full rounded-md px-6 py-3 text-base font-medium transition-colors duration-300 hover:bg-primary/90"
                 >
-                  Complete Order
+                  Update Order
                 </SubmitButton>
               </div>
             </div>

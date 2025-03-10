@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "5fbbaeb3-bf10-45b9-ac2a-c5c0ec31c6ae",
+  "id": "435fdb7a-efc5-444c-8f1e-593abf09290b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "ecom_vit_brand": {
@@ -346,8 +346,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "product_variant_id": {
-          "name": "product_variant_id",
+        "product_id": {
+          "name": "product_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -384,12 +384,12 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "ecom_vit_order_detail_product_variant_id_ecom_vit_product_id_fk": {
-          "name": "ecom_vit_order_detail_product_variant_id_ecom_vit_product_id_fk",
+        "ecom_vit_order_detail_product_id_ecom_vit_product_id_fk": {
+          "name": "ecom_vit_order_detail_product_id_ecom_vit_product_id_fk",
           "tableFrom": "ecom_vit_order_detail",
           "tableTo": "ecom_vit_product",
           "columnsFrom": [
-            "product_variant_id"
+            "product_id"
           ],
           "columnsTo": [
             "id"
@@ -431,6 +431,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "address": {
+          "name": "address",
+          "type": "text(256)",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "total": {
