@@ -1,12 +1,8 @@
 "use server";
 import "server-only";
-import { eq, desc, asc, and, sql } from "drizzle-orm";
+import { eq, desc, asc, sql, and, lt } from "drizzle-orm";
 import { db } from "../db";
-import {
-  ProductsTable,
-  PurchaseInsertType,
-  PurchasesTable,
-} from "../db/schema";
+import { ProductsTable, PurchasesTable } from "../db/schema";
 import { PRODUCT_PER_PAGE } from "@/lib/constants";
 import type { addPurchaseType } from "@/lib/zod/schema";
 
@@ -267,4 +263,28 @@ export const deletePurchase = async (id: number) => {
     }
     return { message: "Deleting purchase failed", error: "Unknown error" };
   }
+};
+
+export const getAverageCostOfProduct = async (
+  productId: number,
+  createdAt: Date,
+) => {
+  const purchases = await db
+    .select()
+    .from(PurchasesTable)
+    .where(
+      and(
+        eq(PurchasesTable.productId, productId),
+        lt(PurchasesTable.createdAt, createdAt),
+      ),
+    );
+  const sum = purchases.reduce(
+    (acc, purchase) => acc + purchase.unitCost * purchase.quantityPurchased,
+    0,
+  );
+  const totalProduct = purchases.reduce(
+    (acc, purchase) => acc + purchase.quantityPurchased,
+    0,
+  );
+  return sum / totalProduct;
 };

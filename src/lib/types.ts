@@ -35,25 +35,13 @@ export interface Session {
   userId: number;
   expiresAt: Date;
 }
-export type FilterOptions<T> = Partial<Record<keyof T, any>>;
 
-export type SortingState<T> = Array<{
-  id: keyof T;
-  desc?: boolean;
-}>;
-
-export interface PaginationOptions<T> {
-  page: number;
-  pageSize: number;
-  sortBy?: keyof T;
-  sortDirection?: "asc" | "desc";
-  filters?: FilterOptions<T>;
-}
-
-export interface PaginatedResult<T> {
-  data: T[];
-  hasNextPage: boolean;
-  nextPage?: number;
-  previousPage?: number;
-}
 export type OrderStatusType=typeof orderStatus[number];
+
+export interface AddSalesType{
+  productCost:number,
+  quantitySold:number,
+  orderId:number,
+  sellingPrice:number,
+  productId:number
+}

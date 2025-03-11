@@ -1,6 +1,12 @@
 "use server";
 import "server-only";
-import { BrandInsertType, CategoryInsertType, ProductImagesTable, ProductsTable } from "@/server/db/schema";
+import {
+  BrandInsertType,
+  CategoryInsertType,
+  ProductImagesTable,
+  ProductsTable,
+  PurchasesTable,
+} from "@/server/db/schema";
 import { addProductType } from "@/lib/zod/schema";
 import { addBrand } from "@/server/actions/brand";
 import { addCategory } from "@/server/actions/category";
@@ -8,6 +14,7 @@ import { addProduct } from "@/server/actions/product";
 import { revalidateTag } from "next/cache";
 import { addOrder } from "@/server/actions/order";
 import { db } from "@/server/db";
+import { eq, sql } from "drizzle-orm";
 
 // Sample data for brands
 const brandsData: BrandInsertType[] = [
@@ -324,7 +331,6 @@ const ordersData = [
   },
 ];
 
-// Seed function to populate the database
 export const seedDatabase = async () => {
   try {
     // Add brands
@@ -337,9 +343,10 @@ export const seedDatabase = async () => {
       await addCategory(category);
     }
     revalidateTag("brandCategory");
-    // Add products
+
+    // Add products with initial stock set to 0
+    const insertedProducts: { id: number; stock: number; price: number }[] = [];
     for (const product of productsData) {
-      // Create a modified version of the addProduct function that doesn't upload images
       const productResult = await db
         .insert(ProductsTable)
         .values({
@@ -349,48 +356,71 @@ export const seedDatabase = async () => {
           discount: 0,
           amount: product.amount,
           potency: product.potency,
-          stock: product.stock,
+          stock: 0, // Set initial stock to 0
           price: product.price,
           dailyIntake: product.dailyIntake,
           categoryId: product.categoryId,
           brandId: product.brandId,
           status: "active",
         })
-        .returning();
-        
+        .returning({ id: ProductsTable.id });
+
       if (productResult[0]) {
         const productId = productResult[0].id;
-        // Add images directly to database without uploading
-        const imagePromises = product.images.map((image, index) => 
+        // Store product details for purchases
+        insertedProducts.push({
+          id: productId,
+          stock: product.stock,
+          price: product.price,
+        });
+
+        // Add images directly to database
+        const imagePromises = product.images.map((image, index) =>
           db.insert(ProductImagesTable).values({
             productId: productId,
-            url: image.url, // Use the URL directly without uploading
-            isPrimary: index === 0 ? true : false,
-          })
+            url: image.url,
+            isPrimary: index === 0 ? true :false , // Use 1/0 for SQLite boolean
+          }),
         );
         await Promise.all(imagePromises);
       }
     }
 
-    // Wait a moment for the database to be ready after product inserts
+    // Add purchasing data to set initial stock
+    await db.transaction(async (tx) => {
+      for (const insertedProduct of insertedProducts) {
+        const unitCost = Math.floor(0.7 * insertedProduct.price); // 70% of selling price
+        await tx.insert(PurchasesTable).values({
+          productId: insertedProduct.id,
+          quantityPurchased: insertedProduct.stock,
+          unitCost: unitCost,
+        });
+
+        // Update stock by adding the purchased quantity
+        await tx
+          .update(ProductsTable)
+          .set({
+            stock: sql`${ProductsTable.stock} + ${insertedProduct.stock}`,
+          })
+          .where(eq(ProductsTable.id, insertedProduct.id));
+      }
+    });
+
+    // Add orders
     console.log("Starting to seed orders...");
-    
-    // Wait for products to fully finish processing
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Try with just the first order
+    await new Promise((resolve) => setTimeout(resolve, 3000)); // Existing delay
     try {
-        setTimeout(async () => {
-          for (const order of ordersData) {
-            await addOrder(order);
-          }
-            console.log("Orders seeded successly");
-          }, 1500);
+      setTimeout(async () => {
+        for (const order of ordersData) {
+          await addOrder(order);
+        }
+        console.log("Orders seeded successfully");
+      }, 1500);
     } catch (error) {
       console.error("Error during order seeding:", error);
     }
-    console.log("Orders seeded successfully");
-    console.log("Database seeding delivered successly.");
+
+    console.log("Database seeding completed successfully.");
   } catch (error) {
     console.error("Error during database seeding:", error);
   }

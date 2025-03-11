@@ -1,9 +1,12 @@
 "use server";
 import "server-only";
-import { unstable_cacheLife as cacheLife, revalidateTag } from "next/cache";
+import {
+  unstable_cacheLife as cacheLife,
+  revalidateTag,
+  unstable_cacheTag as cacheTag,
+} from "next/cache";
 import { db } from "../db";
 import { BrandInsertType, BrandsTable } from "../db/schema";
-import { unstable_cacheTag as cacheTag } from "next/cache";
 import { eq } from "drizzle-orm";
 import { addBrandType } from "@/lib/zod/schema";
 

@@ -61,7 +61,7 @@ const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {
       handleQuantityChange(existingIndex, "add");
     } else {
       append({
-        productId: product.id,
+      productId: product.id,
         quantity: 1,
         price: product.price,
         name: product.name,

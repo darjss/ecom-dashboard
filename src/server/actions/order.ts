@@ -19,6 +19,8 @@ import { updateStock } from "./product";
 import { PRODUCT_PER_PAGE } from "@/lib/constants";
 import { OrderStatusType, PaymentStatusType } from "@/lib/types";
 import { shapeOrderResult, shapeOrderResults } from "./utils";
+import { addSale } from "./sales";
+import { getAverageCostOfProduct } from "./purchases";
 
 export const addOrder = async (orderInfo: addOrderType) => {
   console.log("addOrder called with", orderInfo);
@@ -60,7 +62,23 @@ export const addOrder = async (orderInfo: addOrderType) => {
           quantity: product.quantity,
         });
 
-        await updateStock(product.productId, product.quantity, "minus", tx);
+        if (orderInfo.paymentStatus === "success") {
+          const productCost = await getAverageCostOfProduct(
+            product.productId,
+            new Date(),
+          );
+          await addSale(
+            {
+              productCost: productCost,
+              quantitySold: product.quantity,
+              orderId: order.orderId,
+              sellingPrice: product.price,
+              productId: product.productId,
+            },
+            tx,
+          );
+          await updateStock(product.productId, product.quantity, "minus", tx);
+        }
       }
 
       try {
@@ -156,7 +174,22 @@ export const updateOrder = async (orderInfo: addOrderType) => {
         const existingDetail = currentOrderDetails.find(
           (detail) => detail.productId === product.productId,
         );
-
+        if (orderInfo.paymentStatus === "success") {
+          const productCost = await getAverageCostOfProduct(
+            product.productId,
+            new Date(),
+          );
+          await addSale(
+            {
+              productCost: productCost,
+              quantitySold: product.quantity,
+              orderId: orderInfo.id!,
+              sellingPrice: product.price,
+              productId: product.productId,
+            },
+            tx,
+          );
+        }
         if (existingDetail) {
           const quantityDiff = product.quantity - existingDetail.quantity;
           if (quantityDiff !== 0) {
@@ -182,9 +215,9 @@ export const updateOrder = async (orderInfo: addOrderType) => {
       );
 
       const paymentUpdatePromise = tx
-        .update(OrdersTable)
-        .set({ status: orderInfo.status })
-        .where(eq(OrdersTable.id, orderInfo.id!));
+        .update(PaymentsTable)
+        .set({ status: orderInfo.paymentStatus })
+        .where(eq(PaymentsTable.orderId, orderInfo.id!));
 
       await Promise.allSettled([
         ...orderDetailsPromise,

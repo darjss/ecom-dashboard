@@ -5,12 +5,14 @@ import { ProductImagesTable, ProductsTable } from "../db/schema";
 import { and, asc, desc, eq, SQL, sql, like } from "drizzle-orm";
 import { addProductType } from "@/lib/zod/schema";
 import { z } from "zod";
-import { revalidateTag } from "next/cache";
 import { getAllBrands } from "./brand";
 import { updateImage, uploadImagesFromUrl } from "./image";
-import { unstable_cacheTag as cacheTag } from "next/cache";
+import {
+  unstable_cacheLife as cacheLife,
+  revalidateTag,
+  unstable_cacheTag as cacheTag,
+} from "next/cache";
 import { TransactionType } from "@/lib/types";
-import { redirect } from "next/navigation";
 
 export const searchProductByName = async (searchTerm: string) => {
   const products = await db.query.ProductsTable.findMany({
@@ -301,6 +303,23 @@ export const setProductStock = async (id: number, newStock: number) => {
     .update(ProductsTable)
     .set({ stock: newStock })
     .where(eq(ProductsTable.id, id));
-    revalidateTag("products")
-    // redirect("/products")
+  revalidateTag("products");
+  // redirect("/products")
+};
+export const getAllProductValue = async () => {
+  "use cache";
+  cacheTag("products");
+  cacheLife({
+    expire: 7 * 24 * 60 * 60,
+    stale: 60 * 60 * 6,
+    revalidate: 60 * 60 * 24,
+  });
+  const result = await db
+    .select({ stock: ProductsTable.stock, price: ProductsTable.price })
+    .from(ProductsTable);
+  const total = result.reduce(
+    (acc, product) => acc + product.price * product.stock,
+    0,
+  );
+  return total;
 };

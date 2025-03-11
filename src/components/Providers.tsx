@@ -10,7 +10,7 @@ const Providers = ({ children }: Readonly<{ children: React.ReactNode }>) => {
   return (
     <QueryClientProvider client={queryClient}>
       <NuqsAdapter>
-        <ReactScan/>
+        {/* <ReactScan/> */}
         {children}
         <Toaster />
         <SpeedInsights />

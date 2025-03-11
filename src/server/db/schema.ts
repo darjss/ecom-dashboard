@@ -1,11 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import {
-  index,
-  int,
-  sqliteTableCreator,
-  text,
-  primaryKey,
-} from "drizzle-orm/sqlite-core";
+import { index, int, sqliteTableCreator, text } from "drizzle-orm/sqlite-core";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import {
   orderStatus,
@@ -259,12 +253,10 @@ export const SalesTable = createTable(
     quantitySold: int("quantity_sold", { mode: "number" }).notNull(),
     productCost: int("product_cost", { mode: "number" }).notNull(),
     sellingPrice: int("selling_price", { mode: "number" }).notNull(),
-    discountApplied: int("discount_applied", { mode: "number" })
-      .default(0)
-      .notNull(),
-    createdAt: int("created_at", { mode: "timestamp" })
-      .default(sql`(unixepoch())`)
-      .notNull(),
+    discountApplied: int("discount_applied", { mode: "number" }).default(0),
+    createdAt: int("created_at", { mode: "timestamp" }).default(
+      sql`(unixepoch())`,
+    ),
     updatedAt: int("updated_at", { mode: "timestamp" }).$onUpdate(
       () => new Date(),
     ),
@@ -288,7 +280,9 @@ export const PurchasesTable = createTable(
       () => new Date(),
     ),
   },
-  (table) => [index("purchase_product_idx").on(table.productId)],
+  (table) => [index("purchase_product_idx").on(table.productId),
+    index("purchase_created_idx").on(table.createdAt)
+  ],
 );
 
 export const ordersRelations = relations(OrdersTable, ({ many }) => ({

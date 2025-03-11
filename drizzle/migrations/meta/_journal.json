@@ -15,6 +15,13 @@
       "when": 1741582533243,
       "tag": "0001_mature_white_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1741688594360,
+      "tag": "0002_watery_spitfire",
+      "breakpoints": true
     }
   ]
 }

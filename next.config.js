@@ -8,7 +8,7 @@ const config = {
   experimental: {
     ppr: "incremental",
     dynamicIO: true,
-    // reactCompiler: true,
+    reactCompiler: true,
     useCache: true,
     cacheLife: {
       brandCategory: {
