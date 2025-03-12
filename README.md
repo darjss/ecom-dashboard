@@ -56,3 +56,25 @@
   update product stock
   create payment with status
   if paid add to sales table
+
+  analytics plan:
+  on dashboard home:
+  total revenue
+  total products sold
+  total orders
+  top selling products
+  number of new customers
+  pending orders count
+  pending payments
+  sale trend line chart
+  website analytics total visits
+  on analytics page:
+  average order value 
+  total profit 
+  sales by category and brand 
+  customer lifetime value
+  repeat customers
+  out of stock or stock products
+  cart analytic abondened carts
+  failed payments
+  
