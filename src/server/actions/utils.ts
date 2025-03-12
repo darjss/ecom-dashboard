@@ -131,3 +131,15 @@ export const shapeOrderResults = (
     };
   });
 };
+export const getStartOfDay = () => {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
+
+export const getDaysAgo = (days: number) => {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  date.setHours(0, 0, 0, 0);
+  return date;
+};

@@ -12,15 +12,16 @@ import {
 } from "../db/schema";
 import { generateOrderNumber } from "@/lib/utils";
 import { createPayment } from "./payment";
-import { and, eq, like, sql, desc, asc, or } from "drizzle-orm";
+import { and, eq, like, sql, desc, asc, or, gte } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { unstable_cacheTag as cacheTag } from "next/cache";
 import { updateStock } from "./product";
 import { PRODUCT_PER_PAGE } from "@/lib/constants";
 import { OrderStatusType, PaymentStatusType } from "@/lib/types";
-import { shapeOrderResult, shapeOrderResults } from "./utils";
+import { getDaysAgo, getStartOfDay, shapeOrderResult, shapeOrderResults } from "./utils";
 import { addSale } from "./sales";
 import { getAverageCostOfProduct } from "./purchases";
+import { cacheLife } from "next/dist/server/use-cache/cache-life";
 
 export const addOrder = async (orderInfo: addOrderType) => {
   console.log("addOrder called with", orderInfo);
@@ -531,5 +532,89 @@ export const getPaginatedOrders = async (
       message: "Fetching orders failed",
       error: "Unknown error",
     };
+  }
+};
+
+export const getOrderCountDaily = async () => {
+  "use cache";
+  cacheTag("orders");
+  cacheLife({
+    expire: 24 * 60 * 60, // 24 hours
+    stale: 60 * 5, // 5 minutes
+    revalidate: 60 * 15, // 15 minutes
+  });
+
+  try {
+    const startOfDay = getStartOfDay();
+    const result = await db
+      .select({
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(OrdersTable)
+      .where(gte(OrdersTable.createdAt, startOfDay))
+      .get();
+
+    const count = result?.count ?? 0;
+
+    return { count };
+  }
+  catch (e) {
+    console.log(e);
+    return { count: 0 };
+  }
+};
+export const getOrderCountWeekly = async () => {
+  "use cache";
+  cacheTag("orders");
+  cacheLife({
+    expire: 24 * 60 * 60, // 24 hours
+    stale: 60 * 5, // 5 minutes
+    revalidate: 60 * 60 * 6, // 6 hours
+  });
+
+  try {
+    const result = await db
+      .select({
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(OrdersTable)
+      .where(gte(OrdersTable.createdAt, getDaysAgo(7)))
+      .get();
+
+    const count = result?.count ?? 0;
+
+    return { count };
+  }
+  catch (e) {
+    console.log(e);
+    return { count: 0 };
+  }
+};
+
+export const getOrderCountMonthly = async () => {
+  "use cache";
+  cacheTag("orders");
+  cacheLife({
+    expire: 24 * 60 * 60, // 24 hours
+    stale: 60 * 5, // 5 minutes
+    revalidate: 60 * 60 * 6, // 6 hours
+  });
+
+  try {
+    const result = await db
+      .select({
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(OrdersTable)
+      .where(gte(OrdersTable.createdAt, getDaysAgo(30)))
+      .get();
+
+    const count = result?.count ?? 0;
+
+    return { count };
+  }
+  catch (e) {
+    console.log(e);
+    return { count: 0 };
   }
 };

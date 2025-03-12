@@ -8,6 +8,7 @@ import {
 } from "next/cache";
 import { AddSalesType, TransactionType } from "@/lib/types";
 import { between, gte, sql } from "drizzle-orm";
+import { getDaysAgo, getStartOfDay } from "./utils";
 
 export const addSale = async (sale: AddSalesType, tx?: TransactionType) => {
   try {
@@ -15,18 +16,6 @@ export const addSale = async (sale: AddSalesType, tx?: TransactionType) => {
   } catch (e) {
     console.log(e);
   }
-};
-const getStartOfDay = () => {
-  const date = new Date();
-  date.setHours(0, 0, 0, 0);
-  return date;
-};
-
-const getDaysAgo = (days: number) => {
-  const date = new Date();
-  date.setDate(date.getDate() - days);
-  date.setHours(0, 0, 0, 0);
-  return date;
 };
 
 export const getAnalyticsDaily = async () => {
@@ -72,7 +61,7 @@ export const getAnalyticsWeekly = async () => {
   });
 
   try {
-    const startOfWeek = getDaysAgo(7);
+
     const result = await db
       .select({
         sum: sql<number>`SUM(${SalesTable.sellingPrice} * ${SalesTable.quantitySold})`,
@@ -80,7 +69,7 @@ export const getAnalyticsWeekly = async () => {
         salesCount: sql<number>`COUNT(*)`,
       })
       .from(SalesTable)
-      .where(gte(SalesTable.createdAt, startOfWeek))
+      .where(gte(SalesTable.createdAt, getDaysAgo(7)))
       .get();
 
     const sum = result?.sum ?? 0;
@@ -105,7 +94,6 @@ export const getAnalyticsMonthly = async () => {
   });
 
   try {
-    const startOfMonth = getDaysAgo(30); // Could use 28/31 depending on exact month logic
     const result = await db
       .select({
         sum: sql<number>`SUM(${SalesTable.sellingPrice} * ${SalesTable.quantitySold})`,
@@ -113,7 +101,7 @@ export const getAnalyticsMonthly = async () => {
         salesCount: sql<number>`COUNT(*)`,
       })
       .from(SalesTable)
-      .where(gte(SalesTable.createdAt, startOfMonth))
+      .where(gte(SalesTable.createdAt, getDaysAgo(30)))
       .get();
 
     const sum = result?.sum ?? 0;
@@ -127,3 +115,16 @@ export const getAnalyticsMonthly = async () => {
     return { sum: 0, salesCount: 0, profit: 0 };
   }
 };
+export const getMostSoldProductsDaily= async()=>{
+    "use cache";
+    cacheTag("products");
+    cacheLife({
+      expire: 24 * 60 * 60, // 24 hours
+      stale: 60 * 5, // 5 minutes
+      revalidate: 60 * 15, // 15 minutes
+    });
+    const result= await db.select({
+      productId: SalesTable.productId,
+      totalSold:SalesTable.quantitySold,
+    }).from(SalesTable).groupBy(SalesTable.productId).limit(5);
+}
