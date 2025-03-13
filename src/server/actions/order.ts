@@ -17,13 +17,19 @@ import { revalidateTag } from "next/cache";
 import { unstable_cacheTag as cacheTag } from "next/cache";
 import { updateStock } from "./product";
 import { PRODUCT_PER_PAGE } from "@/lib/constants";
-import { OrderStatusType, PaymentStatusType } from "@/lib/types";
-import { getDaysAgo, getStartOfDay, shapeOrderResult, shapeOrderResults } from "./utils";
+import { OrderStatusType, PaymentStatusType, TimeRange } from "@/lib/types";
+import {
+  getDaysAgo,
+  getStartOfDay,
+  shapeOrderResult,
+  shapeOrderResults,
+} from "./utils";
 import { addSale } from "./sales";
 import { getAverageCostOfProduct } from "./purchases";
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
+import { create } from "lodash";
 
-export const addOrder = async (orderInfo: addOrderType) => {
+export const addOrder = async (orderInfo: addOrderType, createdAt?: Date) => {
   console.log("addOrder called with", orderInfo);
   try {
     const orderTotal = orderInfo.products.reduce(
@@ -49,6 +55,7 @@ export const addOrder = async (orderInfo: addOrderType) => {
           notes: orderInfo.notes,
           total: orderTotal,
           address: orderInfo.address,
+          createdAt: createdAt,
         })
         .returning({ orderId: OrdersTable.id });
       if (order?.orderId === undefined) {
@@ -75,6 +82,7 @@ export const addOrder = async (orderInfo: addOrderType) => {
               orderId: order.orderId,
               sellingPrice: product.price,
               productId: product.productId,
+              createdAt: createdAt,
             },
             tx,
           );
@@ -535,7 +543,7 @@ export const getPaginatedOrders = async (
   }
 };
 
-export const getOrderCountDaily = async () => {
+export const getOrderCount = async (timeRange: TimeRange) => {
   "use cache";
   cacheTag("orders");
   cacheLife({
@@ -543,77 +551,33 @@ export const getOrderCountDaily = async () => {
     stale: 60 * 5, // 5 minutes
     revalidate: 60 * 15, // 15 minutes
   });
-
-  try {
-    const startOfDay = getStartOfDay();
-    const result = await db
-      .select({
-        count: sql<number>`COUNT(*)`,
-      })
-      .from(OrdersTable)
-      .where(gte(OrdersTable.createdAt, startOfDay))
-      .get();
-
-    const count = result?.count ?? 0;
-
-    return { count };
+  let startDate;
+  switch (timeRange) {
+    case "daily":
+      startDate = getStartOfDay();
+      break;
+    case "weekly":
+      startDate = getDaysAgo(7);
+      break;
+    case "monthly":
+      startDate = getDaysAgo(30);
+      break;
+    default:
+      startDate = getStartOfDay();
   }
-  catch (e) {
-    console.log(e);
-    return { count: 0 };
-  }
-};
-export const getOrderCountWeekly = async () => {
-  "use cache";
-  cacheTag("orders");
-  cacheLife({
-    expire: 24 * 60 * 60, // 24 hours
-    stale: 60 * 5, // 5 minutes
-    revalidate: 60 * 60 * 6, // 6 hours
-  });
-
   try {
     const result = await db
       .select({
         count: sql<number>`COUNT(*)`,
       })
       .from(OrdersTable)
-      .where(gte(OrdersTable.createdAt, getDaysAgo(7)))
+      .where(gte(OrdersTable.createdAt, startDate))
       .get();
 
     const count = result?.count ?? 0;
 
     return { count };
-  }
-  catch (e) {
-    console.log(e);
-    return { count: 0 };
-  }
-};
-
-export const getOrderCountMonthly = async () => {
-  "use cache";
-  cacheTag("orders");
-  cacheLife({
-    expire: 24 * 60 * 60, // 24 hours
-    stale: 60 * 5, // 5 minutes
-    revalidate: 60 * 60 * 6, // 6 hours
-  });
-
-  try {
-    const result = await db
-      .select({
-        count: sql<number>`COUNT(*)`,
-      })
-      .from(OrdersTable)
-      .where(gte(OrdersTable.createdAt, getDaysAgo(30)))
-      .get();
-
-    const count = result?.count ?? 0;
-
-    return { count };
-  }
-  catch (e) {
+  } catch (e) {
     console.log(e);
     return { count: 0 };
   }

@@ -44,4 +44,6 @@ export interface AddSalesType{
   orderId:number,
   sellingPrice:number,
   productId:number
+  createdAt?:Date
 }
+export type TimeRange = "daily" | "weekly" | "monthly";

@@ -64,7 +64,7 @@
   total orders
   top selling products
   number of new customers
-  pending orders count
+  pending orders 
   pending payments
   sale trend line chart
   website analytics total visits

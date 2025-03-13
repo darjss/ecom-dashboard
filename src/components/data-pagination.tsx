@@ -28,7 +28,7 @@ export function DataPagination({
   totalItems,
   itemsPerPage,
   onPageChange,
-  maxPageButtons = 5,
+  maxPageButtons = 2,
   showTotalCount = true,
   className = "",
   totalCountText,

@@ -1,13 +1,13 @@
 "use server";
 import "server-only";
 import { db } from "../db";
-import { SalesTable } from "../db/schema";
+import { ProductImagesTable, ProductsTable, SalesTable } from "../db/schema";
 import {
   unstable_cacheLife as cacheLife,
   unstable_cacheTag as cacheTag,
 } from "next/cache";
-import { AddSalesType, TransactionType } from "@/lib/types";
-import { between, eq, gte, sql } from "drizzle-orm";
+import { AddSalesType, TimeRange, TransactionType } from "@/lib/types";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { getDaysAgo, getStartOfDay } from "./utils";
 
 export const addSale = async (sale: AddSalesType, tx?: TransactionType) => {
@@ -18,43 +18,41 @@ export const addSale = async (sale: AddSalesType, tx?: TransactionType) => {
   }
 };
 
-type TimeRange = "daily" | "weekly" | "monthly"
-
 export const getAnalytics = async (timeRange: TimeRange = "daily") => {
-  "use cache"
+  "use cache";
 
-  cacheTag(`analytics-${timeRange}`)
+  cacheTag(`analytics-${timeRange}`);
 
-  cacheTag("analytics-all")
+  cacheTag("analytics-all");
 
   if (timeRange === "daily") {
     cacheLife({
       expire: 24 * 60 * 60, // 24 hours
       stale: 60 * 5, // 5 minutes
       revalidate: 60 * 15, // 15 minutes
-    })
+    });
   } else {
     cacheLife({
       expire: 24 * 60 * 60, // 24 hours
       stale: 60 * 5, // 5 minutes
       revalidate: 60 * 60 * 6, // 6 hours
-    })
+    });
   }
 
   try {
-    let startDate
+    let startDate;
     switch (timeRange) {
       case "daily":
-        startDate = getStartOfDay()
-        break
+        startDate = getStartOfDay();
+        break;
       case "weekly":
-        startDate = getDaysAgo(7)
-        break
+        startDate = getDaysAgo(7);
+        break;
       case "monthly":
-        startDate = getDaysAgo(30)
-        break
+        startDate = getDaysAgo(30);
+        break;
       default:
-        startDate = getStartOfDay()
+        startDate = getStartOfDay();
     }
 
     const result = await db
@@ -65,44 +63,66 @@ export const getAnalytics = async (timeRange: TimeRange = "daily") => {
       })
       .from(SalesTable)
       .where(gte(SalesTable.createdAt, startDate))
-      .get()
+      .get();
 
-    const sum = result?.sum ?? 0
-    const cost = result?.cost ?? 0
-    const profit = sum - cost
-    const salesCount = result?.salesCount ?? 0
-
-    return { sum, salesCount, profit }
+    const sum = result?.sum ?? 0;
+    const cost = result?.cost ?? 0;
+    const profit = sum - cost;
+    const salesCount = result?.salesCount ?? 0;
+      console.log("salesCount",salesCount, "sum",sum,"cost",cost,"profit",profit);
+    return { sum, salesCount, profit }; 
   } catch (e) {
-    console.log(e)
-    return { sum: 0, salesCount: 0, profit: 0 }
+    console.log(e);
+    return { sum: 0, salesCount: 0, profit: 0 };
   }
-}
+};
 
-export const getMostSoldProductsDaily= async(timeRange: TimeRange = "daily")=>{
-    "use cache";
-    cacheTag("products");
-    cacheLife({
-      expire: 24 * 60 * 60, // 24 hours
-      stale: 60 * 5, // 5 minutes
-      revalidate: 60 * 15, // 15 minutes
-    });
-    let startDate
-    switch (timeRange) {
-      case "daily":
-        startDate = getStartOfDay()
-        break
-      case "weekly":
-        startDate = getDaysAgo(7)
-        break
-      case "monthly":
-        startDate = getDaysAgo(30)
-        break
-      default:
-        startDate = getStartOfDay()
-    }
-    const result= await db.select({
+export const getMostSoldProducts = async (
+  timeRange: TimeRange = "daily",
+  productCount: number = 5,
+) => {
+  "use cache";
+  cacheTag("products");
+  cacheLife({
+    expire: 24 * 60 * 60, // 24 hours
+    stale: 60 * 5, // 5 minutes
+    revalidate: 60 * 15, // 15 minutes
+  });
+  let startDate;
+  switch (timeRange) {
+    case "daily":
+      startDate = getStartOfDay();
+      break;
+    case "weekly":
+      startDate = getDaysAgo(7);
+      break;
+    case "monthly":
+      startDate = getDaysAgo(30);
+      break;
+    default:
+      startDate = getStartOfDay();
+  }
+  const result = await db
+    .select({
       productId: SalesTable.productId,
-      totalSold:sql<number>`${SalesTable.quantitySold}` as totalSold,
-    }).from(SalesTable).groupBy(SalesTable.productId).limit(5).orderBy(totalSold);
-}
+      totalSold: sql<number>`${SalesTable.quantitySold}`,
+      name: ProductsTable.name,
+      imageUrl: ProductImagesTable.url,
+    })
+    .from(SalesTable)
+    .leftJoin(ProductsTable, eq(SalesTable.productId, ProductsTable.id))
+    .leftJoin(
+      ProductImagesTable,
+      eq(SalesTable.productId, ProductImagesTable.id),
+    )
+    .limit(productCount)
+    .orderBy(sql`SUM(${SalesTable.quantitySold}) DESC`)
+    .groupBy(SalesTable.productId)
+    .where(
+      and(
+        gte(SalesTable.createdAt, startDate),
+        eq(ProductImagesTable.isPrimary, true),
+      ),
+    );
+  return result;
+};

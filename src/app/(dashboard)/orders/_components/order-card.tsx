@@ -136,7 +136,7 @@ const OrderCard = ({ order }: { order: OrderType }) => {
         <div className="border-b bg-muted/5 px-3 py-2">
           <div className="flex items-center gap-1">
             <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
-            <span className="truncate text-sm font-medium">
+            <span className=" text-sm font-semibold">
               {order.address || "No address provided"}
             </span>
             <Button size={"icon"} className="w-7 h-7" variant={"noShadow"} onClick={async ()=>{

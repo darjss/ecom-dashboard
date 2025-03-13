@@ -3,6 +3,7 @@ import "server-only";
 import {
   BrandInsertType,
   CategoryInsertType,
+  CustomersTable,
   ProductImagesTable,
   ProductsTable,
   PurchasesTable,
@@ -15,6 +16,10 @@ import { revalidateTag } from "next/cache";
 import { addOrder } from "@/server/actions/order";
 import { db } from "@/server/db";
 import { eq, sql } from "drizzle-orm";
+import { faker } from "@faker-js/faker";
+import { orderStatus, paymentStatus } from "./constants";
+import { OrderStatusType, PaymentStatusType } from "./types";
+import { set } from "lodash";
 
 // Sample data for brands
 const brandsData: BrandInsertType[] = [
@@ -330,6 +335,84 @@ const ordersData = [
     ],
   },
 ];
+export const seedFakeOrders = async (
+  numOrders: number,
+  insertedProducts: { id: number; price: number }[],
+) => {
+  try {
+    // Step 1: Generate fake customers
+    const fakeCustomers = [];
+    const phoneSet = new Set<number>();
+    while (fakeCustomers.length < 50) {
+      const phone =
+        Math.floor(Math.random() * (99999999 - 60000000 + 1)) + 60000000;
+      if (!phoneSet.has(phone)) {
+        phoneSet.add(phone);
+        fakeCustomers.push({
+          phone,
+          address: `${faker.location.streetAddress()}, ${faker.location.city()}, ${faker.location.zipCode()}`,
+        });
+      }
+    }
+
+    // Step 2: Insert fake customers into the database
+    for (const customer of fakeCustomers) {
+      await db.insert(CustomersTable).values(customer);
+    }
+
+    // Step 3: Generate fake orders
+    const fakeOrders = [];
+    for (let i = 0; i < numOrders; i++) {
+      const customer =
+        fakeCustomers[Math.floor(Math.random() * fakeCustomers.length)];
+      const numProducts = Math.floor(Math.random() * 5) + 1; // 1 to 5 products
+      const orderProducts = [];
+      for (let j = 0; j < numProducts; j++) {
+        const product =
+          insertedProducts[Math.floor(Math.random() * insertedProducts.length)];
+          if(product===undefined || customer===undefined){
+            console.log("product or customer is undefined");
+            continue;
+          }
+        orderProducts.push({
+          productId: product.id,
+          quantity: Math.floor(Math.random() * 10) + 1, // 1 to 10 units
+          price: product.price, // Use current price for simplicity
+        });
+      }
+      if(customer===undefined){
+        console.log("customer is undefined");
+        continue;
+      }
+      fakeOrders.push({
+        customerPhone: customer.phone,
+        address: customer.address,
+        notes: Math.random() > 0.5 ? faker.lorem.sentence() : null,
+        status: orderStatus[Math.floor(Math.random() * orderStatus.length)] as OrderStatusType,
+        paymentStatus:
+          paymentStatus[Math.floor(Math.random() * paymentStatus.length)] as PaymentStatusType,
+        isNewCustomer: false, // Customers are pre-inserted
+        products: orderProducts,
+        createdAt: faker.date.past({ years: 0.1 }), // Random date in the past ~30 days
+      });
+    }
+
+    // Step 4: Sort fake orders by createdAt to maintain chronological order
+    fakeOrders.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+    // Step 5: Add orders sequentially using addOrder
+    for (const order of fakeOrders) {
+      setTimeout(async () => {
+        await addOrder(order, order.createdAt);
+      }, 1000);
+    }
+
+    console.log(`${numOrders} fake orders seeded successfully.`);
+  } catch (error) {
+    console.error("Error seeding fake orders:", error);
+    throw error;
+  }
+};
 
 export const seedDatabase = async () => {
   try {
@@ -409,15 +492,11 @@ export const seedDatabase = async () => {
     // Add orders
     console.log("Starting to seed orders...");
     await new Promise((resolve) => setTimeout(resolve, 3000)); // Existing delay
-    try {
-      setTimeout(async () => {
-        for (const order of ordersData) {
-          await addOrder(order);
-        }
-        console.log("Orders seeded successfully");
-      }, 1500);
-    } catch (error) {
-      console.error("Error during order seeding:", error);
+    try{
+      await seedFakeOrders(100, insertedProducts);
+    }
+    catch(error){
+      console.error("Error seeding fake orders:", error);
     }
 
     console.log("Database seeding completed successfully.");
