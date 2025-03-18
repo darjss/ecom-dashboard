@@ -59,10 +59,10 @@
 
   analytics plan:
   on dashboard home:
-  total revenue
-  total products sold
-  total orders
-  top selling products
+  total revenue x
+  total products sold x  
+  total orders x
+  top selling products x
   number of new customers
   pending orders 
   pending payments

@@ -1,5 +1,5 @@
 import type React from "react";
-import { getOrderCount } from "@/server/actions/order";
+import { getOrderCount, getPendingOrders } from "@/server/actions/order";
 import { getAnalytics, getMostSoldProducts } from "@/server/actions/sales";
 import { Suspense } from "react";
 import {
@@ -14,6 +14,7 @@ import { DollarSign, Package, ShoppingBag, Users } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
+import { ShapedOrder } from "@/server/actions/utils";
 
 const DashboardHome = async () => {
   // Fetch all data for different time periods
@@ -31,43 +32,7 @@ const DashboardHome = async () => {
 
   // Placeholder data for future metrics and pending orders
   const newCustomers = { daily: 5, weekly: 18, monthly: 42 };
-  const pendingOrders = [
-    {
-      id: "ORD-1234",
-      customer: "Jane Cooper",
-      date: "2 mins ago",
-      amount: 125.0,
-      status: "Processing",
-    },
-    {
-      id: "ORD-1235",
-      customer: "Wade Warren",
-      date: "25 mins ago",
-      amount: 79.99,
-      status: "Payment pending",
-    },
-    {
-      id: "ORD-1236",
-      customer: "Esther Howard",
-      date: "3 hours ago",
-      amount: 249.95,
-      status: "Processing",
-    },
-    {
-      id: "ORD-1237",
-      customer: "Cameron Williamson",
-      date: "5 hours ago",
-      amount: 39.99,
-      status: "Payment pending",
-    },
-    {
-      id: "ORD-1238",
-      customer: "Brooklyn Simmons",
-      date: "Yesterday",
-      amount: 89.95,
-      status: "Processing",
-    },
-  ];
+
   const totalVisits = { daily: 120, weekly: 540, monthly: 1254 };
 
   return (
@@ -128,7 +93,7 @@ const DashboardHome = async () => {
             </div>
 
             {/* Pending Orders */}
-            <PendingOrdersList orders={pendingOrders} />
+            <PendingOrdersList />
           </TabsContent>
 
           {/* Weekly View */}
@@ -164,7 +129,7 @@ const DashboardHome = async () => {
             </div>
 
             {/* Pending Orders */}
-            <PendingOrdersList orders={pendingOrders} />
+            <PendingOrdersList />
           </TabsContent>
 
           {/* Monthly View */}
@@ -202,7 +167,7 @@ const DashboardHome = async () => {
             </div>
 
             {/* Pending Orders */}
-            <PendingOrdersList orders={pendingOrders} />
+            <PendingOrdersList />
           </TabsContent>
         </Tabs>
       </div>
@@ -238,7 +203,7 @@ const MetricsGrid = ({
       <MetricCard
         title="Orders"
         value={orders}
-        icon={<ShoppingBag className="h-3 w-3 md:h-4 md:w-4 " />}
+        icon={<ShoppingBag className="h-3 w-3 md:h-4 md:w-4" />}
       />
       <MetricCard
         title="New Customers"
@@ -342,17 +307,8 @@ const TopProductsList = ({
 };
 
 // Pending Orders List Component
-const PendingOrdersList = ({
-  orders,
-}: {
-  orders: Array<{
-    id: string;
-    customer: string;
-    date: string;
-    amount: number;
-    status: string;
-  }>;
-}) => {
+const PendingOrdersList = async () => {
+  const orders = await getPendingOrders();
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -377,37 +333,32 @@ const PendingOrdersList = ({
             >
               <div className="flex items-center gap-3">
                 <Avatar className="h-8 w-8 border">
-                  <div className="flex h-full w-full items-center justify-center bg-primary/10 text-xs font-medium text-primary">
-                    {order.customer
-                      .split(" ")
-                      .map((name) => name[0])
-                      .join("")}
-                  </div>
+                  <div className="flex h-full w-full items-center justify-center bg-primary/10 text-xs font-medium text-primary"></div>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-medium">{order.id}</p>
+                  <p className="text-sm font-medium"> {order.customerPhone}</p>
                   <div className="flex items-center gap-1">
                     <p className="text-xs text-muted-foreground">
-                      {order.customer}
+                      {order.address}
                     </p>
                     <span className="text-xs text-muted-foreground">•</span>
                     <p className="text-xs text-muted-foreground">
-                      {order.date}
+                      {order.createdAt.getDate()}/
+                      {order.createdAt.getMonth() + 1}/
+                      {order.createdAt.getFullYear()}
                     </p>
                   </div>
                 </div>
               </div>
               <div className="text-right">
                 <p className="text-sm font-medium">
-                  {order.amount.toLocaleString("en-US", {
+                  {order.total.toLocaleString("en-US", {
                     style: "currency",
                     currency: "USD",
                   })}
                 </p>
                 <Badge
-                  variant={
-                    order.status === "Processing" ? "default" : "neutral"
-                  }
+                  variant={order.status === "pending" ? "default" : "neutral"}
                   className="text-xs"
                 >
                   {order.status}

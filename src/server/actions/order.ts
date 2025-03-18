@@ -12,7 +12,7 @@ import {
 } from "../db/schema";
 import { generateOrderNumber } from "@/lib/utils";
 import { createPayment } from "./payment";
-import { and, eq, like, sql, desc, asc, or, gte } from "drizzle-orm";
+import { and, eq, like, sql, desc, asc, or, gte, between } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { unstable_cacheTag as cacheTag } from "next/cache";
 import { updateStock } from "./product";
@@ -20,6 +20,7 @@ import { PRODUCT_PER_PAGE } from "@/lib/constants";
 import { OrderStatusType, PaymentStatusType, TimeRange } from "@/lib/types";
 import {
   getDaysAgo,
+  getStartAndEndofDayAgo,
   getStartOfDay,
   shapeOrderResult,
   shapeOrderResults,
@@ -580,5 +581,46 @@ export const getOrderCount = async (timeRange: TimeRange) => {
   } catch (e) {
     console.log(e);
     return { count: 0 };
+  }
+};
+
+export const getPendingOrders = async () => {
+  try {
+    const result = await db.query.OrdersTable.findMany({
+      where: eq(OrdersTable.status, "pending"),
+      orderBy: desc(OrdersTable.createdAt),
+    });
+
+    return result;
+  } catch (e) {
+    console.log(e);
+    return [];
+  }
+};
+
+export const getOrderCountForWeek = async () => {
+  try {
+    const promises = [];
+    for (let i = 0; i < 7; i++) {
+      const { startDate, endDate } = getStartAndEndofDayAgo(i);
+      const dayPromise = db
+        .select({
+          count: sql<number>`COUNT(*)`,
+        })
+        .from(OrdersTable)
+        .where(between(OrdersTable.createdAt, startDate, endDate))
+        .get();
+      promises.push(dayPromise);
+    }
+    const results = await Promise.all(promises);
+    return results.map((result, i) => {
+      return {
+        count: result?.count ?? 0,
+        day: i + 1,
+      };
+    });
+  } catch (e) {
+    console.log(e);
+    return [];
   }
 };

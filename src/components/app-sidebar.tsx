@@ -1,17 +1,15 @@
-"use client"
+"use client";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
-} from "@/components/ui/sidebar"
-import { sideNavItems } from "@/lib/constants"
+} from "@/components/ui/sidebar";
+import { sideNavItems } from "@/lib/constants";
 
 export function AppSidebar() {
   return (
@@ -22,13 +20,12 @@ export function AppSidebar() {
             <SidebarMenu className="gap-4 pt-6">
               {sideNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                  >
-                    <a href={item.url} className="flex items-center gap-4">
-                      <item.icon className="size-5" /> 
-                      <span className="text-base">{item.title}</span> 
-                    </a>
-                  </SidebarMenuButton>
+                  <a href={item.url} className="flex items-center gap-4">
+                    <SidebarMenuButton>
+                      <item.icon className="size-5" />
+                      <span className="text-base">{item.title}</span>
+                    </SidebarMenuButton>
+                  </a>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -36,6 +33,5 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }
-

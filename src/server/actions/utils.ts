@@ -32,7 +32,7 @@ interface OrderResult {
   }>;
 }
 
-interface ShapedOrder {
+export interface ShapedOrder {
   id: number;
   orderNumber: string;
   customerPhone: number;
@@ -94,15 +94,13 @@ export const shapeOrderResult = (
 };
 export const shapeOrderResults = (
   results: OrderResult[] | undefined,
-): ShapedOrder[] | OrderError => {
-  if (results === undefined) {
-    return {
-      message: "Adding order failed",
-      error: "No order found",
-    };
-  }
+): ShapedOrder[]  => {
 
-  return results.map((result) => {
+    if (results === undefined) {
+      return [];
+    }
+
+  return results?.map((result) => {
     result.payments.sort(
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
     );
@@ -143,3 +141,15 @@ export const getDaysAgo = (days: number) => {
   date.setHours(0, 0, 0, 0);
   return date;
 };
+export const getStartAndEndofDayAgo=(days:number)=>{
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  date.setHours(0, 0, 0, 0);
+  const startDate = new Date();
+  startDate.setDate(date.getDate() - days);
+  startDate.setHours(0, 0, 0, 0);
+  const endDate = new Date();
+  endDate.setDate(date.getDate() - days);
+  endDate.setHours(23, 59, 59, 999);
+  return {startDate,endDate};
+}
