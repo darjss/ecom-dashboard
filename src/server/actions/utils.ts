@@ -144,7 +144,6 @@ export const getDaysAgo = (days: number) => {
 export const getStartAndEndofDayAgo=(days:number)=>{
   const date = new Date();
   date.setDate(date.getDate() - days);
-  date.setHours(0, 0, 0, 0);
   const startDate = new Date();
   startDate.setDate(date.getDate() - days);
   startDate.setHours(0, 0, 0, 0);

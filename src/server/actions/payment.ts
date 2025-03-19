@@ -7,6 +7,7 @@ import {
 } from "@/lib/types";
 import { db } from "../db";
 import { PaymentsTable } from "../db/schema";
+import { eq } from "drizzle-orm";
 
 export const createPayment = async (
   orderId: number,
@@ -26,4 +27,12 @@ export const createPayment = async (
 };
 export const getPayments = async () => {
   const result = await db.select().from(PaymentsTable);
+};
+
+export const getPendingPayments = async () => {
+  const result = await db
+    .select()
+    .from(PaymentsTable)
+    .where(eq(PaymentsTable.status, "pending"));
+  return result;
 };

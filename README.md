@@ -20,36 +20,35 @@
     - [x] add order
     - [x] edit order
     - [x] delete order
-    - [ ] add to sales table/record sale
+    - [x] add to sales table/record sale
     - [x] add to payment table
     - [x] order table pagination
     - [ ] detailed order view modal
     - [x] order table filter sort 
-    - [ ] payment management
+    - [ ] payment 
+    - [ ] qpay integration
     - [x] add payment
     - [ ] edit payment
     - [ ] delete/cancel order
-    - [ ] payment table pagination
-    - [ ] detailed payment view modal
   - [ ] purchase inventory management crud
     - [x] add purchase
     - [x] edit purchase
     - [x] delete/cancell purchase
-    - [ ] connect to sales table/ order process
+    - [x] connect to sales table/ order process
     - [x] purchase table pagination
     - [ ] detailed product view modal
     - [ ] running out of stock
   - [ ] search
   - [x] general pagination utility
   - [ ] analytics
-    - [ ] daily, weekly, monthly sale data
-    - [ ] most sold products
-    - [ ] trending fast selling products
+    - [x] daily, weekly, monthly sale data
+    - [x] most sold products
+    - [ ] analytics page ui
   - [ ] connect payment confirm to telegram bot
   - [x] brand crud
   - [x] category crud
-
-
+  - [ ] set up monorepo
+  - [ ] scrape product data from amazon/iherb using firecrawl
 
   payment flow:
   make order 
@@ -64,9 +63,9 @@
   total orders x
   top selling products x
   number of new customers
-  pending orders 
-  pending payments
-  sale trend line chart
+  pending orders x
+  pending payments x
+  sale trend line chart x
   website analytics total visits
   on analytics page:
   average order value 

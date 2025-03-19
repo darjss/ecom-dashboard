@@ -9,6 +9,7 @@ import {
   OrdersTable,
   PaymentsTable,
   ProductImagesTable,
+  SalesTable,
 } from "../db/schema";
 import { generateOrderNumber } from "@/lib/utils";
 import { createPayment } from "./payment";
@@ -28,7 +29,6 @@ import {
 import { addSale } from "./sales";
 import { getAverageCostOfProduct } from "./purchases";
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
-import { create } from "lodash";
 
 export const addOrder = async (orderInfo: addOrderType, createdAt?: Date) => {
   console.log("addOrder called with", orderInfo);
@@ -598,29 +598,3 @@ export const getPendingOrders = async () => {
   }
 };
 
-export const getOrderCountForWeek = async () => {
-  try {
-    const promises = [];
-    for (let i = 0; i < 7; i++) {
-      const { startDate, endDate } = getStartAndEndofDayAgo(i);
-      const dayPromise = db
-        .select({
-          count: sql<number>`COUNT(*)`,
-        })
-        .from(OrdersTable)
-        .where(between(OrdersTable.createdAt, startDate, endDate))
-        .get();
-      promises.push(dayPromise);
-    }
-    const results = await Promise.all(promises);
-    return results.map((result, i) => {
-      return {
-        count: result?.count ?? 0,
-        day: i + 1,
-      };
-    });
-  } catch (e) {
-    console.log(e);
-    return [];
-  }
-};

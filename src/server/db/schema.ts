@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import { index, int, sqliteTableCreator, text } from "drizzle-orm/sqlite-core";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import {
+  deliveryProvider,
   orderStatus,
   paymentProvider,
   paymentStatus,
@@ -16,6 +17,7 @@ export const UsersTable = createTable(
     id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
     username: text("username", { length: 256 }).notNull(),
     googleId: text("google_id", { length: 256 }).unique(),
+    isApproved: int("is_approved", {mode:"boolean"}).default(false).notNull(),
     createdAt: int("created_at", { mode: "timestamp" })
       .default(sql`(unixepoch())`)
       .notNull(),
@@ -145,6 +147,9 @@ export const OrdersTable = createTable(
       enum: orderStatus,
     }).notNull(),
     address: text("address", { length: 256 }).notNull(),
+    deliveryProvider: text("delivery_provider", {
+      enum: deliveryProvider,
+    }).notNull(),
     total: int("total", { mode: "number" }).notNull(),
     notes: text("notes"),
     createdAt: int("created_at", { mode: "timestamp" })

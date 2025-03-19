@@ -57,12 +57,13 @@ export const updateSession = async (session: Session) => {
   revalidateTag("session");
   return await redis.set(session.id, JSON.stringify(session));
 };
-export const createUser = async (googleId: string, username: string) => {
+export const createUser = async (googleId: string, username: string, isApproved:boolean=false) => {
   const [user] = await db
     .insert(UsersTable)
     .values({
       googleId,
       username,
+      isApproved  
     })
     .returning({
       id: UsersTable.id,

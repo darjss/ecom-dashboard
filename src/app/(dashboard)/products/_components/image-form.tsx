@@ -56,7 +56,7 @@ export const AddImageForm = ({
   );
   useEffect(() => {
     if (isEdit && fields.length > 0) {
-      console.log("this effect is working");
+      // console.log("this effect is working");
       const lastField = watchedImages[watchedImages.length - 1];
       if (lastField?.url && isValidUrl(lastField.url)) {
         append({ url: "" });
