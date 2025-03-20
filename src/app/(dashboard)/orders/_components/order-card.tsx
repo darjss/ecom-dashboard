@@ -5,69 +5,22 @@ import {
   Calendar,
   DollarSign,
   MapPin,
-  CheckCircle,
-  Info,
-  Copy,
+  CheckCircle, Copy
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import type { OrderType } from "@/lib/types";
 import RowActions from "../../../(dashboard)/products/_components/row-actions";
 import { deleteOrder } from "@/server/actions/order";
 import EditOrderForm from "./edit-order-form";
 import type { Dispatch, SetStateAction } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { getPaymentProviderIcon, getPaymentStatusColor, getStatusColor } from "@/lib/utils";
 
 const OrderCard = ({ order }: { order: OrderType }) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "delivered":
-        return "bg-emerald-100 text-emerald-800 border-emerald-200 font-medium";
-      case "pending":
-        return "bg-amber-50 text-amber-800 border-amber-200 font-medium";
-      case "shipped":
-        return "bg-sky-50 text-sky-800 border-sky-200 font-medium";
-      case "cancelled":
-        return "bg-rose-50 text-rose-800 border-rose-200 font-medium";
-      case "refunded":
-        return "bg-slate-100 text-slate-800 border-slate-200 font-medium";
-      default:
-        return "bg-slate-100 text-slate-800 border-slate-200 font-medium";
-    }
-  };
 
-  const getPaymentStatusColor = (status: string) => {
-    switch (status) {
-      case "success":
-        return "border-emerald-200 bg-emerald-50 text-emerald-800";
-      case "pending":
-        return "border-amber-200 bg-amber-50 text-amber-800";
-      case "failed":
-        return "border-rose-200 bg-rose-50 text-rose-800";
-      default:
-        return "border-slate-200 bg-slate-50 text-slate-800";
-    }
-  };
 
-  const getPaymentProviderIcon = (provider: string) => {
-    switch (provider.toLowerCase()) {
-      case "qpay":
-        return "📱";
-      case "cash":
-        return "💵";
-      case "transfer":
-        return "🏦";
-      default:
-        return "💳";
-    }
-  };
 
   return (
     <Card

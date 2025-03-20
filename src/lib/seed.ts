@@ -17,8 +17,8 @@ import { addOrder } from "@/server/actions/order";
 import { db } from "@/server/db";
 import { eq, sql } from "drizzle-orm";
 import { faker } from "@faker-js/faker";
-import { orderStatus, paymentStatus } from "./constants";
-import { OrderStatusType, PaymentStatusType } from "./types";
+import { deliveryProvider, orderStatus, paymentStatus } from "./constants";
+import { OrderDeliveryProviderType, OrderStatusType, PaymentStatusType } from "./types";
 import { set } from "lodash";
 
 // Sample data for brands
@@ -391,6 +391,7 @@ export const seedFakeOrders = async (
         status: orderStatus[Math.floor(Math.random() * orderStatus.length)] as OrderStatusType,
         paymentStatus:
           paymentStatus[Math.floor(Math.random() * paymentStatus.length)] as PaymentStatusType,
+        deliveryProvider: deliveryProvider[Math.floor(Math.random() * deliveryProvider.length)] as OrderDeliveryProviderType,
         isNewCustomer: false, // Customers are pre-inserted
         products: orderProducts,
         createdAt: faker.date.past({ years: 0.1 }), // Random date in the past ~30 days

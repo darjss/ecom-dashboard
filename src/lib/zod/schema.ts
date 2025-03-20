@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { orderStatus, paymentStatus, status } from "../constants";
+import { deliveryProvider, orderStatus, paymentStatus, status } from "../constants";
 
 export const imageSchema = z.object({
   url: z.string(),
@@ -66,6 +66,7 @@ export const addOrderSchema = z.object({
     .nullable(),
   status: z.enum(orderStatus),
   paymentStatus: z.enum(paymentStatus),
+  deliveryProvider: z.enum(deliveryProvider),
   isNewCustomer: z.boolean(),
   products: z.array(productSchema),
 });

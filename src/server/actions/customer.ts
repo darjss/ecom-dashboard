@@ -2,7 +2,9 @@
 import "server-only";
 import { db } from "../db";
 import { CustomerInsertType, CustomersTable } from "../db/schema";
-import { eq, getTableColumns, sql } from "drizzle-orm";
+import { eq, getTableColumns, gte, sql } from "drizzle-orm";
+import { TimeRange } from "@/lib/types";
+import { getDaysAgo, getStartOfDay } from "./utils";
 
 export const addUser = async (userInfo: CustomerInsertType) => {
   const result = db
@@ -30,12 +32,27 @@ export const getCustomerCount = async () => {
     .from(CustomersTable);
   return result;
 };
-export const getNewCustomersCount = async () => {
+export const getNewCustomersCount = async (timeRange: TimeRange) => {
+  let startDate;
+  switch (timeRange) {
+    case "daily":
+      startDate = getStartOfDay();
+      break;
+    case "weekly":
+      startDate = getDaysAgo(7);
+      break;
+    case "monthly":
+      startDate = getDaysAgo(30);
+      break;
+    default:
+      startDate = getStartOfDay();
+  }
   const result = await db
     .select({
       count: sql<number>`COUNT(*)`,
     })
     .from(CustomersTable)
-    .where(eq(CustomersTable.isNewCustomer, true));
-  return result;
+    .where(gte(CustomersTable.createdAt, startDate))
+    .get();
+  return result?.count ?? 0;
 };

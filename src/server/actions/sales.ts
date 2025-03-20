@@ -138,7 +138,6 @@ export const getMostSoldProducts = async (
     .groupBy(SalesTable.productId)
     .orderBy(sql`SUM(${SalesTable.quantitySold}) DESC`)
     .limit(productCount);
-  console.log("result", result);
   return result;
 };
 

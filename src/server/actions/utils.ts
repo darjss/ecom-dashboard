@@ -1,4 +1,5 @@
 import {
+  OrderDeliveryProviderType,
   OrderStatusType,
   PaymentProviderType,
   PaymentStatusType,
@@ -12,6 +13,7 @@ interface OrderResult {
   total: number;
   notes: string | null;
   address: string;
+  deliveryProvider: OrderDeliveryProviderType;
   createdAt: Date;
   updatedAt: Date | null;
   orderDetails: Array<{
@@ -42,6 +44,7 @@ export interface ShapedOrder {
   createdAt: Date;
   address: string;
   updatedAt: Date | null;
+  deliveryProvider: OrderDeliveryProviderType;
   products: Array<{
     quantity: number;
     name: string;
@@ -88,6 +91,7 @@ export const shapeOrderResult = (
       productId: orderDetail.product.id,
       imageUrl: orderDetail.product.images[0]?.url,
     })),
+    deliveryProvider: result.deliveryProvider,
     paymentStatus: result.payments[0]?.status,
     paymentProvider: result.payments[0]?.provider,
   };
@@ -117,6 +121,7 @@ export const shapeOrderResults = (
       address: result.address,
       createdAt: result.createdAt,
       updatedAt: result.updatedAt,
+      deliveryProvider: result.deliveryProvider,
       products: result.orderDetails.map((orderDetail) => ({
         quantity: orderDetail.quantity,
         name: orderDetail.product.name,

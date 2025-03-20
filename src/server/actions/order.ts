@@ -56,6 +56,7 @@ export const addOrder = async (orderInfo: addOrderType, createdAt?: Date) => {
           notes: orderInfo.notes,
           total: orderTotal,
           address: orderInfo.address,
+          deliveryProvider: orderInfo.deliveryProvider,
           createdAt: createdAt,
         })
         .returning({ orderId: OrdersTable.id });
@@ -520,7 +521,6 @@ export const getPaginatedOrders = async (
         ),
       );
     const orders = shapeOrderResults(result);
-    console.log("orders", orders);
     return {
       orders: orders,
       total: total[0]?.count,
@@ -586,12 +586,42 @@ export const getOrderCount = async (timeRange: TimeRange) => {
 
 export const getPendingOrders = async () => {
   try {
-    const result = await db.query.OrdersTable.findMany({
-      where: eq(OrdersTable.status, "pending"),
-      orderBy: desc(OrdersTable.createdAt),
-    });
-
-    return result;
+     const result = await db.query.OrdersTable.findMany({
+       where: eq(OrdersTable.status, "pending"),
+       orderBy: desc(OrdersTable.createdAt),
+       with: {
+         orderDetails: {
+           columns: {
+             quantity: true,
+           },
+           with: {
+             product: {
+               columns: {
+                 name: true,
+                 id: true,
+                 price: true,
+               },
+               with: {
+                 images: {
+                   columns: {
+                     url: true,
+                   },
+                   where: eq(ProductImagesTable.isPrimary, true),
+                 },
+               },
+             },
+           },
+         },
+         payments: {
+           columns: {
+             provider: true,
+             status: true,
+             createdAt: true,
+           },
+         },
+       },
+     });
+     return shapeOrderResults(result);
   } catch (e) {
     console.log(e);
     return [];

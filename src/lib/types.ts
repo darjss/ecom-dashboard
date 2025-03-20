@@ -1,7 +1,7 @@
 import { getAllBrands } from "@/server/actions/brand";
 import { getAllCategories } from "@/server/actions/category";
 import { getProductById, searchProductByNameForOrder } from "@/server/actions/product";
-import { orderStatus, paymentProvider, paymentStatus } from "./constants";
+import { deliveryProvider, orderStatus, paymentProvider, paymentStatus } from "./constants";
 import { ResultSet } from "@libsql/client";
 import { SQLiteTransaction } from "drizzle-orm/sqlite-core";
 import { ExtractTablesWithRelations } from "drizzle-orm";
@@ -19,6 +19,7 @@ export type OrderType = Exclude<
 >;
 export type PaymentProviderType = (typeof paymentProvider)[number];
 export type PaymentStatusType = (typeof paymentStatus)[number] ;
+export type OrderDeliveryProviderType=(typeof deliveryProvider)[number]
 export type TransactionType = SQLiteTransaction<
   "async",
   ResultSet,

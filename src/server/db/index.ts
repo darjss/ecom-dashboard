@@ -35,5 +35,5 @@ export const client =
 
 if (isDevelopment) globalForDb.client = client;
 
-export const db = drizzle(client, { schema });
+export const db = drizzle(client, { schema: schema, logger: true });
 export const redis = Redis.fromEnv();

@@ -1,9 +1,5 @@
 import { getOrderCount, getPendingOrders } from "@/server/actions/order";
-import {
-  getAnalytics,
-  getMostSoldProducts,
-  getOrderCountForWeek,
-} from "@/server/actions/sales";
+import { getAnalytics, getMostSoldProducts } from "@/server/actions/sales";
 import { Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPendingPayments } from "@/server/actions/payment";
@@ -12,126 +8,210 @@ import TopProductsList from "./_components/top-product-list";
 import PendingOrdersList from "./_components/pending-order-list";
 import PendingPaymentsList from "./_components/pending-payment-list";
 import OrderSalesChart from "./_components/order-sales-chart";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getNewCustomersCount } from "@/server/actions/customer";
+import { connection } from "next/server";
 
-const DashboardHome = async () => {
-  // Fetch all data for different time periods
-  const salesDaily = await getAnalytics("daily");
-  const salesWeekly = await getAnalytics("weekly");
-  const salesMonthly = await getAnalytics("monthly");
-
-  const mostSoldProductsDaily = await getMostSoldProducts("daily");
-  const mostSoldProductsWeekly = await getMostSoldProducts("weekly");
-  const mostSoldProductsMonthly = await getMostSoldProducts("monthly");
-
-  const dailyOrders = await getOrderCount("daily");
-  const weeklyOrders = await getOrderCount("weekly");
-  const monthlyOrders = await getOrderCount("monthly");
-
-  const pendingPayments = await getPendingPayments();
-
-  const newCustomers = { daily: 5, weekly: 18, monthly: 42 };
-  const totalVisits = { daily: 120, weekly: 540, monthly: 1254 };
-  return (
-    <Suspense
-      fallback={
-        <div className="flex h-screen items-center justify-center">
-          <div className="flex flex-col items-center gap-2">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-            <p className="text-sm text-muted-foreground">
-              Loading dashboard...
-            </p>
+// Loading component for better UX
+const DashboardLoading = () => (
+  <div className="container mx-auto space-y-4 px-2 py-4 sm:space-y-6 sm:px-4 sm:py-6 md:px-6 md:py-8">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-4">
+      {[...Array(4)].map((_, i) => (
+        <Card key={i} className="overflow-hidden">
+          <div className="p-3 sm:p-4 md:p-6">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-3 w-16 sm:h-4 sm:w-24" />
+              <Skeleton className="h-6 w-6 rounded-full sm:h-8 sm:w-8" />
+            </div>
+            <div className="mt-2 sm:mt-3">
+              <Skeleton className="h-6 w-24 sm:h-8 sm:w-32" />
+              <Skeleton className="mt-1 h-2 w-28 sm:mt-2 sm:h-3 sm:w-40" />
+            </div>
           </div>
-        </div>
-      }
-    >
-      <div className="container mx-auto space-y-6 px-4 py-6 md:px-6 md:py-8">
+        </Card>
+      ))}
+    </div>
+    <div className="grid gap-4 sm:gap-6">
+      <Skeleton className="h-[300px] w-full rounded-lg sm:h-[350px] md:h-[400px]" />
+      <Skeleton className="h-[300px] w-full rounded-lg sm:h-[350px] md:h-[400px]" />
+    </div>
+  </div>
+);
 
-        <Tabs defaultValue="daily" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+// Main dashboard component
+const DashboardHome = async () => {
+  await connection();
+  // Parallel data fetching for better performance
+  const [
+    salesData,
+    mostSoldProducts,
+    orderCounts,
+    newCustomers,
+    pendingOrders,
+  ] = await Promise.all([
+    Promise.all([
+      getAnalytics("daily"),
+      getAnalytics("weekly"),
+      getAnalytics("monthly"),
+    ]),
+    Promise.all([
+      getMostSoldProducts("daily"),
+      getMostSoldProducts("weekly"),
+      getMostSoldProducts("monthly"),
+    ]),
+    Promise.all([
+      getOrderCount("daily"),
+      getOrderCount("weekly"),
+      getOrderCount("monthly"),
+    ]),
+    Promise.all([
+      getNewCustomersCount("daily"),
+      getNewCustomersCount("weekly"),
+      getNewCustomersCount("monthly"),
+    ]),
+    getPendingOrders(),
+  ]);
+
+  const [salesDaily, salesWeekly, salesMonthly] = salesData;
+  const [
+    mostSoldProductsDaily,
+    mostSoldProductsWeekly,
+    mostSoldProductsMonthly,
+  ] = mostSoldProducts;
+  const [dailyOrders, weeklyOrders, monthlyOrders] = orderCounts;
+  const [dailyNewCustomers, weeklyNewCustomers, monthlyNewCustomers] =
+    newCustomers;
+  // Mock data (consider replacing with real data from an API)
+  const totalVisits = { daily: 120, weekly: 540, monthly: 1254 };
+
+  return (
+    <Suspense fallback={<DashboardLoading />}>
+      <div className="container mx-auto space-y-4 px-2 py-4 sm:space-y-6 sm:px-4 sm:py-6 md:space-y-8 md:px-6 md:py-8">
+        <header className="mb-4 sm:mb-6 md:mb-8">
+          <h1 className="text-xl font-bold tracking-tight sm:text-2xl md:text-3xl">
+            Dashboard
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+            Monitor your business performance and key metrics
+          </p>
+        </header>
+
+        <Tabs
+          defaultValue="daily"
+          className="space-y-4 sm:space-y-6 md:space-y-8"
+        >
+          <TabsList className="grid w-full max-w-xs grid-cols-3 sm:max-w-sm md:max-w-md">
             <TabsTrigger value="daily">Daily</TabsTrigger>
             <TabsTrigger value="weekly">Weekly</TabsTrigger>
             <TabsTrigger value="monthly">Monthly</TabsTrigger>
           </TabsList>
 
           {/* Daily View */}
-          <TabsContent value="daily" className="space-y-6">
+          <TabsContent
+            value="daily"
+            className="space-y-4 sm:space-y-6 md:space-y-8"
+          >
             <MetricsGrid
               sales={salesDaily}
               orders={dailyOrders.count}
-              newCustomers={newCustomers.daily}
+              newCustomers={dailyNewCustomers}
               visits={totalVisits.daily}
             />
+            <div className="grid gap-4 sm:gap-6 md:gap-8 lg:grid-cols-1">
+              <div className="w-full overflow-x-auto pb-4">
+                <PendingOrdersList orders={pendingOrders} />
+              </div>
+              {/* <div className="w-full overflow-x-auto pb-4">
+                <PendingPaymentsList payments={pendingPayments} />
+              </div> */}
+            </div>
+            <div className="grid gap-4 sm:gap-6 md:gap-8 lg:grid-cols-2">
+              <Card>
+                <CardHeader className="pb-0 pt-4 sm:pb-2 sm:pt-6">
+                  <CardTitle className="text-base sm:text-lg">
+                    Sales Overview
+                  </CardTitle>
+                </CardHeader>
+                <OrderSalesChart />
+              </Card>
 
-            <div className="grid gap-6 md:grid-cols-3">
               <TopProductsList
                 products={mostSoldProductsDaily.slice(0, 5)}
                 period="Today"
               />
-              <OrderSalesChart />
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Pending Orders */}
-              <PendingOrdersList orders={await getPendingOrders()} />
-
-              {/* Pending Payments */}
-              <PendingPaymentsList payments={pendingPayments} />
             </div>
           </TabsContent>
 
           {/* Weekly View */}
-          <TabsContent value="weekly" className="space-y-6">
+          <TabsContent
+            value="weekly"
+            className="space-y-4 sm:space-y-6 md:space-y-8"
+          >
             <MetricsGrid
               sales={salesWeekly}
               orders={weeklyOrders.count}
-              newCustomers={newCustomers.weekly}
+              newCustomers={weeklyNewCustomers}
               visits={totalVisits.weekly}
             />
+            <div className="grid gap-4 sm:gap-6 md:gap-8 lg:grid-cols-1">
+              <div className="w-full overflow-x-auto pb-4">
+                <PendingOrdersList orders={pendingOrders} />
+              </div>
+              {/* <div className="w-full overflow-x-auto pb-4">
+                <PendingPaymentsList payments={pendingPayments} />
+              </div> */}
+            </div>
+            <div className="grid gap-4 sm:gap-6 md:gap-8 lg:grid-cols-2">
+              <Card>
+                <CardHeader className="pb-0 pt-4 sm:pb-2 sm:pt-6">
+                  <CardTitle className="text-base sm:text-lg">
+                    Weekly Sales Overview
+                  </CardTitle>
+                </CardHeader>
+                <OrderSalesChart />
+              </Card>
 
-            <div className="grid gap-6 md:grid-cols-3">
-              {/* Top Selling Products */}
               <TopProductsList
                 products={mostSoldProductsWeekly.slice(0, 5)}
                 period="This Week"
               />
-              <OrderSalesChart />
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Pending Orders */}
-              <PendingOrdersList orders={await getPendingOrders()} />
-
-              {/* Pending Payments */}
-              <PendingPaymentsList payments={pendingPayments} />
             </div>
           </TabsContent>
 
           {/* Monthly View */}
-          <TabsContent value="monthly" className="space-y-6">
+          <TabsContent
+            value="monthly"
+            className="space-y-4 sm:space-y-6 md:space-y-8"
+          >
             <MetricsGrid
               sales={salesMonthly}
               orders={monthlyOrders.count}
-              newCustomers={newCustomers.monthly}
+              newCustomers={monthlyNewCustomers}
               visits={totalVisits.monthly}
             />
+            <div className="grid gap-4 sm:gap-6 md:gap-8 lg:grid-cols-1">
+              <div className="w-full overflow-x-auto pb-4">
+                <PendingOrdersList orders={pendingOrders} />
+              </div>
+              {/* <div className="w-full overflow-x-auto pb-4">
+                <PendingPaymentsList payments={pendingPayments} />
+              </div> */}
+            </div>
+            <div className="grid gap-4 sm:gap-6 md:gap-8 lg:grid-cols-2">
+              <Card>
+                <CardHeader className="pb-0 pt-4 sm:pb-2 sm:pt-6">
+                  <CardTitle className="text-base sm:text-lg">
+                    Monthly Sales Overview
+                  </CardTitle>
+                </CardHeader>
+                <OrderSalesChart />
+              </Card>
 
-            <div className="grid gap-6 md:grid-cols-3">
-              {/* Sales Trend Chart */}
-
-              {/* Top Selling Products */}
               <TopProductsList
                 products={mostSoldProductsMonthly.slice(0, 5)}
                 period="This Month"
               />
-              <OrderSalesChart />
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Pending Orders */}
-              <PendingOrdersList orders={await getPendingOrders()} />
-
-              {/* Pending Payments */}
-              <PendingPaymentsList payments={pendingPayments} />
             </div>
           </TabsContent>
         </Tabs>

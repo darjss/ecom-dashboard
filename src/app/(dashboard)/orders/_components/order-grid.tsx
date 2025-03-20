@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 
 import { getPaginatedOrders, searchOrder } from "@/server/actions/order";
-import { PRODUCT_PER_PAGE } from "@/lib/constants";
+import { orderStatus, paymentStatus, PRODUCT_PER_PAGE } from "@/lib/constants";
 // import { useAction } from "@/hooks/use-action";
 import type {
   OrderStatusType,
@@ -44,7 +44,6 @@ const OrderGrid = () => {
   const [orderStatusFilter, setOrderStatusFilter] = useQueryState("status");
   const [paymentStatusFilter, setPaymentStatusFilter] =
     useQueryState("payment");
-  // const [isSearching, setIsSearching] = useState(false);
 
   const { data, isLoading, isFetching } = useQuery(
     [
@@ -208,11 +207,11 @@ const OrderGrid = () => {
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent className="max-h-[200px]">
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="shipped">Shipped</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                  <SelectItem value="refunded">Refunded</SelectItem>
+                  {orderStatus.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -225,9 +224,11 @@ const OrderGrid = () => {
                   <SelectValue placeholder="All Payments" />
                 </SelectTrigger>
                 <SelectContent className="max-h-[200px]">
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="success">Success</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
+                  {paymentStatus.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -287,7 +288,7 @@ const OrderGrid = () => {
         )}
 
         {isLoading || isFetching ? (
-          <div className="space-y-4">
+        <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, index) => (
               <OrderSkeleton key={index} />
             ))}

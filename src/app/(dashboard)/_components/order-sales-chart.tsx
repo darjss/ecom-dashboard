@@ -1,11 +1,6 @@
 "use client";
-import React from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  CardContent
 } from "@/components/ui/card";
 import {
   BarChart,
@@ -15,9 +10,13 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { getOrderCountForWeek } from "@/server/actions/sales";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowUpRight, BarChart3 } from "lucide-react";
+import { max } from "lodash";
 
 const OrderSalesChart = () => {
   const { data, isLoading, isError } = useQuery({
@@ -27,61 +26,86 @@ const OrderSalesChart = () => {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Weekly Orders</CardTitle>
-          <CardDescription>Loading chart data...</CardDescription>
-        </CardHeader>
-        <CardContent className="flex h-[300px] items-center justify-center">
-          <div className="animate-pulse">Loading...</div>
-        </CardContent>
-      </Card>
+      <CardContent className="px-0 pb-0">
+        <div className="flex h-[300px] items-center justify-center">
+          <Skeleton className="h-[280px] w-full" />
+        </div>
+      </CardContent>
     );
   }
 
   if (isError) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Weekly Orders</CardTitle>
-          <CardDescription>Error loading chart data</CardDescription>
-        </CardHeader>
-        <CardContent className="flex h-[300px] items-center justify-center">
-          <div className="text-destructive">Failed to load chart data</div>
-        </CardContent>
-      </Card>
+      <CardContent className="px-0 pb-0">
+        <div className="flex h-[300px] flex-col items-center justify-center gap-2 rounded-md border border-dashed p-8 text-center">
+          <BarChart3 className="h-10 w-10 text-muted-foreground/50" />
+          <h3 className="text-lg font-semibold">Failed to load chart data</h3>
+          <p className="text-sm text-muted-foreground">
+            There was an error loading the sales data. Please try again later.
+          </p>
+        </div>
+      </CardContent>
     );
   }
 
-  // Reverse the data to show oldest to newest (left to right)
   const chartData = [...data].reverse();
 
+  const average =
+    chartData.reduce((sum, item) => sum + item.orderCount, 0) /
+    chartData.length;
+
+  const maxValue = Math.max(...chartData.map((item) => item.orderCount));
+  console.log(maxValue);
+
   return (
-    <Card className="col-span-2">
-      <CardHeader>
-        <CardTitle>Weekly Orders</CardTitle>
-        <CardDescription>Orders for the past 7 days</CardDescription>
-      </CardHeader>
-      <CardContent className="h-[300px]">
+    <CardContent className="px-0 pb-0">
+      <div className="mb-4 flex items-center justify-between px-6">
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+              <BarChart3 className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">Average orders</p>
+              <p className="text-2xl font-bold">{average.toFixed(1)}</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
+          <ArrowUpRight className="h-3 w-3" />
+          <span>12% increase</span>
+        </div>
+      </div>
+      <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
             margin={{
-              top: 5,
+              top: 20,
               right: 30,
               left: 20,
-              bottom: 5,
+              bottom: 20,
             }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#888" opacity={0.2} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="#888"
+              opacity={0.15}
+              vertical={false}
+            />
             <XAxis
               dataKey="date"
               tick={{ fontSize: 12 }}
-              tickLine={{ stroke: "#888", strokeWidth: 1 }}
+              tickLine={false}
+              axisLine={{ stroke: "#888", strokeOpacity: 0.2 }}
+              dy={10}
             />
             <YAxis
               tick={{ fontSize: 12 }}
-              tickLine={{ stroke: "#888", strokeWidth: 1 }}
+              tickLine={false}
+              axisLine={false}
+              domain={[0, maxValue ]}
+              width={40}
             />
             <Tooltip
               contentStyle={{
@@ -91,12 +115,32 @@ const OrderSalesChart = () => {
                 boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
               }}
               labelStyle={{ fontWeight: "bold", marginBottom: "4px" }}
+              formatter={(value) => [`${value} orders`, "Orders"]}
+              cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
             />
-            <Bar dataKey="orderCount" fill="hsl(var(--primary))" />
+            <ReferenceLine
+              y={average}
+              stroke="hsl(var(--primary))"
+              strokeDasharray="3 3"
+              strokeOpacity={0.7}
+              label={{
+                value: "Average",
+                position: "insideTopRight",
+                fill: "hsl(var(--primary))",
+                fontSize: 12,
+              }}
+            />
+            <Bar
+              dataKey="orderCount"
+              fill="hsl(var(--primary))"
+              radius={[4, 4, 0, 0]}
+              barSize={40}
+              animationDuration={1000}
+            />
           </BarChart>
         </ResponsiveContainer>
-      </CardContent>
-    </Card>
+      </div>
+    </CardContent>
   );
 };
 
