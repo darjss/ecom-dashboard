@@ -51,7 +51,7 @@ yarn-error.log*
 .sst
 
 #pnpm
-pnpm-lock.yml
+pnpm-lock.yaml
 
 
 # open-next

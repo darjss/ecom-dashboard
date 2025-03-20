@@ -248,9 +248,9 @@ export const getPaginatedProducts = async (
       conditions.push(eq(ProductsTable.brandId, brandId));
     }
 
-    if (categoryId !== undefined && categoryId !== 0) {
-      conditions.push(eq(ProductsTable.categoryId, categoryId));
-    }
+      if (categoryId !== undefined && categoryId !== 0) {
+        conditions.push(eq(ProductsTable.categoryId, categoryId));
+      }
 
     let orderBy;
     if (sortField === "price") {
