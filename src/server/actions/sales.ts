@@ -25,6 +25,7 @@ export const addSale = async (sale: AddSalesType, tx?: TransactionType) => {
 
 export const getAnalytics = async (timeRange: TimeRange = "daily") => {
   "use cache";
+  cacheLife("hours");
 
   cacheTag(`analytics-${timeRange}`);
 

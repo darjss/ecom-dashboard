@@ -32,27 +32,27 @@ export const getCustomerCount = async () => {
     .from(CustomersTable);
   return result;
 };
-export const getNewCustomersCount = async (timeRange: TimeRange) => {
-  let startDate;
-  switch (timeRange) {
-    case "daily":
-      startDate = getStartOfDay();
-      break;
-    case "weekly":
-      startDate = getDaysAgo(7);
-      break;
-    case "monthly":
-      startDate = getDaysAgo(30);
-      break;
-    default:
-      startDate = getStartOfDay();
-  }
-  const result = await db
-    .select({
-      count: sql<number>`COUNT(*)`,
-    })
-    .from(CustomersTable)
-    .where(gte(CustomersTable.createdAt, startDate))
-    .get();
-  return result?.count ?? 0;
-};
+// export const getNewCustomersCount = async (timeRange: TimeRange) => {
+//   let startDate;
+  // switch (timeRange) {
+  //   case "daily":
+  //     startDate = getStartOfDay();
+  //     break;
+  //   case "weekly":
+  //     startDate = getDaysAgo(7);
+  //     break;
+  //   case "monthly":
+  //     startDate = getDaysAgo(30);
+  //     break;
+  //   default:
+  //     startDate = getStartOfDay();
+  // }
+//   const result = await db
+//     .select({
+//       count: sql<number>`COUNT(*)`,
+//     })
+//     .from(CustomersTable)
+//     .where(gte(CustomersTable.createdAt, new Date()))
+//     .get();
+//   return result?.count ?? 0;
+// };

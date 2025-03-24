@@ -8,7 +8,7 @@ import PendingOrdersList from "./_components/pending-order-list";
 import OrderSalesChart from "./_components/order-sales-chart";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getNewCustomersCount } from "@/server/actions/customer";
+// import { getNewCustomersCount } from "@/server/actions/customer";
 import { connection } from "next/server";
 
 // Loading component for better UX
@@ -39,13 +39,12 @@ const DashboardLoading = () => (
 
 // Main dashboard component
 const DashboardHome = async () => {
-  await connection();
+  // await connection();
   // Parallel data fetching for better performance
   const [
     salesData,
     mostSoldProducts,
     orderCounts,
-    newCustomers,
     pendingOrders,
   ] = await Promise.all([
     Promise.all([
@@ -63,11 +62,11 @@ const DashboardHome = async () => {
       getOrderCount("weekly"),
       getOrderCount("monthly"),
     ]),
-    Promise.all([
-      getNewCustomersCount("daily"),
-      getNewCustomersCount("weekly"),
-      getNewCustomersCount("monthly"),
-    ]),
+    // Promise.all([
+    //   getNewCustomersCount("daily"),
+    //   getNewCustomersCount("weekly"),
+    //   getNewCustomersCount("monthly"),
+    // ]),
     getPendingOrders(),
   ]);
 
@@ -78,8 +77,8 @@ const DashboardHome = async () => {
     mostSoldProductsMonthly,
   ] = mostSoldProducts;
   const [dailyOrders, weeklyOrders, monthlyOrders] = orderCounts;
-  const [dailyNewCustomers, weeklyNewCustomers, monthlyNewCustomers] =
-    newCustomers;
+  // const [dailyNewCustomers, weeklyNewCustomers, monthlyNewCustomers] =
+  //   newCustomers;
   // Mock data (consider replacing with real data from an API)
   const totalVisits = { daily: 120, weekly: 540, monthly: 1254 };
 
@@ -105,7 +104,7 @@ const DashboardHome = async () => {
             <MetricsGrid
               sales={salesDaily}
               orders={dailyOrders.count}
-              newCustomers={dailyNewCustomers}
+              newCustomers={0}
               visits={totalVisits.daily}
             />
             <div className="grid gap-4 sm:gap-6 md:gap-8 lg:grid-cols-1">
@@ -141,7 +140,7 @@ const DashboardHome = async () => {
             <MetricsGrid
               sales={salesWeekly}
               orders={weeklyOrders.count}
-              newCustomers={weeklyNewCustomers}
+              newCustomers={1}
               visits={totalVisits.weekly}
             />
             <div className="grid gap-4 sm:gap-6 md:gap-8 lg:grid-cols-1">
@@ -177,7 +176,7 @@ const DashboardHome = async () => {
             <MetricsGrid
               sales={salesMonthly}
               orders={monthlyOrders.count}
-              newCustomers={monthlyNewCustomers}
+              newCustomers={5}
               visits={totalVisits.monthly}
             />
             <div className="grid gap-4 sm:gap-6 md:gap-8 lg:grid-cols-1">
