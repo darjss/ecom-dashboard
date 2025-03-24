@@ -3,6 +3,7 @@ import "server-only";
 import {
   BrandInsertType,
   CategoryInsertType,
+  CustomerInsertType,
   CustomersTable,
   ProductImagesTable,
   ProductsTable,
@@ -11,7 +12,6 @@ import {
 import { addProductType } from "@/lib/zod/schema";
 import { addBrand } from "@/server/actions/brand";
 import { addCategory } from "@/server/actions/category";
-import { addProduct } from "@/server/actions/product";
 import { revalidateTag } from "next/cache";
 import { addOrder } from "@/server/actions/order";
 import { db } from "@/server/db";
@@ -19,7 +19,6 @@ import { eq, sql } from "drizzle-orm";
 import { faker } from "@faker-js/faker";
 import { deliveryProvider, orderStatus, paymentStatus } from "./constants";
 import { OrderDeliveryProviderType, OrderStatusType, PaymentStatusType } from "./types";
-import { set } from "lodash";
 
 // Sample data for brands
 const brandsData: BrandInsertType[] = [
@@ -210,139 +209,17 @@ const productsData: addProductType[] = [
     ],
     status: "active",
   },
-];
-const ordersData = [
-  {
-    customerPhone: 60123456,
-    address: "123 Main Street, Kuala Lumpur, 50000",
-    notes: "Please call before delivery",
-    status: "pending" as const,
-    paymentStatus: "success" as const,
-    isNewCustomer: true,
-    products: [
-      { productId: 1, quantity: 2, price: 50000 },
-      { productId: 3, quantity: 1, price: 75000 },
-    ],
-  },
-  {
-    customerPhone: 61234567,
-    address: "45 Garden Avenue, Petaling Jaya, 47301",
-    notes: null,
-    status: "pending" as const,
-    paymentStatus: "pending" as const,
-    isNewCustomer: true,
-    products: [
-      { productId: 2, quantity: 3, price: 80000 },
-      { productId: 5, quantity: 1, price: 120000 },
-    ],
-  },
-  {
-    customerPhone: 62345678,
-    address: "78 Jalan Bukit Bintang, Kuala Lumpur, 55100",
-    notes: "Leave with security guard if not at home",
-    status: "delivered" as const,
-    paymentStatus: "success" as const,
-    isNewCustomer: true,
-    products: [
-      { productId: 4, quantity: 1, price: 90000 },
-      { productId: 6, quantity: 2, price: 150000 },
-    ],
-  },
-  {
-    customerPhone: 63456789,
-    address: "221 Jalan Ampang, Ampang, 68000",
-    notes: "Fragile items, handle with care",
-    status: "pending" as const,
-    paymentStatus: "pending" as const,
-    isNewCustomer: true,
-    products: [
-      { productId: 7, quantity: 1, price: 60000 },
-      { productId: 9, quantity: 1, price: 85000 },
-    ],
-  },
-  {
-    customerPhone: 64567890,
-    address: "15 Jalan Tun Razak, Kuala Lumpur, 50400",
-    notes: null,
-    status: "pending" as const,
-    paymentStatus: "failed" as const,
-    isNewCustomer: true,
-    products: [
-      { productId: 8, quantity: 2, price: 70000 },
-      { productId: 10, quantity: 1, price: 100000 },
-    ],
-  },
-  {
-    customerPhone: 65678901,
-    address: "88 Lebuh Armenian, Georgetown, Penang, 10200",
-    notes: "Please deliver after 6pm",
-    status: "delivered" as const,
-    paymentStatus: "success" as const,
-    isNewCustomer: true,
-    products: [
-      { productId: 1, quantity: 1, price: 50000 },
-      { productId: 5, quantity: 1, price: 120000 },
-      { productId: 9, quantity: 1, price: 85000 },
-    ],
-  },
-  {
-    customerPhone: 66789012,
-    address: "32 Jalan Wong Ah Fook, Johor Bahru, 80000",
-    notes: "Contact on WhatsApp before delivery",
-    status: "pending" as const,
-    paymentStatus: "success" as const,
-    isNewCustomer: true,
-    products: [
-      { productId: 2, quantity: 1, price: 80000 },
-      { productId: 4, quantity: 2, price: 90000 },
-    ],
-  },
-  {
-    customerPhone: 67890123,
-    address: "55 Jalan Laksamana, Melaka, 75000",
-    notes: null,
-    status: "pending" as const,
-    paymentStatus: "pending" as const,
-    isNewCustomer: true,
-    products: [
-      { productId: 3, quantity: 3, price: 75000 },
-      { productId: 6, quantity: 1, price: 150000 },
-    ],
-  },
-  {
-    customerPhone: 68901234,
-    address: "101 Jalan Sultan Ismail, Kuala Lumpur, 50250",
-    notes: "Gift wrapping requested",
-    status: "delivered" as const,
-    paymentStatus: "success" as const,
-    isNewCustomer: true,
-    products: [
-      { productId: 7, quantity: 2, price: 60000 },
-      { productId: 10, quantity: 1, price: 100000 },
-    ],
-  },
-  {
-    customerPhone: 69012345,
-    address: "77 Jalan Sri Hartamas, Kuala Lumpur, 50480",
-    notes: "Delivery to office building",
-    status: "pending" as const,
-    paymentStatus: "pending" as const,
-    isNewCustomer: true,
-    products: [
-      { productId: 8, quantity: 1, price: 70000 },
-      { productId: 9, quantity: 1, price: 85000 },
-      { productId: 1, quantity: 1, price: 50000 },
-    ],
-  },
-];
-export const seedFakeOrders = async (
+
+];export const seedFakeOrders = async (
   numOrders: number,
-  insertedProducts: { id: number; price: number }[],
+  insertedProducts: { id: number; price: number }[]
 ) => {
   try {
-    // Step 1: Generate fake customers
-    const fakeCustomers = [];
+    // Step 1: Generate fake customers in batches
+    const BATCH_SIZE = 10;
+    const fakeCustomers:{phone: number, address:string}[]  = [];
     const phoneSet = new Set<number>();
+
     while (fakeCustomers.length < 50) {
       const phone =
         Math.floor(Math.random() * (99999999 - 60000000 + 1)) + 60000000;
@@ -355,57 +232,68 @@ export const seedFakeOrders = async (
       }
     }
 
-    // Step 2: Insert fake customers into the database
-    for (const customer of fakeCustomers) {
-      await db.insert(CustomersTable).values(customer);
-    }
+    // Step 2: Insert customers in a single transaction
+    await db.transaction(async (tx) => {
+      for (const customer of fakeCustomers) {
+        await tx.insert(CustomersTable).values(customer);
+      }
+    });
 
-    // Step 3: Generate fake orders
-    const fakeOrders = [];
-    for (let i = 0; i < numOrders; i++) {
+    // Step 3: Generate all fake orders first
+    const fakeOrders = Array.from({ length: numOrders }, () => {
       const customer =
         fakeCustomers[Math.floor(Math.random() * fakeCustomers.length)];
-      const numProducts = Math.floor(Math.random() * 5) + 1; // 1 to 5 products
+      const numProducts = Math.floor(Math.random() * 5) + 1;
       const orderProducts = [];
+
       for (let j = 0; j < numProducts; j++) {
         const product =
           insertedProducts[Math.floor(Math.random() * insertedProducts.length)];
-          if(product===undefined || customer===undefined){
-            console.log("product or customer is undefined");
-            continue;
-          }
-        orderProducts.push({
-          productId: product.id,
-          quantity: Math.floor(Math.random() * 10) + 1, // 1 to 10 units
-          price: product.price, // Use current price for simplicity
-        });
+        if (product && customer) {
+          orderProducts.push({
+            productId: product.id,
+            quantity: Math.floor(Math.random() * 10) + 1,
+            price: product.price,
+          });
+        }
       }
-      if(customer===undefined){
-        console.log("customer is undefined");
-        continue;
-      }
-      fakeOrders.push({
+
+      if (!customer) return null;
+
+      return {
         customerPhone: customer.phone,
         address: customer.address,
         notes: Math.random() > 0.5 ? faker.lorem.sentence() : null,
-        status: orderStatus[Math.floor(Math.random() * orderStatus.length)] as OrderStatusType,
-        paymentStatus:
-          paymentStatus[Math.floor(Math.random() * paymentStatus.length)] as PaymentStatusType,
-        deliveryProvider: deliveryProvider[Math.floor(Math.random() * deliveryProvider.length)] as OrderDeliveryProviderType,
-        isNewCustomer: false, // Customers are pre-inserted
+        status: orderStatus[
+          Math.floor(Math.random() * orderStatus.length)
+        ] as OrderStatusType,
+        paymentStatus: paymentStatus[
+          Math.floor(Math.random() * paymentStatus.length)
+        ] as PaymentStatusType,
+        deliveryProvider: deliveryProvider[
+          Math.floor(Math.random() * deliveryProvider.length)
+        ] as OrderDeliveryProviderType,
+        isNewCustomer: false,
         products: orderProducts,
-        createdAt: faker.date.past({ years: 0.1 }), // Random date in the past ~30 days
-      });
-    }
+        createdAt: faker.date.past({ years: 0.1 }),
+      };
+    }).filter((order): order is NonNullable<typeof order> => order !== null);
 
-    // Step 4: Sort fake orders by createdAt to maintain chronological order
+    // Step 4: Sort orders by createdAt
     fakeOrders.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
-    // Step 5: Add orders sequentially using addOrder
-    for (const order of fakeOrders) {
-      setTimeout(async () => {
-        await addOrder(order, order.createdAt);
-      }, 1000);
+    // Step 5: Process orders in batches
+    const batches = [];
+    for (let i = 0; i < fakeOrders.length; i += BATCH_SIZE) {
+      batches.push(fakeOrders.slice(i, i + BATCH_SIZE));
+    }
+
+    for (const batch of batches) {
+      await Promise.all(
+        batch.map((order) => addOrder(order, order.createdAt))
+      );
+      // Add a small delay between batches to prevent overwhelming the database
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
     console.log(`${numOrders} fake orders seeded successfully.`);
@@ -417,91 +305,134 @@ export const seedFakeOrders = async (
 
 export const seedDatabase = async () => {
   try {
-    // Add brands
-    for (const brand of brandsData) {
-      await addBrand(brand);
-    }
+    // Step 1: Add brands and categories in parallel
+    await Promise.all([
+      ...brandsData.map((brand) => addBrand(brand)),
+      ...categoriesData.map((category) => addCategory(category)),
+    ]);
 
-    // Add categories
-    for (const category of categoriesData) {
-      await addCategory(category);
-    }
     revalidateTag("brandCategory");
 
-    // Add products with initial stock set to 0
+    // Step 2: Add products in batches
+    const BATCH_SIZE = 5;
     const insertedProducts: { id: number; stock: number; price: number }[] = [];
-    for (const product of productsData) {
-      const productResult = await db
-        .insert(ProductsTable)
-        .values({
-          name: product.name,
-          slug: product.name.replace(/\s+/g, "-").toLowerCase(),
-          description: product.description,
-          discount: 0,
-          amount: product.amount,
-          potency: product.potency,
-          stock: 0, // Set initial stock to 0
-          price: product.price,
-          dailyIntake: product.dailyIntake,
-          categoryId: product.categoryId,
-          brandId: product.brandId,
-          status: "active",
+
+    // Process products in batches
+    for (let i = 0; i < productsData.length; i += BATCH_SIZE) {
+      const batch = productsData.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.map(async (product) => {
+          try {
+            const productResult = await db
+              .insert(ProductsTable)
+              .values({
+                name: product.name,
+                slug: product.name.replace(/\s+/g, "-").toLowerCase(),
+                description: product.description,
+                discount: 0,
+                amount: product.amount,
+                potency: product.potency,
+                stock: 0,
+                price: product.price,
+                dailyIntake: product.dailyIntake,
+                categoryId: product.categoryId,
+                brandId: product.brandId,
+                status: "active",
+              })
+              .returning({ id: ProductsTable.id });
+
+            if (productResult[0]) {
+              const productId = productResult[0].id;
+              insertedProducts.push({
+                id: productId,
+                stock: product.stock,
+                price: product.price,
+              });
+
+              // Add images for this product
+              await Promise.all(
+                product.images.map((image, index) =>
+                  db.insert(ProductImagesTable).values({
+                    productId: productId,
+                    url: image.url,
+                    isPrimary: index === 0,
+                  })
+                )
+              );
+            }
+          } catch (error) {
+            console.error(
+              `Error inserting product ${product.name}:`,
+              error
+            );
+          }
         })
-        .returning({ id: ProductsTable.id });
+      );
 
-      if (productResult[0]) {
-        const productId = productResult[0].id;
-        // Store product details for purchases
-        insertedProducts.push({
-          id: productId,
-          stock: product.stock,
-          price: product.price,
+      // Add a small delay between batches
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    // Step 3: Handle purchases and stock updates in smaller transactions
+    for (const insertedProduct of insertedProducts) {
+      try {
+        await db.transaction(async (tx) => {
+          const unitCost = Math.floor(0.7 * insertedProduct.price);
+          
+          // Add purchase record
+          await tx.insert(PurchasesTable).values({
+            productId: insertedProduct.id,
+            quantityPurchased: insertedProduct.stock,
+            unitCost: unitCost,
+          });
+
+          // Update stock
+          await tx
+            .update(ProductsTable)
+            .set({
+              stock: sql`${ProductsTable.stock} + ${insertedProduct.stock}`,
+            })
+            .where(eq(ProductsTable.id, insertedProduct.id));
         });
-
-        // Add images directly to database
-        const imagePromises = product.images.map((image, index) =>
-          db.insert(ProductImagesTable).values({
-            productId: productId,
-            url: image.url,
-            isPrimary: index === 0 ? true :false , // Use 1/0 for SQLite boolean
-          }),
+      } catch (error) {
+        console.error(
+          `Error processing purchase for product ${insertedProduct.id}:`,
+          error
         );
-        await Promise.all(imagePromises);
       }
     }
 
-    // Add purchasing data to set initial stock
-    await db.transaction(async (tx) => {
-      for (const insertedProduct of insertedProducts) {
-        const unitCost = Math.floor(0.7 * insertedProduct.price); // 70% of selling price
-        await tx.insert(PurchasesTable).values({
-          productId: insertedProduct.id,
-          quantityPurchased: insertedProduct.stock,
-          unitCost: unitCost,
-        });
+    // Step 4: Seed orders with retry mechanism
+    const MAX_RETRIES = 3;
+    let retryCount = 0;
+    let success = false;
 
-        // Update stock by adding the purchased quantity
-        await tx
-          .update(ProductsTable)
-          .set({
-            stock: sql`${ProductsTable.stock} + ${insertedProduct.stock}`,
-          })
-          .where(eq(ProductsTable.id, insertedProduct.id));
+    while (!success && retryCount < MAX_RETRIES) {
+      try {
+        await seedFakeOrders(100, insertedProducts);
+        success = true;
+      } catch (error) {
+        retryCount++;
+        console.error(
+          `Attempt ${retryCount} failed to seed orders:`,
+          error
+        );
+        if (retryCount < MAX_RETRIES) {
+          // Wait before retrying (exponential backoff)
+          await new Promise((resolve) =>
+            setTimeout(resolve, Math.pow(2, retryCount) * 1000)
+          );
+        }
       }
-    });
-
-    // Add orders
-    console.log("Starting to seed orders...");
-    await new Promise((resolve) => setTimeout(resolve, 3000)); // Existing delay
-    try{
-      await seedFakeOrders(100, insertedProducts);
     }
-    catch(error){
-      console.error("Error seeding fake orders:", error);
+
+    if (!success) {
+      throw new Error("Failed to seed orders after maximum retries");
     }
 
     console.log("Database seeding completed successfully.");
   } catch (error) {
     console.error("Error during database seeding:", error);
+    throw error;
   }
 };
