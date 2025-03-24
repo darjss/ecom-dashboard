@@ -27,15 +27,15 @@ export const getSession = async (sessionId: string) => {
     return null;
   }
 
-  const sessionWithDate = {
-    ...session,
-    expiresAt: new Date(session.expiresAt),
-  };
+  // const sessionWithDate = {
+  //   ...session,
+  //   expiresAt: new Date(session.expiresAt),
+  // };
 
   const result = await db
     .select({ user: UsersTable })
     .from(UsersTable)
-    .where(eq(UsersTable.id, sessionWithDate.userId as number))
+    .where(eq(UsersTable.id, session.userId as number))
     .limit(1);
 
   const user = result[0];
@@ -44,7 +44,7 @@ export const getSession = async (sessionId: string) => {
   }
 
   return {
-    session: sessionWithDate as Session,
+    session: session as Session,
     user: user.user as UserSelectType,
   };
 };
