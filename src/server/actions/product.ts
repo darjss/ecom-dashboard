@@ -13,6 +13,7 @@ import {
   unstable_cacheTag as cacheTag,
 } from "next/cache";
 import { TransactionType } from "@/lib/types";
+import { redirect } from "next/navigation";
 
 export const searchProductByName = async (searchTerm: string) => {
   const products = await db.query.ProductsTable.findMany({
@@ -101,6 +102,7 @@ export const addProduct = async (product: addProductType) => {
     await uploadImagesFromUrl(images);
 
     console.log("Images added successfully");
+    redirect("/products")
     return { message: "Added product Successfully" };
   } catch (e) {
     console.log(e);

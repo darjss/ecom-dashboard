@@ -1,6 +1,6 @@
 "use server";
 import "server-only";
-import { db } from "../db";
+import { db, redis } from "../db";
 import {
   OrdersTable,
   ProductImagesTable,
@@ -13,7 +13,12 @@ import {
 } from "next/cache";
 import { AddSalesType, TimeRange, TransactionType } from "@/lib/types";
 import { and, between, eq, gte, sql } from "drizzle-orm";
-import { getDaysAgo, getStartAndEndofDayAgo, getStartOfDay } from "./utils";
+import {
+  calculateExpiration,
+  getDaysAgo,
+  getStartAndEndofDayAgo,
+  getStartOfDay,
+} from "./utils";
 
 export const addSale = async (sale: AddSalesType, tx?: TransactionType) => {
   try {
@@ -169,15 +174,76 @@ export const getOrderCountForWeek = async () => {
     const salesResults = await Promise.all(salesPromises);
     return orderResults.map((orderResult, i) => {
       const salesResult = salesResults[i]; // Corresponding sales result
-      const date=new Date(Date.now() - i * 24 * 60 * 60 * 1000)
+      const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
       return {
         orderCount: orderResult?.orderCount ?? 0,
         salesCount: salesResult?.salesCount ?? 0, // Access sales count here
-        date: date.getMonth()+1+"/"+date.getDate()
+        date: date.getMonth() + 1 + "/" + date.getDate(),
       };
     });
   } catch (e) {
     console.error(e);
     return [];
+  }
+};
+
+export const getCachedAnalytics = async (timerange: TimeRange) => {
+  try {
+    const key = `analytics:${timerange}`;
+    const cached = (await redis.get(key)) as string;
+    if (cached) {
+      return JSON.parse(cached) as Awaited<ReturnType<typeof getAnalytics>>;
+    }
+    const analytics = await getAnalytics(timerange);
+    await redis.set(key, JSON.stringify(analytics), {
+      ex: calculateExpiration(timerange),
+    });
+    return analytics;
+  } catch (e) {
+    console.log(e);
+    return await getAnalytics(timerange);
+  }
+};
+
+export const getCachedOrderCountForWeek = async () => {
+  try {
+    const key = `orderCountForWeek`;
+    const cached = (await redis.get(key)) as string;
+    if (cached) {
+      return JSON.parse(cached) as Awaited<
+        ReturnType<typeof getOrderCountForWeek>
+      >;
+    }
+    const orderCount = await getOrderCountForWeek();
+    await redis.set(key, JSON.stringify(orderCount), {
+      ex: calculateExpiration("weekly"),
+    });
+    return orderCount;
+  } catch (e) {
+    console.log(e);
+    return await getOrderCountForWeek();
+  }
+};
+
+export const getCachedMostSoldProducts = async (
+  timerange: TimeRange = "daily",
+  productCount: number = 5,
+) => {
+  try {
+    const key = `mostSoldProducts:${timerange}:${productCount}`;
+    const cached = (await redis.get(key)) as string;
+    if (cached) {
+      return JSON.parse(cached) as Awaited<
+        ReturnType<typeof getMostSoldProducts>
+      >;
+    }
+    const mostSoldProducts = await getMostSoldProducts(timerange, productCount);
+    await redis.set(key, JSON.stringify(mostSoldProducts), {
+      ex: calculateExpiration(timerange),
+    });
+    return mostSoldProducts;
+  } catch (e) {
+    console.log(e);
+    return await getMostSoldProducts();
   }
 };

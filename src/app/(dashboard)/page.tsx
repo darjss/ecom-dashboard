@@ -1,5 +1,5 @@
-import { getOrderCount, getPendingOrders } from "@/server/actions/order";
-import { getAnalytics, getMostSoldProducts } from "@/server/actions/sales";
+import { getCachedOrderCount, getOrderCount, getPendingOrders } from "@/server/actions/order";
+import { getAnalytics, getCachedAnalytics, getCachedMostSoldProducts, getMostSoldProducts } from "@/server/actions/sales";
 import { Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MetricsGrid } from "./_components/metric-grid";
@@ -48,19 +48,19 @@ const DashboardHome = async () => {
     pendingOrders,
   ] = await Promise.all([
     Promise.all([
-      getAnalytics("daily"),
-      getAnalytics("weekly"),
-      getAnalytics("monthly"),
+      getCachedAnalytics("daily"),
+      getCachedAnalytics("weekly"),
+      getCachedAnalytics("monthly"),
     ]),
     Promise.all([
-      getMostSoldProducts("daily"),
-      getMostSoldProducts("weekly"),
-      getMostSoldProducts("monthly"),
+      getCachedMostSoldProducts("daily"),
+      getCachedMostSoldProducts("weekly"),
+      getCachedMostSoldProducts("monthly"),
     ]),
     Promise.all([
-      getOrderCount("daily"),
-      getOrderCount("weekly"),
-      getOrderCount("monthly"),
+      getCachedOrderCount("daily"),
+      getCachedOrderCount("weekly"),
+      getCachedOrderCount("monthly"),
     ]),
     // Promise.all([
     //   getNewCustomersCount("daily"),

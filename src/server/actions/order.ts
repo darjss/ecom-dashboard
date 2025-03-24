@@ -2,7 +2,7 @@
 import "server-only";
 
 import { addOrderType } from "@/lib/zod/schema";
-import { db } from "../db";
+import { db, redis } from "../db";
 import {
   CustomersTable,
   OrderDetailsTable,
@@ -20,6 +20,7 @@ import { updateStock } from "./product";
 import { PRODUCT_PER_PAGE } from "@/lib/constants";
 import { OrderStatusType, PaymentStatusType, TimeRange } from "@/lib/types";
 import {
+  calculateExpiration,
   getDaysAgo,
   getStartAndEndofDayAgo,
   getStartOfDay,
@@ -29,6 +30,7 @@ import {
 import { addSale } from "./sales";
 import { getAverageCostOfProduct } from "./purchases";
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
+import { redirect } from "next/navigation";
 
 export const addOrder = async (orderInfo: addOrderType, createdAt?: Date) => {
   console.log("addOrder called with", orderInfo);
@@ -108,6 +110,7 @@ export const addOrder = async (orderInfo: addOrderType, createdAt?: Date) => {
     });
 
     revalidateTag("orders");
+    redirect("/orders");
     console.log("added order");
     return { message: "Order added successfully" };
   } catch (e) {
@@ -584,47 +587,64 @@ export const getOrderCount = async (timeRange: TimeRange) => {
   }
 };
 
+export const getCachedOrderCount = async (timerange: TimeRange = "daily") => {
+  try {
+    const key = `orderCount:${timerange}`;
+    const cached = (await redis.get(key)) as string;
+    if (cached) {
+      return JSON.parse(cached) as Awaited<ReturnType<typeof getOrderCount>>;
+    }
+    const orderCount = await getOrderCount(timerange);
+    await redis.set(key, JSON.stringify(orderCount), {
+      ex: calculateExpiration(timerange),
+    });
+    return orderCount;
+  } catch (e) {
+    console.log(e);
+    return await getOrderCount(timerange)
+  }
+};
+
 export const getPendingOrders = async () => {
   try {
-     const result = await db.query.OrdersTable.findMany({
-       where: eq(OrdersTable.status, "pending"),
-       orderBy: desc(OrdersTable.createdAt),
-       with: {
-         orderDetails: {
-           columns: {
-             quantity: true,
-           },
-           with: {
-             product: {
-               columns: {
-                 name: true,
-                 id: true,
-                 price: true,
-               },
-               with: {
-                 images: {
-                   columns: {
-                     url: true,
-                   },
-                   where: eq(ProductImagesTable.isPrimary, true),
-                 },
-               },
-             },
-           },
-         },
-         payments: {
-           columns: {
-             provider: true,
-             status: true,
-             createdAt: true,
-           },
-         },
-       },
-     });
-     return shapeOrderResults(result);
+    const result = await db.query.OrdersTable.findMany({
+      where: eq(OrdersTable.status, "pending"),
+      orderBy: desc(OrdersTable.createdAt),
+      with: {
+        orderDetails: {
+          columns: {
+            quantity: true,
+          },
+          with: {
+            product: {
+              columns: {
+                name: true,
+                id: true,
+                price: true,
+              },
+              with: {
+                images: {
+                  columns: {
+                    url: true,
+                  },
+                  where: eq(ProductImagesTable.isPrimary, true),
+                },
+              },
+            },
+          },
+        },
+        payments: {
+          columns: {
+            provider: true,
+            status: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+    return shapeOrderResults(result);
   } catch (e) {
     console.log(e);
     return [];
   }
 };
-

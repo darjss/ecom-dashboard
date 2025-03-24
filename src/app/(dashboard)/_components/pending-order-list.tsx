@@ -52,9 +52,6 @@ const PendingOrdersList = async ({ orders }: { orders: ShapedOrder[] }) => {
             {orders.length} pending
           </Badge>
         </div>
-        <CardDescription className="text-xs sm:text-sm">
-          Orders awaiting processing
-        </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow px-0">
         <ScrollArea className="h-[320px] px-3 sm:h-[350px] sm:px-4 md:h-[380px] md:px-6">

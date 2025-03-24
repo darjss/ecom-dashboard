@@ -165,7 +165,14 @@ const OrderGrid = () => {
                 className="h-9"
                 disabled={isFetching}
               />
-              {searchTerm ? (
+              <SubmitButton
+                onClick={handleSearch}
+                isPending={isFetching}
+                className="h-9 w-9 shrink-0 p-0"
+              >
+                <Search className="h-4 w-4" />
+              </SubmitButton>
+              {searchTerm && (
                 <SubmitButton
                   onClick={clearSearch}
                   isPending={isFetching}
@@ -173,14 +180,6 @@ const OrderGrid = () => {
                   variant="destructive"
                 >
                   <X className="h-4 w-4 text-black" />
-                </SubmitButton>
-              ) : (
-                <SubmitButton
-                  onClick={handleSearch}
-                  isPending={isFetching}
-                  className="h-9 w-9 shrink-0 p-0"
-                >
-                  <Search className="h-4 w-4" />
                 </SubmitButton>
               )}
             </div>
@@ -288,7 +287,7 @@ const OrderGrid = () => {
         )}
 
         {isLoading || isFetching ? (
-        <div className="space-y-4">
+          <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, index) => (
               <OrderSkeleton key={index} />
             ))}

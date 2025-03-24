@@ -3,7 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { Search, PlusCircle, ArrowUpDown, Loader2, X, RotateCcw } from "lucide-react";
+import {
+  Search,
+  PlusCircle,
+  ArrowUpDown,
+  Loader2,
+  X,
+  RotateCcw,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
@@ -130,7 +137,11 @@ const ProductGrid = ({
     await setPage(1);
   }
 
-  const hasActiveFilters = searchTerm !== "" || brandFilter !== 0 || categoryFilter !== 0 || sortField !== "";
+  const hasActiveFilters =
+    searchTerm !== "" ||
+    brandFilter !== 0 ||
+    categoryFilter !== 0 ||
+    sortField !== "";
 
   return (
     <Card className="w-full">
@@ -146,30 +157,29 @@ const ProductGrid = ({
                 }}
                 className="h-9"
               />
-              {searchTerm ? (
+              <Button
+                onClick={async () => await setSearchTerm(inputValue)}
+                className="h-9 w-9 shrink-0 p-0"
+                disabled={isLoadingData || !inputValue.trim()}
+              >
+                {isLoadingData ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="h-4 w-4" />
+                )}
+              </Button>
+              {searchTerm && (
                 <Button
                   onClick={handleClearSearch}
                   className="h-9 w-9 shrink-0 p-0"
                   disabled={isLoadingData}
                   size={"icon"}
-                  variant={isLoadingData? "default": "destructive"}
+                  variant={isLoadingData ? "default" : "destructive"}
                 >
                   {isLoadingData ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <X className="h-4 w-4 text-white" />
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  onClick={async () => await setSearchTerm(inputValue)}
-                  className="h-9 w-9 shrink-0 p-0"
-                  disabled={isLoadingData || !inputValue.trim()}
-                >
-                  {isLoadingData ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Search className="h-4 w-4" />
                   )}
                 </Button>
               )}

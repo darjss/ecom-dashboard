@@ -3,6 +3,7 @@ import {
   OrderStatusType,
   PaymentProviderType,
   PaymentStatusType,
+  TimeRange,
 } from "@/lib/types";
 
 interface OrderResult {
@@ -156,4 +157,16 @@ export const getStartAndEndofDayAgo=(days:number)=>{
   endDate.setDate(date.getDate() - days);
   endDate.setHours(23, 59, 59, 999);
   return {startDate,endDate};
+}
+export const calculateExpiration=(timerange:TimeRange)=>{
+  switch (timerange) {
+    case "daily":
+      return 12* 60 * 60;
+    case "weekly":
+      return   24 * 60 * 60; 
+    case "monthly":
+      return 3 * 24 * 60 * 60; 
+    default:
+      return 24 * 60 * 60; 
+  }
 }
