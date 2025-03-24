@@ -16,10 +16,10 @@
     return (
       <html lang="en" className={`${GeistSans.variable}`}>
         <body className="">
-          <script
+          {/* <script
             crossOrigin="anonymous"
             src="//unpkg.com/react-scan/dist/auto.global.js"
-          />
+          /> */}
           <Providers>
             <ErrorBoundary>
               <main>{children}</main>

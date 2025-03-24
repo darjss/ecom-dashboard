@@ -88,14 +88,6 @@ const DashboardHome = async () => {
   return (
     <Suspense fallback={<DashboardLoading />}>
       <div className="container mx-auto space-y-4 px-2 py-4 sm:space-y-6 sm:px-4 sm:py-6 md:space-y-8 md:px-6 md:py-8">
-        <header className="mb-4 sm:mb-6 md:mb-8">
-          <h1 className="text-xl font-bold tracking-tight sm:text-2xl md:text-3xl">
-            Dashboard
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground sm:text-base">
-            Monitor your business performance and key metrics
-          </p>
-        </header>
 
         <Tabs
           defaultValue="daily"
