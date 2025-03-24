@@ -18,9 +18,9 @@ const publicPaths = [
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   console.log("Middleware");
-  if (process.env.NODE_ENV === "development") {
-    return NextResponse.next();
-  }
+  // if (process.env.NODE_ENV === "development") {
+  //   return NextResponse.next();
+  // }
 
   const path = request.nextUrl.pathname;
   const clientIP = request.headers.get("X-Forwarded-For") ?? "";

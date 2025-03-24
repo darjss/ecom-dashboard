@@ -27,11 +27,6 @@ export const getSession = async (sessionId: string) => {
     return null;
   }
 
-  // const sessionWithDate = {
-  //   ...session,
-  //   expiresAt: new Date(session.expiresAt),
-  // };
-
   const result = await db
     .select({ user: UsersTable })
     .from(UsersTable)

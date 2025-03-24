@@ -5,31 +5,35 @@ import { UserSelectType } from "@/server/db/schema";
 import {
   deleteSession,
   getSession as getDbSession,
-  insertSession,
   updateSession,
 } from "@/server/actions/auth";
 import { sha256 } from "@oslojs/crypto/sha2";
 import { encodeHexLowerCase } from "@oslojs/encoding";
 import { cookies } from "next/headers";
 import { Session } from "./types";
-import {
-  unstable_cacheLife as cacheLife,
-  unstable_cacheTag as cacheTag,
-} from "next/cache";
+import { redis } from "@/server/db";
 
-export async function createSession(
-  token: string,
-  userId: number,
-): Promise<Session> {
-  const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-  const session: Session = {
-    id: sessionId,
-    userId: userId as number,
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60),
-  };
+export async function createSession(token: string, userId: number): Promise<Session> {
+	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+	const session: Session = {
+		id: sessionId,
+		userId,
+		expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
+	};
+	await redis.set(
+		`session:${session.id}`,
+		JSON.stringify({
+			id: session.id,
+			user_id: session.userId,
+			expires_at: Math.floor(session.expiresAt.getTime() / 1000)
+		}),
+		{
+			exat: Math.floor(session.expiresAt.getTime() / 1000)
+		}
+	);
+	await redis.sadd(`user_sessions:${userId}`, sessionId);
 
-  await insertSession(session);
-  return session;
+	return session;
 }
 
 export async function validateSessionToken(

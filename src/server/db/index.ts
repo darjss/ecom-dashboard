@@ -36,4 +36,13 @@ export const client =
 if (isDevelopment) globalForDb.client = client;
 
 export const db = drizzle(client, { schema: schema, logger: true });
-export const redis = Redis.fromEnv();
+export let redis: Redis;
+
+if (process.env.NODE_ENV === "development") {
+  redis = new Redis({
+    url:  "http://localhost:6379", // Default local URL
+    token: "", // Empty token if no auth
+  });
+} else {
+  redis = Redis.fromEnv(); // Use Upstash Redis in other environments (production)
+}
