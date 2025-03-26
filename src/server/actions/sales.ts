@@ -16,6 +16,7 @@ import { and, between, eq, gte, sql } from "drizzle-orm";
 import {
   calculateExpiration,
   getDaysAgo,
+  getDaysFromTimeRange,
   getStartAndEndofDayAgo,
   getStartOfDay,
 } from "./utils";
@@ -51,21 +52,7 @@ export const getAnalytics = async (timeRange: TimeRange = "daily") => {
   }
 
   try {
-    let startDate;
-    switch (timeRange) {
-      case "daily":
-        startDate = getStartOfDay();
-        break;
-      case "weekly":
-        startDate = getDaysAgo(7);
-        break;
-      case "monthly":
-        startDate = getDaysAgo(30);
-        break;
-      default:
-        startDate = getStartOfDay();
-    }
-
+  
     const result = await db
       .select({
         sum: sql<number>`SUM(${SalesTable.sellingPrice} * ${SalesTable.quantitySold})`,
@@ -73,13 +60,35 @@ export const getAnalytics = async (timeRange: TimeRange = "daily") => {
         salesCount: sql<number>`COUNT(*)`,
       })
       .from(SalesTable)
-      .where(gte(SalesTable.createdAt, startDate))
+      .where(gte(SalesTable.createdAt, getDaysFromTimeRange(timeRange)))
       .get();
 
     const sum = result?.sum ?? 0;
     const cost = result?.cost ?? 0;
     const profit = sum - cost;
     const salesCount = result?.salesCount ?? 0;
+    const mostSoldProducts=await db
+      .select({
+        productId: SalesTable.productId,
+        totalSold: sql<number>`SUM(${SalesTable.quantitySold})`,
+        name: ProductsTable.name,
+        imageUrl: ProductImagesTable.url,
+      })
+      .from(SalesTable)
+      .leftJoin(ProductsTable, eq(SalesTable.productId, ProductsTable.id))
+      .leftJoin(
+        ProductImagesTable,
+        eq(SalesTable.productId, ProductImagesTable.productId),
+      )
+      .where(
+        and(
+          gte(SalesTable.createdAt, getDaysFromTimeRange(timeRange)),
+          eq(ProductImagesTable.isPrimary, true),
+        ),
+      )
+      .groupBy(SalesTable.productId)
+      .orderBy(sql`SUM(${SalesTable.quantitySold}) DESC`)
+      .limit(5);
     console.log(
       "salesCount",
       salesCount,
@@ -108,20 +117,7 @@ export const getMostSoldProducts = async (
     stale: 60 * 5, // 5 minutes
     revalidate: 60 * 15, // 15 minutes
   });
-  let startDate;
-  switch (timeRange) {
-    case "daily":
-      startDate = getStartOfDay();
-      break;
-    case "weekly":
-      startDate = getDaysAgo(7);
-      break;
-    case "monthly":
-      startDate = getDaysAgo(30);
-      break;
-    default:
-      startDate = getStartOfDay();
-  }
+
   const result = await db
     .select({
       productId: SalesTable.productId,
@@ -137,7 +133,7 @@ export const getMostSoldProducts = async (
     )
     .where(
       and(
-        gte(SalesTable.createdAt, startDate),
+        gte(SalesTable.createdAt, getDaysFromTimeRange(timeRange)),
         eq(ProductImagesTable.isPrimary, true),
       ),
     )
@@ -187,6 +183,24 @@ export const getOrderCountForWeek = async () => {
   }
 };
 
+export const getAverageOrderValue = async (timerange: TimeRange) => {
+
+  const order= await db.query.OrdersTable.findMany({
+    columns:{
+      total: true,
+      createdAt: true,
+    },
+    where: gte(OrdersTable.createdAt, getDaysFromTimeRange(timerange)),
+    }
+  );
+
+  const total = order.reduce((acc, order) => {
+    return acc + order.total;
+  }, 0);
+
+  return total / order.length;
+}
+
 export const getCachedAnalytics = async (timerange: TimeRange) => {
   try {
     const key = `analytics:${timerange}`;
@@ -194,6 +208,7 @@ export const getCachedAnalytics = async (timerange: TimeRange) => {
     if (cached) {
       return JSON.parse(cached) as Awaited<ReturnType<typeof getAnalytics>>;
     }
+    console.log("Cached analytics", cached);
     const analytics = await getAnalytics(timerange);
     await redis.set(key, JSON.stringify(analytics), {
       ex: calculateExpiration(timerange),
@@ -209,6 +224,7 @@ export const getCachedOrderCountForWeek = async () => {
   try {
     const key = `orderCountForWeek`;
     const cached = (await redis.get(key)) as string;
+    console.log("Cached order count for week", cached);
     if (cached) {
       return JSON.parse(cached) as Awaited<
         ReturnType<typeof getOrderCountForWeek>
@@ -232,6 +248,7 @@ export const getCachedMostSoldProducts = async (
   try {
     const key = `mostSoldProducts:${timerange}:${productCount}`;
     const cached = (await redis.get(key)) as string;
+    console.log("Cached most sold products", cached);
     if (cached) {
       return JSON.parse(cached) as Awaited<
         ReturnType<typeof getMostSoldProducts>

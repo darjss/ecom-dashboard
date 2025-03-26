@@ -31,7 +31,6 @@ import {
 import { PRODUCT_PER_PAGE } from "@/lib/constants";
 import type { BrandType, CategoryType } from "@/lib/types";
 import { DataPagination } from "@/components/data-pagination";
-import { useAction } from "@/hooks/use-action";
 import ProductCard from "./product-card";
 import ProductSkeleton from "./product-skeleton";
 

@@ -1,5 +1,5 @@
-import { getCachedOrderCount, getOrderCount, getPendingOrders } from "@/server/actions/order";
-import { getAnalytics, getCachedAnalytics, getCachedMostSoldProducts, getMostSoldProducts } from "@/server/actions/sales";
+import { getCachedOrderCount, getPendingOrders } from "@/server/actions/order";
+import { getCachedAnalytics, getCachedMostSoldProducts } from "@/server/actions/sales";
 import { Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MetricsGrid } from "./_components/metric-grid";
@@ -8,10 +8,8 @@ import PendingOrdersList from "./_components/pending-order-list";
 import OrderSalesChart from "./_components/order-sales-chart";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { getNewCustomersCount } from "@/server/actions/customer";
-import { connection } from "next/server";
 
-// Loading component for better UX
+
 const DashboardLoading = () => (
   <div className="container mx-auto space-y-4 px-2 py-4 sm:space-y-6 sm:px-4 sm:py-6 md:px-6 md:py-8">
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-4">

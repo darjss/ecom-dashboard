@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useFieldArray, useWatch, type UseFormReturn } from "react-hook-form";
+import { useFieldArray, type UseFormReturn } from "react-hook-form";
 import {
   MinusIcon,
   PlusIcon,
@@ -12,13 +12,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { ProductSearchForOrderType, ProductType } from "@/lib/types";
+import type { ProductSearchForOrderType } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import {
-  getAllProducts,
-  searchProductByNameForOrder,
+  searchProductByNameForOrder
 } from "@/server/actions/product";
-import { toast } from "sonner";
 import { debounce } from "lodash";
 
 const SelectProductForm = ({ form }: { form: UseFormReturn<any> }) => {

@@ -8,24 +8,19 @@ import {
   OrderDetailsTable,
   OrdersTable,
   PaymentsTable,
-  ProductImagesTable,
-  SalesTable,
+  ProductImagesTable
 } from "../db/schema";
 import { generateOrderNumber } from "@/lib/utils";
 import { createPayment } from "./payment";
-import { and, eq, like, sql, desc, asc, or, gte, between } from "drizzle-orm";
+import { and, eq, like, sql, desc, asc, or, gte } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { unstable_cacheTag as cacheTag } from "next/cache";
 import { updateStock } from "./product";
 import { PRODUCT_PER_PAGE } from "@/lib/constants";
 import { OrderStatusType, PaymentStatusType, TimeRange } from "@/lib/types";
 import {
-  calculateExpiration,
-  getDaysAgo,
-  getStartAndEndofDayAgo,
-  getStartOfDay,
-  shapeOrderResult,
-  shapeOrderResults,
+  calculateExpiration, getDaysFromTimeRange, shapeOrderResult,
+  shapeOrderResults
 } from "./utils";
 import { addSale } from "./sales";
 import { getAverageCostOfProduct } from "./purchases";
@@ -555,27 +550,14 @@ export const getOrderCount = async (timeRange: TimeRange) => {
     stale: 60 * 5, // 5 minutes
     revalidate: 60 * 15, // 15 minutes
   });
-  let startDate;
-  switch (timeRange) {
-    case "daily":
-      startDate = getStartOfDay();
-      break;
-    case "weekly":
-      startDate = getDaysAgo(7);
-      break;
-    case "monthly":
-      startDate = getDaysAgo(30);
-      break;
-    default:
-      startDate = getStartOfDay();
-  }
+
   try {
     const result = await db
       .select({
         count: sql<number>`COUNT(*)`,
       })
       .from(OrdersTable)
-      .where(gte(OrdersTable.createdAt, startDate))
+      .where(gte(OrdersTable.createdAt, getDaysFromTimeRange(timeRange)))
       .get();
 
     const count = result?.count ?? 0;
@@ -594,6 +576,7 @@ export const getCachedOrderCount = async (timerange: TimeRange = "daily") => {
     if (cached) {
       return JSON.parse(cached) as Awaited<ReturnType<typeof getOrderCount>>;
     }
+    console.log("Cached order count", cached);
     const orderCount = await getOrderCount(timerange);
     await redis.set(key, JSON.stringify(orderCount), {
       ex: calculateExpiration(timerange),

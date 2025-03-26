@@ -170,3 +170,21 @@ export const calculateExpiration=(timerange:TimeRange)=>{
       return 24 * 60 * 60; 
   }
 }
+
+export const getDaysFromTimeRange=(timerange:TimeRange)=>{
+  let startDate;
+  switch (timerange) {
+    case "daily":
+      startDate = getStartOfDay();
+      break;
+    case "weekly":
+      startDate = getDaysAgo(7);
+      break;
+    case "monthly":
+      startDate = getDaysAgo(30);
+      break;
+    default:
+      startDate = getStartOfDay();
+  }
+  return startDate;
+}

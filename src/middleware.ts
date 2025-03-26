@@ -2,7 +2,6 @@ import "server-only";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { TokenBucket } from "@/lib/rate-limit";
-import { validateSessionToken } from "./lib/session";
 
 const getRequestBucket = new TokenBucket<string>(100, 1);
 const postRequestBucket = new TokenBucket<string>(30, 1);
@@ -18,9 +17,9 @@ const publicPaths = [
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   console.log("Middleware");
-  // if (process.env.NODE_ENV === "development") {
-  //   return NextResponse.next();
-  // }
+  if (process.env.NODE_ENV === "development") {
+    return NextResponse.next();
+  }
 
   const path = request.nextUrl.pathname;
   const clientIP = request.headers.get("X-Forwarded-For") ?? "";
