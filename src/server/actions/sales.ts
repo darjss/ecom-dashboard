@@ -1,6 +1,6 @@
 "use server";
 import "server-only";
-import { db, redis } from "../db";
+import { db } from "../db";
 import {
   OrdersTable,
   ProductImagesTable,
@@ -20,6 +20,7 @@ import {
   getStartAndEndofDayAgo,
   getStartOfDay,
 } from "./utils";
+import { redis } from "../db/redis";
 
 export const addSale = async (sale: AddSalesType, tx?: TransactionType) => {
   try {

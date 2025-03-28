@@ -2,7 +2,7 @@
 import "server-only";
 
 import { addOrderType } from "@/lib/zod/schema";
-import { db, redis } from "../db";
+import { db } from "../db";
 import {
   CustomersTable,
   OrderDetailsTable,
@@ -26,6 +26,7 @@ import { addSale } from "./sales";
 import { getAverageCostOfProduct } from "./purchases";
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
 import { redirect } from "next/navigation";
+import { redis } from "../db/redis";
 
 export const addOrder = async (orderInfo: addOrderType, createdAt?: Date) => {
   console.log("addOrder called with", orderInfo);

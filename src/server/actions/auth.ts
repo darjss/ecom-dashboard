@@ -1,6 +1,6 @@
 "use server";
 import "server-only";
-import { db, redis } from "../db";
+import { db } from "../db";
 import { UserSelectType, UsersTable } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { Session } from "@/lib/types";
@@ -9,6 +9,7 @@ import {
   revalidateTag,
   unstable_cacheTag as cacheTag,
 } from "next/cache";
+import { redis } from "../db/redis";
 export const insertSession = async (session: Session) => {
   const sessionToStore = {
     ...session,

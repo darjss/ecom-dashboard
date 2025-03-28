@@ -18,7 +18,11 @@ import { db } from "@/server/db";
 import { eq, sql } from "drizzle-orm";
 import { faker } from "@faker-js/faker";
 import { deliveryProvider, orderStatus, paymentStatus } from "./constants";
-import { OrderDeliveryProviderType, OrderStatusType, PaymentStatusType } from "./types";
+import {
+  OrderDeliveryProviderType,
+  OrderStatusType,
+  PaymentStatusType,
+} from "./types";
 
 // Sample data for brands
 const brandsData: BrandInsertType[] = [
@@ -209,15 +213,15 @@ const productsData: addProductType[] = [
     ],
     status: "active",
   },
-
-];export const seedFakeOrders = async (
+];
+export const seedFakeOrders = async (
   numOrders: number,
-  insertedProducts: { id: number; price: number }[]
+  insertedProducts: { id: number; price: number }[],
 ) => {
   try {
     // Step 1: Generate fake customers in batches
     const BATCH_SIZE = 10;
-    const fakeCustomers:{phone: number, address:string}[]  = [];
+    const fakeCustomers: { phone: number; address: string }[] = [];
     const phoneSet = new Set<number>();
 
     while (fakeCustomers.length < 50) {
@@ -289,9 +293,7 @@ const productsData: addProductType[] = [
     }
 
     for (const batch of batches) {
-      await Promise.all(
-        batch.map((order) => addOrder(order, order.createdAt))
-      );
+      await Promise.all(batch.map((order) => addOrder(order, order.createdAt)));
       // Add a small delay between batches to prevent overwhelming the database
       await new Promise((resolve) => setTimeout(resolve, 500));
     }
@@ -356,17 +358,14 @@ export const seedDatabase = async () => {
                     productId: productId,
                     url: image.url,
                     isPrimary: index === 0,
-                  })
-                )
+                  }),
+                ),
               );
             }
           } catch (error) {
-            console.error(
-              `Error inserting product ${product.name}:`,
-              error
-            );
+            console.error(`Error inserting product ${product.name}:`, error);
           }
-        })
+        }),
       );
 
       // Add a small delay between batches
@@ -378,7 +377,7 @@ export const seedDatabase = async () => {
       try {
         await db.transaction(async (tx) => {
           const unitCost = Math.floor(0.7 * insertedProduct.price);
-          
+
           // Add purchase record
           await tx.insert(PurchasesTable).values({
             productId: insertedProduct.id,
@@ -397,7 +396,7 @@ export const seedDatabase = async () => {
       } catch (error) {
         console.error(
           `Error processing purchase for product ${insertedProduct.id}:`,
-          error
+          error,
         );
       }
     }
@@ -413,14 +412,11 @@ export const seedDatabase = async () => {
         success = true;
       } catch (error) {
         retryCount++;
-        console.error(
-          `Attempt ${retryCount} failed to seed orders:`,
-          error
-        );
+        console.error(`Attempt ${retryCount} failed to seed orders:`, error);
         if (retryCount < MAX_RETRIES) {
           // Wait before retrying (exponential backoff)
           await new Promise((resolve) =>
-            setTimeout(resolve, Math.pow(2, retryCount) * 1000)
+            setTimeout(resolve, Math.pow(2, retryCount) * 1000),
           );
         }
       }
