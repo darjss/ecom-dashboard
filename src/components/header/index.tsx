@@ -6,7 +6,6 @@ import { Suspense } from "react";
 import Pathname from "./pathname";
 import UserData from "./user-data";
 import SearchBar from "./search-bar";
-
 const Header = async () => {
   return (
     <header className="sticky flex h-16 border-b shadow-sm">
@@ -16,7 +15,7 @@ const Header = async () => {
           <Pathname />
         </div>
 
-        {/* Search bar - hidden on mobile, shown in dropdown */}
+        {/* Desktop Search bar */}
         <SearchBar />
 
         <div className="flex items-center gap-2">
@@ -27,10 +26,11 @@ const Header = async () => {
                 <Search className="h-5 w-5 text-gray-600" />
               </div>
             </PopoverTrigger>
-            <PopoverContent className="p-4 md:hidden bg-none">
-              <SearchBar />
+            <PopoverContent className="w-[calc(100vw-2rem)] p-4 md:hidden">
+              <SearchBar isMobile />
             </PopoverContent>
           </Popover>
+
 
           {/* User Menu */}
           <Popover>
