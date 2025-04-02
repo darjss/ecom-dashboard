@@ -19,9 +19,9 @@ export const insertSession = async (session: Session) => {
 };
 
 export const getSession = async (sessionId: string) => {
-  "use cache";
-  cacheLife("session");
-  cacheTag("session");
+  // "use cache";
+  // cacheLife("session");
+  // cacheTag("session");
   console.log("Getting session");
   const session = (await redis.json.get(sessionId)) as Session | null;
   if (session === null || session === undefined) {
