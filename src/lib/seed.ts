@@ -13,7 +13,7 @@ import { addProductType } from "@/lib/zod/schema";
 import { addBrand } from "@/server/actions/brand";
 import { addCategory } from "@/server/actions/category";
 import { revalidateTag } from "next/cache";
-import { addOrder } from "@/server/actions/order";
+
 import { db } from "@/server/db";
 import { eq, sql } from "drizzle-orm";
 import { faker } from "@faker-js/faker";
@@ -23,6 +23,7 @@ import {
   OrderStatusType,
   PaymentStatusType,
 } from "./types";
+import { seedOrder } from "@/server/actions/order";
 
 // Sample data for brands
 const brandsData: BrandInsertType[] = [
@@ -286,24 +287,38 @@ export const seedFakeOrders = async (
     // Step 4: Sort orders by createdAt
     fakeOrders.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
-    // Step 5: Process orders in batches
-    const batches = [];
-    for (let i = 0; i < fakeOrders.length; i += BATCH_SIZE) {
-      batches.push(fakeOrders.slice(i, i + BATCH_SIZE));
+     console.log(`Starting to seed ${fakeOrders.length} orders...`);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < fakeOrders.length; i++) {
+      const order = fakeOrders[i];
+      try {
+          if(order==undefined){
+            return;
+          }
+          seedOrder(order, order.createdAt);
+
+        
+        successCount++;
+        if (successCount % 10 === 0) {
+          console.log(`Successfully seeded ${successCount} orders so far...`);
+        }
+      } catch (error) {
+        failCount++;
+        console.error(`Error seeding order #${i + 1}:`, error);
+      }
+      
+      // Add a small delay between orders to prevent overwhelming the database
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
 
-    for (const batch of batches) {
-      await Promise.all(batch.map((order) => addOrder(order, order.createdAt)));
-      // Add a small delay between batches to prevent overwhelming the database
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-
-    console.log(`${numOrders} fake orders seeded successfully.`);
+    console.log(`Seeding complete: ${successCount} orders added, ${failCount} failed.`);
   } catch (error) {
-    console.error("Error seeding fake orders:", error);
+    console.error("Error in seedFakeOrders:", error);
     throw error;
   }
-};
+}
 
 export const seedDatabase = async () => {
   try {

@@ -118,6 +118,93 @@ export const addOrder = async (orderInfo: addOrderType, createdAt?: Date) => {
   }
 };
 
+export const seedOrder = async (orderInfo: addOrderType, createdAt?: Date) => {
+  console.log("addOrder called with", orderInfo);
+  try {
+    const orderTotal = orderInfo.products.reduce(
+      (acc, currentProduct) =>
+        acc + currentProduct.price * currentProduct.quantity,
+      0,
+    );
+
+    await db.transaction(async (tx) => {
+      if (orderInfo.isNewCustomer) {
+        const userResult = await tx.insert(CustomersTable).values({
+          phone: orderInfo.customerPhone,
+          address: orderInfo.address,
+        });
+      }
+
+      const [order] = await tx
+        .insert(OrdersTable)
+        .values({
+          orderNumber: generateOrderNumber(),
+          customerPhone: orderInfo.customerPhone,
+          status: orderInfo.status,
+          notes: orderInfo.notes,
+          total: orderTotal,
+          address: orderInfo.address,
+          deliveryProvider: orderInfo.deliveryProvider,
+          createdAt: createdAt,
+        })
+        .returning({ orderId: OrdersTable.id });
+      if (order?.orderId === undefined) {
+        return;
+      }
+      const orderId = order?.orderId;
+
+      for (const product of orderInfo.products) {
+        await tx.insert(OrderDetailsTable).values({
+          orderId: orderId,
+          productId: product.productId,
+          quantity: product.quantity,
+        });
+
+        if (orderInfo.paymentStatus === "success") {
+          const productCost = await getAverageCostOfProduct(
+            product.productId,
+            new Date(),
+          );
+          await addSale(
+            {
+              productCost: productCost,
+              quantitySold: product.quantity,
+              orderId: order.orderId,
+              sellingPrice: product.price,
+              productId: product.productId,
+              createdAt: createdAt,
+            },
+            tx,
+          );
+          await updateStock(product.productId, product.quantity, "minus", tx);
+        }
+      }
+
+      try {
+        const paymentResult = await createPayment(
+          orderId,
+          orderInfo.paymentStatus,
+          "transfer",
+          tx,
+        );
+        console.log("Payment created:", paymentResult);
+      } catch (error) {
+        console.error("Error creating payment:", error);
+        throw error;
+      }
+      console.log("transaction done");
+    });
+
+    console.log("added order");
+    return { message: "Order added successfully" };
+  } catch (e) {
+    if (e instanceof Error) {
+      return { message: "Adding order failed", error: e.message };
+    }
+    console.log("error", e);
+    return { message: "Adding order failed", error: "Unknown error" };
+  }
+};
 export const updateOrder = async (orderInfo: addOrderType) => {
   try {
     console.log("updating order");
@@ -443,6 +530,14 @@ export const getPaginatedOrders = async (
     page,
     "pageSize:",
     pageSize,
+    "paymentStatus:",
+    paymentStatus,
+    "orderStatus:",
+    orderStatus,
+    "sortField:",
+    sortField,
+    "sortDirection:",
+    sortDirection,
   );
 
   try {
@@ -519,7 +614,8 @@ export const getPaginatedOrders = async (
             : eq(PaymentsTable.status, paymentStatus),
         ),
       );
-    const orders = shapeOrderResults(result);
+      const orders = shapeOrderResults(result);
+
     return {
       orders: orders,
       total: total[0]?.count,
@@ -558,7 +654,7 @@ export const getOrderCount = async (timeRange: TimeRange) => {
         count: sql<number>`COUNT(*)`,
       })
       .from(OrdersTable)
-      .where(gte(OrdersTable.createdAt, getDaysFromTimeRange(timeRange)))
+      .where(gte(OrdersTable.createdAt,await  getDaysFromTimeRange(timeRange)))
       .get();
 
     const count = result?.count ?? 0;

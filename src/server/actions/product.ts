@@ -287,7 +287,7 @@ export const getPaginatedProducts = async (
         images: true,
       },
     });
-
+    console.log("products",products);
     return {
       products,
       totalCount,

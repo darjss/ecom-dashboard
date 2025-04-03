@@ -5,6 +5,7 @@ import {
   PaymentStatusType,
   TimeRange,
 } from "@/lib/types";
+import { connection } from "next/server";
 
 interface OrderResult {
   id: number;
@@ -141,7 +142,8 @@ export const getStartOfDay = () => {
   return date;
 };
 
-export const getDaysAgo = (days: number) => {
+export const getDaysAgo = async(days: number) => {
+  await connection();
   const date = new Date();
   date.setDate(date.getDate() - days);
   date.setHours(0, 0, 0, 0);

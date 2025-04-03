@@ -19,9 +19,7 @@ import { toast } from "sonner";
 import { getPaymentProviderIcon, getPaymentStatusColor, getStatusColor } from "@/lib/utils";
 
 const OrderCard = ({ order }: { order: OrderType }) => {
-
-
-
+console.log("id",order.id)
   return (
     <Card
       className="overflow-hidden border-l-4 transition-all duration-200 hover:shadow-md"
@@ -119,9 +117,9 @@ const OrderCard = ({ order }: { order: OrderType }) => {
               </div>
 
               <div className="mb-2 grid grid-cols-2 gap-1.5">
-                {order.products.map((product) => (
+                {order.products.map((product,index) => (
                   <div
-                    key={product.productId}
+                    key={order.orderNumber+product.productId+index}
                     className="flex items-center gap-1.5 rounded border bg-card p-1.5 text-xs"
                   >
                     <div className="h-8 w-8 shrink-0 overflow-hidden rounded bg-muted/10">

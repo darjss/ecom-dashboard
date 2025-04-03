@@ -74,6 +74,5 @@
   customer lifetime value
   repeat customers
   out of stock or stock products
-  cart analytic abondened carts
   failed payments
   

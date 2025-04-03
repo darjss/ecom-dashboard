@@ -47,16 +47,10 @@ export async function GET(request: Request): Promise<Response> {
   const username = claims.name;
 
   const existingUser = await getUserFromGoogleId(googleUserId);
-  
-  console.log(existingUser)
-
-
-
 
   if (existingUser !== null && existingUser.isApproved === true) {
-    console.log("session hit")
     const sessionToken = generateSessionToken();
-    const session = await createSession(sessionToken, existingUser);
+    const session = await createSession(sessionToken, existingUser.id);
     await setSessionTokenCookie(sessionToken, session.expiresAt);
     return new Response(null, {
       status: 302,
@@ -69,7 +63,7 @@ export async function GET(request: Request): Promise<Response> {
   if (googleUserId == "118271302696111351988") {
     const user = await createUser(googleUserId, username, true);
     const sessionToken = generateSessionToken();
-    const session = await createSession(sessionToken, user);
+    const session = await createSession(sessionToken, user.id);
     await setSessionTokenCookie(sessionToken, session.expiresAt);
     return new Response(null, {
       status: 302,

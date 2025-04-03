@@ -15,10 +15,8 @@ import { AddSalesType, TimeRange, TransactionType } from "@/lib/types";
 import { and, between, eq, gte, sql } from "drizzle-orm";
 import {
   calculateExpiration,
-  getDaysAgo,
   getDaysFromTimeRange,
   getStartAndEndofDayAgo,
-  getStartOfDay,
 } from "./utils";
 import { redis } from "../db/redis";
 
@@ -30,7 +28,7 @@ export const addSale = async (sale: AddSalesType, tx?: TransactionType) => {
   }
 };
 
-export const getAnalytics = async (timeRange: TimeRange = "daily") => {
+export const getAnalyticsForHome = async (timeRange: TimeRange = "daily") => {
   "use cache";
   cacheLife("hours");
 
@@ -53,7 +51,6 @@ export const getAnalytics = async (timeRange: TimeRange = "daily") => {
   }
 
   try {
-  
     const result = await db
       .select({
         sum: sql<number>`SUM(${SalesTable.sellingPrice} * ${SalesTable.quantitySold})`,
@@ -61,14 +58,14 @@ export const getAnalytics = async (timeRange: TimeRange = "daily") => {
         salesCount: sql<number>`COUNT(*)`,
       })
       .from(SalesTable)
-      .where(gte(SalesTable.createdAt, getDaysFromTimeRange(timeRange)))
+      .where(gte(SalesTable.createdAt,await getDaysFromTimeRange(timeRange)))
       .get();
 
     const sum = result?.sum ?? 0;
     const cost = result?.cost ?? 0;
     const profit = sum - cost;
     const salesCount = result?.salesCount ?? 0;
-    const mostSoldProducts=await db
+    const mostSoldProducts = await db
       .select({
         productId: SalesTable.productId,
         totalSold: sql<number>`SUM(${SalesTable.quantitySold})`,
@@ -83,7 +80,7 @@ export const getAnalytics = async (timeRange: TimeRange = "daily") => {
       )
       .where(
         and(
-          gte(SalesTable.createdAt, getDaysFromTimeRange(timeRange)),
+          gte(SalesTable.createdAt, await getDaysFromTimeRange(timeRange)),
           eq(ProductImagesTable.isPrimary, true),
         ),
       )
@@ -134,7 +131,7 @@ export const getMostSoldProducts = async (
     )
     .where(
       and(
-        gte(SalesTable.createdAt, getDaysFromTimeRange(timeRange)),
+        gte(SalesTable.createdAt,await getDaysFromTimeRange(timeRange)),
         eq(ProductImagesTable.isPrimary, true),
       ),
     )
@@ -185,39 +182,39 @@ export const getOrderCountForWeek = async () => {
 };
 
 export const getAverageOrderValue = async (timerange: TimeRange) => {
-
-  const order= await db.query.OrdersTable.findMany({
-    columns:{
+  const order = await db.query.OrdersTable.findMany({
+    columns: {
       total: true,
       createdAt: true,
     },
-    where: gte(OrdersTable.createdAt, getDaysFromTimeRange(timerange)),
-    }
-  );
+    where: gte(OrdersTable.createdAt, await getDaysFromTimeRange(timerange)),
+  });
 
   const total = order.reduce((acc, order) => {
     return acc + order.total;
   }, 0);
 
   return total / order.length;
-}
+};
 
 export const getCachedAnalytics = async (timerange: TimeRange) => {
   try {
     const key = `analytics:${timerange}`;
     const cached = (await redis.get(key)) as string;
     if (cached) {
-      return JSON.parse(cached) as Awaited<ReturnType<typeof getAnalytics>>;
+      return JSON.parse(cached) as Awaited<
+        ReturnType<typeof getAnalyticsForHome>
+      >;
     }
     console.log("Cached analytics", cached);
-    const analytics = await getAnalytics(timerange);
+    const analytics = await getAnalyticsForHome(timerange);
     await redis.set(key, JSON.stringify(analytics), {
       ex: calculateExpiration(timerange),
     });
     return analytics;
   } catch (e) {
     console.log(e);
-    return await getAnalytics(timerange);
+    return await getAnalyticsForHome(timerange);
   }
 };
 

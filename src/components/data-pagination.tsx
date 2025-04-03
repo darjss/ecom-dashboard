@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Pagination,
   PaginationContent,
@@ -34,13 +33,7 @@ export function DataPagination({
   totalCountText,
   isLoading = false,
 }: DataPaginationProps) {
-  const [totalPages, setTotalPages] = useState(
-    Math.max(1, Math.ceil(totalItems / itemsPerPage)),
-  );
-
-  useEffect(() => {
-    setTotalPages(Math.max(1, Math.ceil(totalItems / itemsPerPage)));
-  }, [totalItems, itemsPerPage]);
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 
   const handlePageChange = async (page: number) => {
     if (isLoading || page === currentPage || page < 1 || page > totalPages) {
@@ -68,7 +61,7 @@ export function DataPagination({
 
   const pageNumbers = getPageNumbers();
   if (pageNumbers[0] === undefined) {
-    return;
+    return null;
   }
 
   const showStartEllipsis = totalPages > 1 && pageNumbers[0] > 1;

@@ -13,51 +13,51 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Suspense, useState } from "react";
 
 import { getPaginatedOrders, searchOrder } from "@/server/actions/order";
 import { orderStatus, paymentStatus, PRODUCT_PER_PAGE } from "@/lib/constants";
-// import { useAction } from "@/hooks/use-action";
 import type {
   OrderStatusType,
   OrderType,
   PaymentStatusType,
 } from "@/lib/types";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { DataPagination } from "@/components/data-pagination";
 import SubmitButton from "@/components/submit-button";
 import OrderCard from "./order-card";
 import OrderSkeleton from "./order-skeleton";
-import { useState } from "react";
 
-const OrderGrid = () => {
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [sortField, setSortField] = useQueryState("sort", {
-    defaultValue: "",
-  });
-  const [sortDirection, setSortDirection] = useQueryState("dir", {
-    defaultValue: "asc",
-  });
-  const [inputValue, setInputValue] = useState("");
-  const [searchTerm, setSearchTerm] = useQueryState("query", {
-    defaultValue: "",
-  });
-  const [orderStatusFilter, setOrderStatusFilter] = useQueryState("status");
-  const [paymentStatusFilter, setPaymentStatusFilter] =
-    useQueryState("payment");
-
-  const { data, isLoading, isFetching } = useQuery(
-    [
-      "orders" +
-        page +
-        orderStatusFilter +
-        paymentStatusFilter +
-        sortField +
-        sortDirection +
-        searchTerm,
+// This component handles the data fetching with suspense
+const OrderList = ({
+  page,
+  searchTerm,
+  orderStatusFilter,
+  paymentStatusFilter,
+  sortField,
+  sortDirection,
+  onPageChange,
+}: {
+  page: number;
+  searchTerm: string;
+  orderStatusFilter: string | null;
+  paymentStatusFilter: string | null;
+  sortField: string;
+  sortDirection: string;
+  onPageChange: (page: number) => void;
+}) => {
+  const { data } = useSuspenseQuery({
+    queryKey: [
+      "orders",
+      page,
+      orderStatusFilter,
+      paymentStatusFilter,
+      sortField,
+      sortDirection,
+      searchTerm,
     ],
-    async () => {
+    queryFn: async () => {
       if (searchTerm) {
-        // setIsSearching(true);
         const searchResult = await searchOrder(searchTerm);
         if ("message" in searchResult && "error" in searchResult) {
           throw new Error(`Error fetching orders: ${searchResult.error}`);
@@ -76,7 +76,6 @@ const OrderGrid = () => {
         };
       }
 
-      // setIsSearching(false);
       const result = await getPaginatedOrders(
         page,
         PRODUCT_PER_PAGE,
@@ -106,43 +105,109 @@ const OrderGrid = () => {
         total: result.total || 0,
       };
     },
-    {
-      keepPreviousData: true,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      staleTime: Infinity,
-    },
+    staleTime: 1000 * 60 * 5,
+    
+  });
+
+  if (!data || data.orders.length === 0) {
+    return (
+      <div className="py-8 text-center text-muted-foreground">
+        {searchTerm
+          ? `No orders found matching "${searchTerm}"`
+          : "No orders found"}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="space-y-4">
+        {data.orders.map((order: OrderType) => (
+          <OrderCard key={order.orderNumber} order={order} />
+        ))}
+      </div>
+
+      {data.total > 0 && (
+        <div className="space-y-4">
+          <DataPagination
+            currentPage={page}
+            totalItems={data.total}
+            itemsPerPage={PRODUCT_PER_PAGE}
+            onPageChange={onPageChange}  
+          />
+        </div>
+      )}
+    </>
   );
+};
+
+// Loading fallback for Suspense
+const OrderListFallback = () => {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 5 }).map((_, index) => (
+        <OrderSkeleton key={index*100} />
+      ))}
+    </div>
+  );
+};
+
+const OrderGrid = () => {
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [sortField, setSortField] = useQueryState("sort", {
+    defaultValue: "",
+  });
+  const [sortDirection, setSortDirection] = useQueryState("dir", {
+    defaultValue: "asc",
+  });
+  const [inputValue, setInputValue] = useState("");
+  const [searchTerm, setSearchTerm] = useQueryState("query", {
+    defaultValue: "",
+  });
+  const [orderStatusFilter, setOrderStatusFilter] = useQueryState("status");
+  const [paymentStatusFilter, setPaymentStatusFilter] =
+    useQueryState("payment");
+  const [isFetching, setIsFetching] = useState(false);
 
   async function handleSearch() {
+    setIsFetching(true);
     await setSearchTerm(inputValue);
     await setPage(1);
+    setIsFetching(false);
   }
 
   async function clearSearch() {
+    setIsFetching(true);
     setInputValue("");
     await setSearchTerm("");
     await setPage(1);
+    setIsFetching(false);
   }
 
   async function handlePageChange(newPage: number) {
+    setIsFetching(true);
     await setPage(newPage);
+    setIsFetching(false);
   }
 
   async function handleFilterChange(type: "status" | "payment", value: string) {
+    setIsFetching(true);
     if (type === "status") await setOrderStatusFilter(value);
     else await setPaymentStatusFilter(value);
     await setPage(1);
+    setIsFetching(false);
   }
 
   async function resetFilters() {
+    setIsFetching(true);
     await setOrderStatusFilter(null);
     await setPaymentStatusFilter(null);
     await setPage(1);
+    setIsFetching(false);
   }
 
   const handleSort = async (field: string) => {
+    setIsFetching(true);
     if (sortField === field) {
       await setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -150,6 +215,7 @@ const OrderGrid = () => {
       await setSortDirection("asc");
     }
     await setPage(1);
+    setIsFetching(false);
   };
 
   return (
@@ -286,37 +352,17 @@ const OrderGrid = () => {
           </div>
         )}
 
-        {isLoading || isFetching ? (
-          <div className="space-y-4">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <OrderSkeleton key={index} />
-            ))}
-          </div>
-        ) : !data || data.orders.length === 0 ? (
-          <div className="py-8 text-center text-muted-foreground">
-            {searchTerm
-              ? `No orders found matching "${searchTerm}"`
-              : "No orders found"}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {data.orders.map((order: OrderType) => (
-              <OrderCard key={order.id} order={order} />
-            ))}
-          </div>
-        )}
-
-        {data && data.total > 0 && (
-          <div className="space-y-4">
-            <DataPagination
-              currentPage={page}
-              totalItems={data.total}
-              itemsPerPage={PRODUCT_PER_PAGE}
-              onPageChange={handlePageChange}
-              isLoading={isLoading || isFetching}
-            />
-          </div>
-        )}
+        <Suspense fallback={<OrderListFallback />}>
+          <OrderList
+            page={page}
+            searchTerm={searchTerm}
+            orderStatusFilter={orderStatusFilter}
+            paymentStatusFilter={paymentStatusFilter}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onPageChange={handlePageChange}
+          />
+        </Suspense>
       </CardContent>
     </Card>
   );

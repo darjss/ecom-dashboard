@@ -6,7 +6,6 @@ import { ResultSet } from "@libsql/client";
 import { SQLiteTransaction } from "drizzle-orm/sqlite-core";
 import { ExtractTablesWithRelations } from "drizzle-orm";
 import { getOrderById } from "@/server/actions/order";
-import { UserSelectType } from "@/server/db/schema";
 export type BrandType = Awaited<ReturnType<typeof getAllBrands>>;
 export type CategoryType = Awaited<ReturnType<typeof getAllCategories>>;
 export type ProductType = Exclude<
@@ -34,7 +33,7 @@ export interface ProductImageType {
 }
 export interface Session {
   id: string;
-  user: UserSelectType;
+  userId: number;
   expiresAt: Date;
 }
 
