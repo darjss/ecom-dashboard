@@ -50,6 +50,22 @@ export async function GET(request: Request): Promise<Response> {
   
   console.log(existingUser)
 
+
+
+
+  if (existingUser !== null && existingUser.isApproved === true) {
+    console.log("session hit")
+    const sessionToken = generateSessionToken();
+    const session = await createSession(sessionToken, existingUser);
+    await setSessionTokenCookie(sessionToken, session.expiresAt);
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: "/",
+      },
+    });
+  }
+
   if (googleUserId == "118271302696111351988") {
     const user = await createUser(googleUserId, username, true);
     const sessionToken = generateSessionToken();
@@ -62,20 +78,6 @@ export async function GET(request: Request): Promise<Response> {
       },
     });
   }
-
-
-  if (existingUser !== null && existingUser.isApproved === true) {
-    const sessionToken = generateSessionToken();
-    const session = await createSession(sessionToken, existingUser);
-    await setSessionTokenCookie(sessionToken, session.expiresAt);
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: "/",
-      },
-    });
-  }
-
 
   if (existingUser === null || existingUser.isApproved === false) {
     return new Response(null, {

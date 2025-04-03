@@ -22,18 +22,23 @@ export async function createSession(
     user: user,
     expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
   };
-  await redis.set(
-    `session:${session.id}`,
-    JSON.stringify({
-      id: session.id,
-      user: session.user,
-      expires_at: Math.floor(session.expiresAt.getTime() / 1000),
-    }),
-    {
-      exat: Math.floor(session.expiresAt.getTime() / 1000),
-    },
-  );
-  await redis.sadd(`user_sessions:${user.id}`, sessionId);
+  try{
+
+    await redis.set(
+      `session:${session.id}`,
+      JSON.stringify({
+        id: session.id,
+        user: session.user,
+        expires_at: Math.floor(session.expiresAt.getTime() / 1000),
+      }),
+      {
+        exat: Math.floor(session.expiresAt.getTime() / 1000),
+      },
+    );
+    await redis.sadd(`user_sessions:${user.id}`, sessionId);
+  } catch (e) {
+    console.log(e)
+  }
 
   return session;
 }
