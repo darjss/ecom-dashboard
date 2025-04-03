@@ -45,9 +45,10 @@ const PurchaseGrid = ({ products }: { products: ProductType[] }) => {
     await setPage(1);
   };
 
-  const { data, isLoading } = useQuery(
-    ["purchases", page, productFilter, sortField, sortDirection],
-    async () => {
+  const { data, isLoading } = useQuery({
+
+    queryKey:["purchases", page, productFilter, sortField, sortDirection],
+    queryFn:async () => {
       return getPaginatedPurchases(
         page,
         PRODUCT_PER_PAGE,
@@ -56,9 +57,7 @@ const PurchaseGrid = ({ products }: { products: ProductType[] }) => {
         productFilter === 0 ? undefined : productFilter,
       );
     },
-    {
-      keepPreviousData: true,
-    },
+  }
   );
 
   const purchases = data?.purchases || [];

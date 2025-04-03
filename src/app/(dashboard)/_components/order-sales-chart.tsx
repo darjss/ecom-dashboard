@@ -47,7 +47,9 @@ const OrderSalesChart = () => {
       </CardContent>
     );
   }
-
+  if(data===undefined){
+    return <div>Loading...</div>
+  }
   const chartData = [...data].reverse();
 
   const average =

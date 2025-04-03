@@ -15,7 +15,7 @@ interface PageProps{
   searchParams: Promise<SearchParams>;
 };
 
-export const orderPageParams = {
+const orderPageParams = {
   page: parseAsInteger.withDefault(1),
   query: parseAsString.withDefault(""),
   status: parseAsString,

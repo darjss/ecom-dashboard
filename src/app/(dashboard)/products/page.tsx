@@ -18,7 +18,7 @@ import {
   SearchParams,
 } from "nuqs/server";
 
-export const productPageParams = {
+const productPageParams = {
   page: parseAsInteger.withDefault(1),
   sort: parseAsString.withDefault(""),
   query: parseAsString.withDefault(""),
