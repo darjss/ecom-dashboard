@@ -47,18 +47,8 @@ export async function GET(request: Request): Promise<Response> {
   const username = claims.name;
 
   const existingUser = await getUserFromGoogleId(googleUserId);
-
-  if (existingUser !== null && existingUser.isApproved === true) {
-    const sessionToken = generateSessionToken();
-    const session = await createSession(sessionToken, existingUser);
-    await setSessionTokenCookie(sessionToken, session.expiresAt);
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: "/",
-      },
-    });
-  }
+  
+  console.log(existingUser)
 
   if (googleUserId == "118271302696111351988") {
     const user = await createUser(googleUserId, username, true);
@@ -72,6 +62,20 @@ export async function GET(request: Request): Promise<Response> {
       },
     });
   }
+
+
+  if (existingUser !== null && existingUser.isApproved === true) {
+    const sessionToken = generateSessionToken();
+    const session = await createSession(sessionToken, existingUser);
+    await setSessionTokenCookie(sessionToken, session.expiresAt);
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: "/",
+      },
+    });
+  }
+
 
   if (existingUser === null || existingUser.isApproved === false) {
     return new Response(null, {
