@@ -1,5 +1,5 @@
 import { getCachedOrderCount, getPendingOrders } from "@/server/actions/order";
-import { getCachedAnalytics, getCachedMostSoldProducts } from "@/server/actions/sales";
+import { getDashboardHomePageData } from "@/server/actions/sales";
 import { Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MetricsGrid } from "./_components/metric-grid";
@@ -8,7 +8,6 @@ import PendingOrdersList from "./_components/pending-order-list";
 import OrderSalesChart from "./_components/order-sales-chart";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-
 
 const DashboardLoading = () => (
   <div className="container mx-auto space-y-4 px-2 py-4 sm:space-y-6 sm:px-4 sm:py-6 md:px-6 md:py-8">
@@ -37,53 +36,45 @@ const DashboardLoading = () => (
 
 // Main dashboard component
 const DashboardHome = async () => {
-  // await connection();
-  // Parallel data fetching for better performance
-  const [
+  // Fetch all data using the consolidated function
+  const dashboardData = await getDashboardHomePageData();
+
+  // Destructure data - check for potential error state
+  if (dashboardData.error) {
+    // Handle error case - maybe show an error message
+    console.error("Failed to load dashboard data:", dashboardData.error);
+    // You might want to return a dedicated error component or message here
+    return <div>Error loading dashboard data. Please try again later.</div>;
+  }
+
+  const {
     salesData,
     mostSoldProducts,
     orderCounts,
     pendingOrders,
-  ] = await Promise.all([
-    Promise.all([
-      getCachedAnalytics("daily"),
-      getCachedAnalytics("weekly"),
-      getCachedAnalytics("monthly"),
-    ]),
-    Promise.all([
-      getCachedMostSoldProducts("daily"),
-      getCachedMostSoldProducts("weekly"),
-      getCachedMostSoldProducts("monthly"),
-    ]),
-    Promise.all([
-      getCachedOrderCount("daily"),
-      getCachedOrderCount("weekly"),
-      getCachedOrderCount("monthly"),
-    ]),
-    // Promise.all([
-    //   getNewCustomersCount("daily"),
-    //   getNewCustomersCount("weekly"),
-    //   getNewCustomersCount("monthly"),
-    // ]),
-    getPendingOrders(),
-  ]);
+    // totalVisits, // Keep mock data or fetch separately if needed
+  } = dashboardData;
 
-  const [salesDaily, salesWeekly, salesMonthly] = salesData;
-  const [
-    mostSoldProductsDaily,
-    mostSoldProductsWeekly,
-    mostSoldProductsMonthly,
-  ] = mostSoldProducts;
-  const [dailyOrders, weeklyOrders, monthlyOrders] = orderCounts;
-  // const [dailyNewCustomers, weeklyNewCustomers, monthlyNewCustomers] =
-  //   newCustomers;
-  // Mock data (consider replacing with real data from an API)
+  // Extract data for each time range
+  const salesDaily = salesData.daily;
+  const salesWeekly = salesData.weekly;
+  const salesMonthly = salesData.monthly;
+
+  const mostSoldProductsDaily = mostSoldProducts.daily;
+  const mostSoldProductsWeekly = mostSoldProducts.weekly;
+  const mostSoldProductsMonthly = mostSoldProducts.monthly;
+
+  const dailyOrders = orderCounts.daily;
+  const weeklyOrders = orderCounts.weekly;
+  const monthlyOrders = orderCounts.monthly;
+
+  // Mock data (consider replacing with real data from an API or fetching separately)
+  // This was previously defined here, keep it if it's still needed and not part of dashboardData
   const totalVisits = { daily: 120, weekly: 540, monthly: 1254 };
 
   return (
     <Suspense fallback={<DashboardLoading />}>
       <div className="container mx-auto space-y-4 px-2 py-4 sm:space-y-6 sm:px-4 sm:py-6 md:space-y-8 md:px-6 md:py-8">
-
         <Tabs
           defaultValue="daily"
           className="space-y-4 sm:space-y-6 md:space-y-8"

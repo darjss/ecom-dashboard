@@ -7,10 +7,6 @@ import {
   ProductsTable,
   SalesTable,
 } from "../db/schema";
-import {
-  unstable_cacheLife as cacheLife,
-  unstable_cacheTag as cacheTag,
-} from "next/cache";
 import { AddSalesType, TimeRange, TransactionType } from "@/lib/types";
 import { and, between, eq, gte, sql } from "drizzle-orm";
 import {
@@ -19,6 +15,7 @@ import {
   getStartAndEndofDayAgo,
 } from "./utils";
 import { redis } from "../db/redis";
+import { getCachedOrderCount, getPendingOrders, getOrderCount } from "./order";
 
 export const addSale = async (sale: AddSalesType, tx?: TransactionType) => {
   try {
@@ -29,27 +26,6 @@ export const addSale = async (sale: AddSalesType, tx?: TransactionType) => {
 };
 
 export const getAnalyticsForHome = async (timeRange: TimeRange = "daily") => {
-  "use cache";
-  cacheLife("hours");
-
-  cacheTag(`analytics-${timeRange}`);
-
-  cacheTag("analytics-all");
-
-  if (timeRange === "daily") {
-    cacheLife({
-      expire: 24 * 60 * 60, // 24 hours
-      stale: 60 * 5, // 5 minutes
-      revalidate: 60 * 15, // 15 minutes
-    });
-  } else {
-    cacheLife({
-      expire: 24 * 60 * 60, // 24 hours
-      stale: 60 * 5, // 5 minutes
-      revalidate: 60 * 60 * 6, // 6 hours
-    });
-  }
-
   try {
     const result = await db
       .select({
@@ -58,7 +34,7 @@ export const getAnalyticsForHome = async (timeRange: TimeRange = "daily") => {
         salesCount: sql<number>`COUNT(*)`,
       })
       .from(SalesTable)
-      .where(gte(SalesTable.createdAt,await getDaysFromTimeRange(timeRange)))
+      .where(gte(SalesTable.createdAt, await getDaysFromTimeRange(timeRange)))
       .get();
 
     const sum = result?.sum ?? 0;
@@ -108,14 +84,6 @@ export const getMostSoldProducts = async (
   timeRange: TimeRange = "daily",
   productCount: number = 5,
 ) => {
-  "use cache";
-  cacheTag("products");
-  cacheLife({
-    expire: 24 * 60 * 60, // 24 hours
-    stale: 60 * 5, // 5 minutes
-    revalidate: 60 * 15, // 15 minutes
-  });
-
   const result = await db
     .select({
       productId: SalesTable.productId,
@@ -131,7 +99,7 @@ export const getMostSoldProducts = async (
     )
     .where(
       and(
-        gte(SalesTable.createdAt,await getDaysFromTimeRange(timeRange)),
+        gte(SalesTable.createdAt, await getDaysFromTimeRange(timeRange)),
         eq(ProductImagesTable.isPrimary, true),
       ),
     )
@@ -197,68 +165,100 @@ export const getAverageOrderValue = async (timerange: TimeRange) => {
   return total / order.length;
 };
 
-export const getCachedAnalytics = async (timerange: TimeRange) => {
-  try {
-    const key = `analytics:${timerange}`;
-    const cached = (await redis.get(key)) as string;
-    if (cached) {
-      return JSON.parse(cached) as Awaited<
-        ReturnType<typeof getAnalyticsForHome>
-      >;
-    }
-    console.log("Cached analytics", cached);
-    const analytics = await getAnalyticsForHome(timerange);
-    await redis.set(key, JSON.stringify(analytics), {
-      ex: calculateExpiration(timerange),
-    });
-    return analytics;
-  } catch (e) {
-    console.log(e);
-    return await getAnalyticsForHome(timerange);
-  }
-};
+export const getDashboardHomePageData = async () => {
+  const isProd = process.env.NODE_ENV === "production";
+  const cacheKey = "dashboard-homepage-data";
 
-export const getCachedOrderCountForWeek = async () => {
-  try {
-    const key = `orderCountForWeek`;
-    const cached = (await redis.get(key)) as string;
-    console.log("Cached order count for week", cached);
-    if (cached) {
-      return JSON.parse(cached) as Awaited<
-        ReturnType<typeof getOrderCountForWeek>
-      >;
+  if (isProd) {
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        console.log("Using cached dashboard homepage data");
+        return JSON.parse(cached as string);
+      }
+    } catch (e) {
+      console.error("Redis cache read error:", e);
+      // Proceed to fetch fresh data if cache read fails
     }
-    const orderCount = await getOrderCountForWeek();
-    await redis.set(key, JSON.stringify(orderCount), {
-      ex: calculateExpiration("weekly"),
-    });
-    return orderCount;
-  } catch (e) {
-    console.log(e);
-    return await getOrderCountForWeek();
   }
-};
 
-export const getCachedMostSoldProducts = async (
-  timerange: TimeRange = "daily",
-  productCount: number = 5,
-) => {
+  console.log("Fetching fresh dashboard homepage data");
   try {
-    const key = `mostSoldProducts:${timerange}:${productCount}`;
-    const cached = (await redis.get(key)) as string;
-    console.log("Cached most sold products", cached);
-    if (cached) {
-      return JSON.parse(cached) as Awaited<
-        ReturnType<typeof getMostSoldProducts>
-      >;
+    const [
+      salesDaily,
+      salesWeekly,
+      salesMonthly,
+      mostSoldProductsDaily,
+      mostSoldProductsWeekly,
+      mostSoldProductsMonthly,
+      dailyOrders,
+      weeklyOrders,
+      monthlyOrders,
+      pendingOrders,
+    ] = await Promise.all([
+      getAnalyticsForHome("daily"),
+      getAnalyticsForHome("weekly"),
+      getAnalyticsForHome("monthly"),
+      getMostSoldProducts("daily"),
+      getMostSoldProducts("weekly"),
+      getMostSoldProducts("monthly"),
+      getOrderCount("daily"),
+      getOrderCount("weekly"),
+      getOrderCount("monthly"),
+      getPendingOrders(),
+    ]);
+
+    const dashboardData = {
+      salesData: {
+        daily: salesDaily,
+        weekly: salesWeekly,
+        monthly: salesMonthly,
+      },
+      mostSoldProducts: {
+        daily: mostSoldProductsDaily,
+        weekly: mostSoldProductsWeekly,
+        monthly: mostSoldProductsMonthly,
+      },
+      orderCounts: {
+        daily: dailyOrders,
+        weekly: weeklyOrders,
+        monthly: monthlyOrders,
+      },
+      pendingOrders,
+      lastFetched: new Date().toISOString(),
+    };
+
+    if (isProd) {
+      try {
+        // Cache for 15 minutes in production
+        await redis.set(cacheKey, JSON.stringify(dashboardData), {
+          ex: 60 * 60 * 24,
+        });
+        console.log("Stored fresh dashboard homepage data in cache");
+      } catch (e) {
+        console.error("Redis cache write error:", e);
+      }
     }
-    const mostSoldProducts = await getMostSoldProducts(timerange, productCount);
-    await redis.set(key, JSON.stringify(mostSoldProducts), {
-      ex: calculateExpiration(timerange),
-    });
-    return mostSoldProducts;
-  } catch (e) {
-    console.log(e);
-    return await getMostSoldProducts();
+
+    return dashboardData;
+  } catch (error) {
+    console.error("Error fetching dashboard homepage data:", error);
+    // Return a default structure on error to prevent breaking the page
+    return {
+      salesData: {
+        daily: { sum: 0, salesCount: 0, profit: 0 },
+        weekly: { sum: 0, salesCount: 0, profit: 0 },
+        monthly: { sum: 0, salesCount: 0, profit: 0 },
+      },
+      mostSoldProducts: { daily: [], weekly: [], monthly: [] },
+      orderCounts: {
+        daily: { count: 0 },
+        weekly: { count: 0 },
+        monthly: { count: 0 },
+      },
+      pendingOrders: [],
+      lastFetched: new Date().toISOString(),
+      error: "Failed to fetch data",
+    };
   }
 };

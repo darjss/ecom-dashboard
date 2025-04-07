@@ -47,9 +47,12 @@ export async function GET(request: Request): Promise<Response> {
 
   const existingUser = await getUserFromGoogleId(googleUserId);
 
+  console.log(existingUser)
   if (existingUser !== null && existingUser.isApproved === true) {
+    
     const sessionToken = generateSessionToken();
     const session = await createSession(sessionToken, existingUser);
+    console.log("created session with cookie ")
     await setSessionTokenCookie(sessionToken, session.expiresAt);
     return new Response(null, {
       status: 302,

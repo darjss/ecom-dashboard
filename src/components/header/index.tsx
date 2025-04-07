@@ -1,12 +1,28 @@
+"use client"
 import { UserRound, Search } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { SidebarTrigger } from "../ui/sidebar";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 
 import Pathname from "./pathname";
 import UserData from "./user-data";
 import SearchBar from "./search-bar";
-const Header = async () => {
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+
+const Header = () => {
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const closeMobileSearch = () => {
+    setSheetOpen(false);
+  };
+
   return (
     <header className="sticky flex h-16 border-b shadow-sm">
       <div className="sticky flex h-full w-full items-center justify-between px-4">
@@ -19,18 +35,20 @@ const Header = async () => {
         <SearchBar />
 
         <div className="flex items-center gap-2">
-          {/* Mobile Search Button */}
-          <Popover>
-            <PopoverTrigger className="md:hidden">
+          {/* Mobile Search Button -> Sheet Trigger */}
+          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+            <SheetTrigger asChild className="md:hidden">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200">
                 <Search className="h-5 w-5 text-gray-600" />
               </div>
-            </PopoverTrigger>
-            <PopoverContent className="w-[calc(100vw-2rem)] p-4 md:hidden">
-              <SearchBar isMobile />
-            </PopoverContent>
-          </Popover>
-
+            </SheetTrigger>
+            <SheetContent side="top" className="p-4">
+              <SheetHeader className="mb-4">
+                <SheetTitle>Search Orders</SheetTitle>
+              </SheetHeader>
+              <SearchBar isMobile onResultClick={closeMobileSearch} />
+            </SheetContent>
+          </Sheet>
 
           {/* User Menu */}
           <Popover>

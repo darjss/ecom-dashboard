@@ -20,7 +20,7 @@ export const insertSession = async (session: Session) => {
 
 export const getSession = async (sessionId: string) => {
 
-  console.log("Getting session");
+  console.log("Getting session from redis");
   const session = (await redis.json.get(sessionId)) as Session | null;
   if (session === null || session === undefined) {
     return null;
@@ -32,7 +32,7 @@ export const getSession = async (sessionId: string) => {
   if (user === null || user === undefined) {
     return null;
   }
-
+  console.log("Session result", session)
   return {
     session: session as Session,
     user: user as UserSelectType,

@@ -42,7 +42,7 @@ export async function validateSessionToken(
   token: string,
 ): Promise<SessionValidationResult> {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-
+  console.log("decoded session id")
   const result = await getDbSession(sessionId);
 
   if (result === null) {
@@ -101,6 +101,8 @@ export async function deleteSessionTokenCookie(): Promise<void> {
 export const auth = async (): Promise<SessionValidationResult> => {
   const cookieStore = await cookies();
   const token = cookieStore.get("session")?.value ?? null;
+
+  console.log("checking auth with session", token)
 
   if (token === null) {
     return { session: null, user: null };
