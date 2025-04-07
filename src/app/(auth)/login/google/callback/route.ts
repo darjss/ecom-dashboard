@@ -52,7 +52,7 @@ export async function GET(request: Request): Promise<Response> {
     
     const sessionToken = generateSessionToken();
     const session = await createSession(sessionToken, existingUser);
-    console.log("created session with cookie ")
+    console.log("created session with cookie ", session)
     await setSessionTokenCookie(sessionToken, session.expiresAt);
     return new Response(null, {
       status: 302,

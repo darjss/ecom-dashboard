@@ -19,20 +19,19 @@ export const insertSession = async (session: Session) => {
 };
 
 export const getSession = async (sessionId: string) => {
-
   console.log("Getting session from redis");
-  const session = (await redis.json.get(sessionId)) as Session | null;
+  const session = (await redis.json.get(
+    `session:${sessionId}`,
+  )) as Session | null;
   if (session === null || session === undefined) {
     return null;
   }
-
-  
 
   const user = session.user;
   if (user === null || user === undefined) {
     return null;
   }
-  console.log("Session result", session)
+  console.log("Session result", session);
   return {
     session: session as Session,
     user: user as UserSelectType,
@@ -47,13 +46,17 @@ export const updateSession = async (session: Session) => {
   revalidateTag("session");
   return await redis.set(session.id, JSON.stringify(session));
 };
-export const createUser = async (googleId: string, username: string, isApproved:boolean=false) => {
+export const createUser = async (
+  googleId: string,
+  username: string,
+  isApproved: boolean = false,
+) => {
   const [user] = await db
     .insert(UsersTable)
     .values({
       googleId,
       username,
-      isApproved  
+      isApproved,
     })
     .returning({
       id: UsersTable.id,
