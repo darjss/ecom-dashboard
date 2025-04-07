@@ -14,26 +14,26 @@ import { redis } from "@/server/db/redis";
 
 export async function createSession(
   token: string,
-  userId: number,
+  user: UserSelectType,
 ): Promise<Session> {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
   const session: Session = {
     id: sessionId,
-    userId,
+    user,
     expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
   };
   await redis.set(
     `session:${session.id}`,
     JSON.stringify({
       id: session.id,
-      user_id: session.userId,
+      user: session.user,
       expires_at: Math.floor(session.expiresAt.getTime() / 1000),
     }),
     {
       exat: Math.floor(session.expiresAt.getTime() / 1000),
     },
   );
-  await redis.sadd(`user_sessions:${userId}`, sessionId);
+  await redis.sadd(`user_sessions:${user.id}`, sessionId);
 
   return session;
 }

@@ -8,7 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { IndianRupee, Users, Package, AlertCircle, Banknote, DollarSign } from "lucide-react";
+import {
+  IndianRupee,
+  Users,
+  Package,
+  AlertCircle,
+  Banknote,
+  DollarSign,
+} from "lucide-react";
 import { getAnalyticsData } from "@/server/actions/analytics";
 import { StatsCard } from "./_components/stats-card";
 import { formatCurrency } from "@/lib/utils";
@@ -18,9 +25,7 @@ import { M } from "node_modules/@upstash/redis/zmscore-BdNsMd17.mjs";
 import LoadingScreen from "@/components/loading-screen";
 
 async function AnalyticsPage() {
-  const [analytics ]= await Promise.all([
-    getAnalyticsData("monthly"),
-  ]);
+  const [analytics] = await Promise.all([getAnalyticsData("monthly")]);
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">

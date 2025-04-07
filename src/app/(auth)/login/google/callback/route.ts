@@ -5,7 +5,6 @@ import { decodeIdToken } from "arctic";
 
 import type { OAuth2Tokens } from "arctic";
 import { createUser, getUserFromGoogleId } from "@/server/actions/auth";
-import { create } from "domain";
 import { generateSessionToken } from "@/lib/utils";
 
 export async function GET(request: Request): Promise<Response> {
@@ -50,7 +49,7 @@ export async function GET(request: Request): Promise<Response> {
 
   if (existingUser !== null && existingUser.isApproved === true) {
     const sessionToken = generateSessionToken();
-    const session = await createSession(sessionToken, existingUser.id);
+    const session = await createSession(sessionToken, existingUser);
     await setSessionTokenCookie(sessionToken, session.expiresAt);
     return new Response(null, {
       status: 302,
@@ -63,7 +62,7 @@ export async function GET(request: Request): Promise<Response> {
   if (googleUserId == "118271302696111351988") {
     const user = await createUser(googleUserId, username, true);
     const sessionToken = generateSessionToken();
-    const session = await createSession(sessionToken, user.id);
+    const session = await createSession(sessionToken, user);
     await setSessionTokenCookie(sessionToken, session.expiresAt);
     return new Response(null, {
       status: 302,

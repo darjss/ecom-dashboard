@@ -19,29 +19,23 @@ export const insertSession = async (session: Session) => {
 };
 
 export const getSession = async (sessionId: string) => {
-  "use cache";
-  cacheLife("session");
-  cacheTag("session");
+
   console.log("Getting session");
   const session = (await redis.json.get(sessionId)) as Session | null;
   if (session === null || session === undefined) {
     return null;
   }
 
-  const result = await db
-    .select({ user: UsersTable })
-    .from(UsersTable)
-    .where(eq(UsersTable.id, session.userId as number))
-    .limit(1);
+  
 
-  const user = result[0];
+  const user = session.user;
   if (user === null || user === undefined) {
     return null;
   }
 
   return {
     session: session as Session,
-    user: user.user as UserSelectType,
+    user: user as UserSelectType,
   };
 };
 
@@ -65,6 +59,7 @@ export const createUser = async (googleId: string, username: string, isApproved:
       id: UsersTable.id,
       username: UsersTable.username,
       googleId: UsersTable.googleId,
+      isApproved: UsersTable.isApproved,
       createdAt: UsersTable.createdAt,
       updatedAt: UsersTable.updatedAt,
     });
