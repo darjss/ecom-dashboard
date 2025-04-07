@@ -19,7 +19,7 @@ const SearchBar = ({ isMobile }: SearchBarProps) => {
     debounce((value: string) => {
       setDebouncedValue(value);
     }, 500),
-    []
+    [],
   );
 
   const { data, isFetching } = useQuery({
@@ -30,11 +30,7 @@ const SearchBar = ({ isMobile }: SearchBarProps) => {
   });
 
   return (
-    <div
-      className={`relative ${
-        isMobile ? "w-full" : "hidden w-96 md:block"
-      }`}
-    >
+    <div className={`relative ${isMobile ? "w-full" : "hidden w-96 md:block"}`}>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
         <Input
@@ -58,7 +54,7 @@ const SearchBar = ({ isMobile }: SearchBarProps) => {
             Searching...
           </div>
         )}
-        
+
         {data !== undefined && data?.length > 0 && inputValue && (
           <div className="absolute left-0 right-0 z-[100] mt-1 max-h-[400px] w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
             {data.map((product) => (

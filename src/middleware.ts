@@ -38,16 +38,16 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       return NextResponse.next();
     }
 
-    const token = request.cookies.get("session")?.value ?? null;
-    // const result = await auth();
+    // const token = request.cookies.get("session")?.value ?? null;
+    const result = await auth();
 
-    // if (result.session === null) {
-    //   return NextResponse.redirect(new URL("/login", request.url));
-    // }
-
-    if (!token) {
+    if (result.session === null) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
+
+    // if (!token) {
+    //   return NextResponse.redirect(new URL("/login", request.url));
+    // }
 
     return NextResponse.next();
   }
