@@ -63,8 +63,5 @@ export const getPaymentProviderIcon = (provider: string) => {
   }
 };
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-MN", {
-    style: "currency",
-    currency: "MNT",
-  }).format(amount);
+  return amount + "₮";
 }

@@ -106,7 +106,6 @@ const OrderList = ({
       };
     },
     staleTime: 1000 * 60 * 5,
-    
   });
 
   if (!data || data.orders.length === 0) {
@@ -133,7 +132,7 @@ const OrderList = ({
             currentPage={page}
             totalItems={data.total}
             itemsPerPage={PRODUCT_PER_PAGE}
-            onPageChange={onPageChange}  
+            onPageChange={onPageChange}
           />
         </div>
       )}
@@ -146,7 +145,7 @@ const OrderListFallback = () => {
   return (
     <div className="space-y-4">
       {Array.from({ length: 5 }).map((_, index) => (
-        <OrderSkeleton key={index*100} />
+        <OrderSkeleton key={index * 100} />
       ))}
     </div>
   );

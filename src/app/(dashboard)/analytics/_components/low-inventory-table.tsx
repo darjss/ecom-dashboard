@@ -8,18 +8,19 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { LowInventoryProductItem } from "@/lib/types";
 
-interface LowInventoryItem {
-  productId: number;
-  name: string;
-  stock: number;
-  status: string;
-  imageUrl: string;
-  price: number;
-}
+// interface LowInventoryItem {
+//   productId: number;
+//   name: string;
+//   stock: number;
+//   status: string;
+//   imageUrl: string;
+//   price: number;
+// }
 
 interface LowInventoryTableProps {
-  data: LowInventoryItem[];
+  data: LowInventoryProductItem[];
 }
 
 export function LowInventoryTable({ data }: LowInventoryTableProps) {
@@ -39,7 +40,7 @@ export function LowInventoryTable({ data }: LowInventoryTableProps) {
             <TableCell className="flex items-center gap-3">
               <div className="relative h-12 w-12">
                 <Image
-                  src={item.imageUrl}
+                  src={item.imageUrl || "/placeholder.png"}
                   alt={item.name}
                   fill
                   className="rounded-md object-cover"

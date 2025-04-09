@@ -13,7 +13,7 @@ import {
   CategoriesTable,
   ProductImagesTable,
 } from "../db/schema";
-import { TimeRange } from "@/lib/types";
+import { AnalyticsData, TimeRange } from "@/lib/types";
 import { and, eq, gte, sql, count, lt, or, desc } from "drizzle-orm";
 import { calculateExpiration, getDaysFromTimeRange } from "./utils";
 import { connection } from "next/server";
@@ -157,7 +157,7 @@ export const getFailedPayments = async (timeRange: TimeRange) => {
         gte(PaymentsTable.createdAt,await getDaysFromTimeRange(timeRange)),
         eq(PaymentsTable.status, "failed"),
       ),
-    );
+    ).get();
 };
 
 export const getLowInventoryProducts = async () => {
@@ -203,6 +203,16 @@ export const getTopBrandsBySales = async (timeRange: TimeRange) => {
     )
     .limit(5);
 };
+
+export const getCurrentProductsValue = async () => {
+  const result = await db
+    .select({
+      total: sql<number>`SUM(${ProductsTable.price} * ${ProductsTable.stock})`,
+    })
+    .from(ProductsTable);
+  return result[0]?.total || 0;
+}
+
 export const getAnalyticsData = async (timeRange: TimeRange) => {
   try {
     const isProd = process.env.NODE_ENV === "production";
@@ -212,7 +222,7 @@ export const getAnalyticsData = async (timeRange: TimeRange) => {
     if (isProd) {
       const cached = (await redis.get(cacheKey)) as string;
       if (cached) {
-        return JSON.parse(cached);
+        return JSON.parse(cached) as AnalyticsData;
       }
     }
 
@@ -226,6 +236,7 @@ export const getAnalyticsData = async (timeRange: TimeRange) => {
       failedPayments,
       lowInventoryProducts,
       topBrands,
+      currentProductsValue,
     ] = await Promise.all([
       getAverageOrderValue(timeRange),
       getTotalProfit(timeRange),
@@ -236,6 +247,7 @@ export const getAnalyticsData = async (timeRange: TimeRange) => {
       getFailedPayments(timeRange),
       getLowInventoryProducts(),
       getTopBrandsBySales(timeRange),
+      getCurrentProductsValue(),
     ]);
 
     const analytics = {
@@ -267,6 +279,7 @@ export const getAnalyticsData = async (timeRange: TimeRange) => {
         totalProducts: inventoryStatus.length,
         lowStockCount: lowInventoryProducts.length,
         topBrandRevenue: topBrands.reduce((acc, brand) => acc + brand.total, 0),
+        currentProductsValue,
       },
     };
 
@@ -280,6 +293,5 @@ export const getAnalyticsData = async (timeRange: TimeRange) => {
     return analytics;
   } catch (error) {
     console.error("Error fetching analytics:", error);
-    throw error;
   }
 };

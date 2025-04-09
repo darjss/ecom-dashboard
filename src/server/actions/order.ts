@@ -728,3 +728,19 @@ export const getPendingOrders = async () => {
     return [];
   }
 };
+
+export const updateOrderStatus = async (id: number, status: OrderStatusType) => {
+  try {
+    await db.update(OrdersTable).set({ status: status }).where(eq(OrdersTable.id, id));
+    revalidateTag("orders");
+    return { message: "Order status updated successfully"+status };
+  } catch (e) {
+    console.log(e);
+    if (e instanceof Error) {
+      console.error(e)
+      return { message: "Updating order status failed", error: e.message };
+    }
+    console.error(e)
+    return { message: "Updating order status failed", error: "Unknown error" };
+  }
+};

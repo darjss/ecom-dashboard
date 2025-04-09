@@ -34,11 +34,9 @@ import { DataPagination } from "@/components/data-pagination";
 import ProductCard from "./product-card";
 import ProductSkeleton from "./product-skeleton";
 
-// --- Skeleton Component (keep as is) ---
 const ProductGridSkeleton = () => (
   <Card className="w-full">
     <CardContent className="space-y-6 p-2 sm:p-6">
-      {/* Skeleton for controls */}
       <div className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <div className="flex w-full items-center gap-2">
@@ -58,19 +56,16 @@ const ProductGridSkeleton = () => (
           </div>
         </div>
       </div>
-      {/* Skeleton for product list */}
       <div className="space-y-4">
         {Array.from({ length: 5 }).map((_, index) => (
           <ProductSkeleton key={index} />
         ))}
       </div>
-      {/* Skeleton for pagination */}
       <div className="h-9 w-full animate-pulse rounded bg-muted"></div>
     </CardContent>
   </Card>
 );
 
-// --- Component with the actual logic ---
 const ProductGridContent = ({
   brands,
   categories,
@@ -78,7 +73,6 @@ const ProductGridContent = ({
   categories: CategoryType;
   brands: BrandType;
 }) => {
-  // --- State Hooks ---
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [sortField, setSortField] = useQueryState("sort", {
     defaultValue: "",
@@ -86,7 +80,7 @@ const ProductGridContent = ({
   const [sortDirection, setSortDirection] = useQueryState("dir", {
     defaultValue: "asc",
   });
-  const [inputValue, setInputValue] = useState(""); // Local state for input field
+  const [inputValue, setInputValue] = useState(""); 
   const [searchTerm, setSearchTerm] = useQueryState("query", {
     defaultValue: "",
   });
@@ -99,11 +93,8 @@ const ProductGridContent = ({
     parseAsInteger.withDefault(0),
   );
 
-  // --- Transition Hook ---
   const [isPending, startTransition] = useTransition();
 
-  // --- Data Fetching ---
-  // useSuspenseQuery handles initial loading via Suspense boundary
   const { data, isFetching } = useSuspenseQuery({
     queryKey: [
       "products",
@@ -131,16 +122,12 @@ const ProductGridContent = ({
         categoryFilter === 0 ? undefined : categoryFilter,
       );
     },
-    // staleTime: 5 * 1000, // Optional: Add staleTime if needed
   });
 
-  // Combine isFetching (background updates) and isPending (transitions)
   const isUpdating = isFetching || isPending;
 
   const products = data?.products || [];
   const totalCount = data?.totalCount || 0;
-
-  // --- Event Handlers (Wrapped in startTransition) ---
 
   const handleSort = (field: string) => {
     startTransition(async () => {
@@ -148,9 +135,8 @@ const ProductGridContent = ({
         await setSortDirection(sortDirection === "asc" ? "desc" : "asc");
       } else {
         await setSortField(field);
-        await setSortDirection("asc"); // Default to asc when changing field
+        await setSortDirection("asc"); 
       }
-      // Reset to page 1 when sorting changes
       if (page !== 1) {
         await setPage(1);
       }
@@ -158,7 +144,7 @@ const ProductGridContent = ({
   };
 
   const handlePageChange = (newPage: number) => {
-    // Basic validation to prevent unnecessary updates
+
     if (newPage === page || newPage < 1) return;
     startTransition(async () => {
       await setPage(newPage);
@@ -172,7 +158,6 @@ const ProductGridContent = ({
       } else {
         await setCategoryFilter(value);
       }
-      // Reset to page 1 when filters change
       if (page !== 1) {
         await setPage(1);
       }
@@ -180,12 +165,10 @@ const ProductGridContent = ({
   };
 
   const handleSearch = () => {
-    // Only trigger search if input is not empty and different from current term
     const trimmedInput = inputValue.trim();
     if (trimmedInput && trimmedInput !== searchTerm) {
       startTransition(async () => {
         await setSearchTerm(trimmedInput);
-        // Reset to page 1 when search term changes
         if (page !== 1) {
           await setPage(1);
         }
@@ -194,31 +177,31 @@ const ProductGridContent = ({
   };
 
   const handleClearSearch = () => {
-    setInputValue(""); // Update local input state immediately
+    setInputValue("");
     if (searchTerm !== "") {
       startTransition(async () => {
         await setSearchTerm("");
-        // Optionally reset to page 1, or let it stay on the current page
-        // if (page !== 1) {
-        //   await setPage(1);
-        // }
+
+        if (page !== 1) {
+          await setPage(1);
+        }
       });
     }
   };
 
   const handleResetFilters = () => {
     startTransition(async () => {
-      setInputValue(""); // Clear local input state
-      // Reset all query states
+      setInputValue(""); 
+
       const promises = [
         setSearchTerm(""),
         setBrandFilter(0),
         setCategoryFilter(0),
         setSortField(""),
         setSortDirection("asc"),
-        setPage(1), // Always go back to page 1 on full reset
+        setPage(1), 
       ];
-      await Promise.all(promises.map((p) => p.catch((e) => console.error(e)))); // Handle potential errors in individual setters
+      await Promise.all(promises.map((p) => p.catch((e) => console.error(e)))); 
     });
   };
 
@@ -231,9 +214,7 @@ const ProductGridContent = ({
   return (
     <Card className="w-full">
       <CardContent className="space-y-6 p-2 sm:p-6">
-        {/* --- Controls --- */}
         <div className="space-y-4">
-          {/* Search and Add */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <div className="flex w-full items-center gap-2">
               <Input
@@ -252,7 +233,7 @@ const ProductGridContent = ({
                 disabled={isUpdating || !inputValue.trim()}
                 aria-label="Search"
               >
-                {isPending && searchTerm === inputValue.trim() ? ( // Show spinner only during search transition
+                {isPending && searchTerm === inputValue.trim() ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Search className="h-4 w-4" />
@@ -267,10 +248,10 @@ const ProductGridContent = ({
                   variant={"destructive"}
                   aria-label="Clear search"
                 >
-                  {isPending && searchTerm !== "" ? ( // Show spinner during clear transition
+                  {isPending && searchTerm !== "" ? ( 
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <X className="h-4 w-4" /> // Ensure icon color contrasts
+                    <X className="h-4 w-4" />
                   )}
                 </Button>
               )}
@@ -279,7 +260,7 @@ const ProductGridContent = ({
               <Button
                 size="sm"
                 className="h-9 w-full sm:w-auto"
-                disabled={isUpdating} // Disable during any update/transition
+                disabled={isUpdating}
               >
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Add Product
@@ -335,10 +316,9 @@ const ProductGridContent = ({
               </Select>
             </div>
 
-            {/* Sort and Reset */}
             <div className="flex gap-2 sm:ml-auto">
               <Button
-                variant="neutral" // Use outline for sort buttons?
+                variant="neutral" 
                 size="sm"
                 onClick={() => handleSort("price")}
                 className="h-9 px-3"
@@ -367,7 +347,7 @@ const ProductGridContent = ({
               </Button>
               {hasActiveFilters && (
                 <Button
-                  variant="default" // Use ghost for reset?
+                  variant="default" 
                   size="sm"
                   onClick={handleResetFilters}
                   className="h-9 px-3"
@@ -381,24 +361,18 @@ const ProductGridContent = ({
             </div>
           </div>
         </div>
-
-        {/* --- Product List --- */}
-        {/* Suspense handles the initial load */}
         <div className="space-y-4">
-          {/* Show loader during transitions/fetching if products exist */}
           {isUpdating && products.length > 0 && (
             <div className="flex items-center justify-center py-4 text-muted-foreground">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Loading...
             </div>
           )}
-          {/* Show "No products" only if not loading and no products */}
           {!isUpdating && products.length === 0 && (
             <div className="py-8 text-center text-muted-foreground">
               No products found matching your criteria.
             </div>
           )}
-          {/* Render products */}
           {products.length > 0 && (
             <div className="space-y-4">
               {products.map((product) => (
@@ -413,15 +387,12 @@ const ProductGridContent = ({
           )}
         </div>
 
-        {/* --- Pagination --- */}
-        {/* Only show pagination if there's more than one page or if searching (totalCount might be inaccurate during search) */}
-
           <DataPagination
             currentPage={page}
-            totalItems={totalCount} // Be aware this might be inaccurate if search doesn't return total
+            totalItems={totalCount}
             itemsPerPage={PRODUCT_PER_PAGE}
             onPageChange={handlePageChange}
-            isLoading={isUpdating} // Pass combined loading state
+            isLoading={isUpdating} 
           />
 
         {isUpdating && (
@@ -432,7 +403,6 @@ const ProductGridContent = ({
   );
 };
 
-// --- Main Exported Component (keep as is) ---
 const ProductGrid = ({
   brands,
   categories,

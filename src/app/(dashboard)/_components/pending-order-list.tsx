@@ -1,13 +1,12 @@
+// "use client"
 import { CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardDescription,
-  CardFooter,
+  Card, CardFooter,
   CardHeader,
-  CardTitle,
+  CardTitle
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,13 +16,11 @@ import {
   User2Icon,
   Phone,
   MapPin,
-  MoreHorizontal,
-  Truck,
-  CreditCard,
+  MoreHorizontal, CreditCard
 } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { getStatusColor } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { connection } from "next/server";
 import { ShapedOrder } from "@/server/actions/utils";
 import Image from "next/image";
@@ -62,16 +59,16 @@ const PendingOrdersList = async ({ orders }: { orders: ShapedOrder[] }) => {
                   key={order.id}
                   className="group relative rounded-lg border border-border p-2.5 transition-all hover:border-primary/50 hover:shadow-sm sm:p-3 md:p-4"
                 >
-                  {/* Status Badge */}
+                  {/* Status Badge
                   <div className="absolute right-2 top-2">
                     <Badge
                       className={`px-1.5 py-0.5 text-[10px] sm:text-xs ${getStatusColor(
                         order.status,
                       )}`}
                     >
-                      {order.status} 
+                      {order.status}
                     </Badge>
-                  </div>
+                  </div> */}
 
                   {/* Customer Info */}
                   <div className="mb-2 flex items-center gap-2 sm:mb-3 sm:gap-3">
@@ -89,6 +86,7 @@ const PendingOrdersList = async ({ orders }: { orders: ShapedOrder[] }) => {
                           variant="neutral"
                           className="hidden h-4 border-dashed px-1 text-[10px] sm:inline-flex"
                         >
+                          💵
                           {order.paymentStatus}
                         </Badge>
                       </div>
@@ -158,7 +156,7 @@ const PendingOrdersList = async ({ orders }: { orders: ShapedOrder[] }) => {
                           </div>
                           <Badge
                             variant="neutral"
-                            className="absolute -right-1 -top-1 h-4 w-4 rounded-full p-0 text-[9px] sm:h-5 sm:w-5 sm:text-[10px] flex items-center justify-center"
+                            className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full p-0 text-[9px] sm:h-5 sm:w-5 sm:text-[10px]"
                           >
                             {product.quantity}
                           </Badge>
@@ -182,10 +180,7 @@ const PendingOrdersList = async ({ orders }: { orders: ShapedOrder[] }) => {
                         </p>
                       </div>
                       <p className="text-xs font-medium sm:text-sm">
-                        {order.total.toLocaleString("en-US", {
-                          style: "currency",
-                          currency: "USD",
-                        })}
+                        {formatCurrency(order.total)}
                       </p>
                     </div>
                     <div className="flex items-start gap-1">
@@ -202,6 +197,7 @@ const PendingOrdersList = async ({ orders }: { orders: ShapedOrder[] }) => {
                       variant="default"
                       size="sm"
                       className="h-7 px-2 text-xs sm:h-8 sm:px-3 sm:text-xs"
+                      // onClick={() => updateOrderStatus(order.id, "pending")}
                     >
                       Process
                     </Button>
@@ -209,6 +205,7 @@ const PendingOrdersList = async ({ orders }: { orders: ShapedOrder[] }) => {
                       variant="neutral"
                       size="sm"
                       className="h-7 px-2 text-xs sm:h-8 sm:px-3 sm:text-xs"
+                      // onClick={() => updateOrderStatus(order.id, "shipped")}
                     >
                       Deliver
                     </Button>

@@ -1,5 +1,7 @@
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TopBrandItem } from "@/lib/types";
+import { formatCurrency } from "@/lib/utils";
 import {
   Bar,
   BarChart,
@@ -9,14 +11,9 @@ import {
   Tooltip,
 } from "recharts";
 
-interface TopBrandData {
-  brandName: string;
-  total: number;
-  quantity: number;
-}
 
 interface TopBrandsChartProps {
-  data: TopBrandData[];
+  data: TopBrandItem[];
 }
 
 export function TopBrandsChart({ data }: TopBrandsChartProps) {
@@ -30,14 +27,7 @@ export function TopBrandsChart({ data }: TopBrandsChartProps) {
           <BarChart data={data}>
             <XAxis dataKey="brandName" />
             <YAxis />
-            <Tooltip
-              formatter={(value) =>
-                new Intl.NumberFormat("en-IN", {
-                  style: "currency",
-                  currency: "INR",
-                }).format(value as number)
-              }
-            />
+            <Tooltip formatter={(value) => formatCurrency(value as number)} />
             <Bar dataKey="total" fill="#0ea5e9" />
           </BarChart>
         </ResponsiveContainer>

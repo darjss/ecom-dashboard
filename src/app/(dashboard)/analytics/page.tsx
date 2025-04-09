@@ -9,9 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  IndianRupee,
   Users,
-  Package,
   AlertCircle,
   Banknote,
   DollarSign,
@@ -21,12 +19,13 @@ import { StatsCard } from "./_components/stats-card";
 import { formatCurrency } from "@/lib/utils";
 import { TopBrandsChart } from "./_components/top-brand-chart";
 import { LowInventoryTable } from "./_components/low-inventory-table";
-import { M } from "node_modules/@upstash/redis/zmscore-BdNsMd17.mjs";
 import LoadingScreen from "@/components/loading-screen";
 
 async function AnalyticsPage() {
   const [analytics] = await Promise.all([getAnalyticsData("monthly")]);
-
+  if(analytics === undefined){
+    return <div>Loading...</div>
+  }
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -49,8 +48,8 @@ async function AnalyticsPage() {
           icon={<Users className="h-4 w-4" />}
         />
         <StatsCard
-          title="Customer Lifetime Value"
-          value={formatCurrency(analytics.customerLifetimeValue)}
+          title="All Products Value"
+          value={formatCurrency(analytics.metrics.currentProductsValue)}
           icon={<Users className="h-4 w-4" />}
         />
       </div>
@@ -68,10 +67,10 @@ async function AnalyticsPage() {
             <div className="flex items-center space-x-2">
               <AlertCircle className="h-4 w-4 text-destructive" />
               <span className="text-2xl font-bold">
-                {analytics.failedPayments.count}
+                {analytics.failedPayments?.count || 0} 
               </span>
               <span className="text-muted-foreground">
-                ({formatCurrency(analytics.failedPayments.total)})
+                ({formatCurrency(analytics.failedPayments?.total || 0)})
               </span>
             </div>
           </CardContent>

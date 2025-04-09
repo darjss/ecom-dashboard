@@ -3,18 +3,17 @@ import { UserRound, Search } from "lucide-react";
 import { SidebarTrigger } from "../ui/sidebar";
 import { Suspense, useState } from "react";
 
-import Pathname from "./pathname";
 import UserData from "./user-data";
 import SearchBar from "./search-bar";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import Link from "next/link";
 
 const Header = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -28,7 +27,21 @@ const Header = () => {
       <div className="sticky flex h-full w-full items-center justify-between px-4">
         <div className="flex items-center gap-2 md:gap-4">
           <SidebarTrigger className="text-gray-500 hover:text-gray-700" />
-          <Pathname />
+          <Link href="/">
+            <h1 className="text-lg font-semibold text-gray-900 md:text-xl">
+              Home
+              </h1>
+              </Link>
+          <Link href="/orders">
+          <h1 className="text-lg font-semibold text-gray-900 md:text-xl">
+          Orders
+          </h1>
+          </Link>
+          <Link href="/products">
+             <h1 className="text-lg font-semibold text-gray-900 md:text-xl">
+          Products
+             </h1>
+          </Link>
         </div>
 
         {/* Desktop Search bar */}

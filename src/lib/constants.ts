@@ -61,10 +61,6 @@ export const sideNavItems = [
     title: "Users",
     url: "/users",
     icon: Users,   },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,   },
 ];
 
 export const amazonHeaders = {

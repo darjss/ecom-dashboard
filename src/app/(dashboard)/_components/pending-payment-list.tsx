@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { CreditCard, Clock, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { getPaymentProviderIcon } from "@/lib/utils";
+import { formatCurrency, getPaymentProviderIcon } from "@/lib/utils";
 import { connection } from "next/server";
 
 const PendingPaymentsList = async ({ payments }: { payments: any[] }) => {
@@ -46,7 +46,7 @@ const PendingPaymentsList = async ({ payments }: { payments: any[] }) => {
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
                         {getPaymentProviderIcon(payment.provider)}
-                      </div>
+                    </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="truncate text-sm font-medium capitalize">
@@ -66,10 +66,7 @@ const PendingPaymentsList = async ({ payments }: { payments: any[] }) => {
                     </div>
                     <div className="text-left sm:text-right">
                       <p className="text-sm font-medium">
-                        {payment.amount?.toLocaleString("en-US", {
-                          style: "currency",
-                          currency: "USD",
-                        }) || "N/A"}
+                        {formatCurrency(payment.amount) || "N/A"}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         Order #{payment.orderId} 

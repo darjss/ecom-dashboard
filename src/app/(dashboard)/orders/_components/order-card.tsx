@@ -11,14 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import type { OrderType } from "@/lib/types";
 import RowActions from "../../../(dashboard)/products/_components/row-actions";
-import { deleteOrder } from "@/server/actions/order";
+import { deleteOrder, updateOrderStatus } from "@/server/actions/order";
 import EditOrderForm from "./edit-order-form";
 import type { Dispatch, SetStateAction } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { getPaymentProviderIcon, getPaymentStatusColor, getStatusColor } from "@/lib/utils";
+import { useAction } from "@/hooks/use-action";
 
 const OrderCard = ({ order }: { order: OrderType }) => {
+  const [editOrderAction, isPending]= useAction(updateOrderStatus)
 console.log("id",order.id)
   return (
     <Card
@@ -87,13 +89,21 @@ console.log("id",order.id)
         <div className="border-b bg-muted/5 px-3 py-2">
           <div className="flex items-center gap-1">
             <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
-            <span className=" text-sm font-semibold">
+            <span className="text-sm font-semibold">
               {order.address || "No address provided"}
             </span>
-            <Button size={"icon"} className="w-7 h-7" variant={"noShadow"} onClick={async ()=>{
-              await navigator.clipboard.writeText(order.address)
-              toast("Address Copied")
-            }}>  <Copy className="w-4 h-4"/></Button>
+            <Button
+              size={"icon"}
+              className="h-7 w-7"
+              variant={"noShadow"}
+              onClick={async () => {
+                await navigator.clipboard.writeText(order.address);
+                toast("Address Copied");
+              }}
+            >
+              {" "}
+              <Copy className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
@@ -117,9 +127,9 @@ console.log("id",order.id)
               </div>
 
               <div className="mb-2 grid grid-cols-2 gap-1.5">
-                {order.products.map((product,index) => (
+                {order.products.map((product, index) => (
                   <div
-                    key={order.orderNumber+product.productId+index}
+                    key={order.orderNumber + product.productId + index}
                     className="flex items-center gap-1.5 rounded border bg-card p-1.5 text-xs"
                   >
                     <div className="h-8 w-8 shrink-0 overflow-hidden rounded bg-muted/10">
@@ -149,6 +159,17 @@ console.log("id",order.id)
                   size="sm"
                   className="h-7 gap-1 border-emerald-200 px-2 text-xs text-emerald-700 hover:bg-emerald-50"
                   disabled={order.status === "delivered"}
+                  onClick={() => editOrderAction(order.id, "shipped")}
+                >
+                  <CheckCircle className="h-3 w-3" />
+                  <span>Mark Shipped</span>
+                </Button>
+                <Button
+                  variant="neutral"
+                  size="sm"
+                  className="h-7 gap-1 border-emerald-200 px-2 text-xs text-emerald-700 hover:bg-emerald-50"
+                  disabled={order.status === "delivered"}
+                  onClick={() => editOrderAction(order.id, "delivered")}
                 >
                   <CheckCircle className="h-3 w-3" />
                   <span>Mark Delivered</span>

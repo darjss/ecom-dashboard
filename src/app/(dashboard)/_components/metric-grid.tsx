@@ -15,6 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { formatCurrency } from "@/lib/utils";
 
 export const MetricsGrid = ({
   sales,
@@ -85,11 +86,7 @@ const MetricCard = ({
   color?: "primary" | "emerald" | "blue" | "amber" | "violet" | "rose";
 }) => {
   const formattedValue = isCurrency
-    ? value.toLocaleString("en-US", {
-        style: "currency",
-        currency: "USD",
-        maximumFractionDigits: 0,
-      })
+    ? formatCurrency(value)
     : value.toLocaleString();
 
   const colorClasses = {
