@@ -24,7 +24,7 @@ export const getSession = async (sessionId: string) => {
   if (sessionStr === null || sessionStr === undefined) {
     return null;
   }
-  console.log(sessionStr);
+  console.log("json",sessionStr, "type", typeof sessionStr);
   const sessionJson = JSON.parse(sessionStr as string);
   const session: Session = {
     id: sessionJson.id,
