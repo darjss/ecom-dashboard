@@ -331,12 +331,12 @@ export const seedDatabase = async () => {
               // Add images for this product in parallel
               await Promise.all(
                 (
-                  product.images as Array<{ url: string; isPrimary: boolean }>
-                ).map((image) =>
+                  product.images 
+                ).map((image,index) =>
                   db.insert(ProductImagesTable).values({
                     productId: productId,
                     url: image.url,
-                    isPrimary: image.isPrimary,
+                    isPrimary: index===0,
                   }),
                 ),
               );

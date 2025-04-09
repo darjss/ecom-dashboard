@@ -9,7 +9,6 @@ import {
 export const imageSchema = z.object({
   url: z.string(),
   id: z.number().int().positive().finite().optional(),
-  isPrimary: z.boolean(),
 });
 
 const productSchema = z.object({
