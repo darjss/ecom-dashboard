@@ -1,9 +1,15 @@
 import { z } from "zod";
-import { deliveryProvider, orderStatus, paymentStatus, status } from "../constants";
+import {
+  deliveryProvider,
+  orderStatus,
+  paymentStatus,
+  status,
+} from "../constants";
 
 export const imageSchema = z.object({
   url: z.string(),
   id: z.number().int().positive().finite().optional(),
+  isPrimary: z.boolean(),
 });
 
 const productSchema = z.object({

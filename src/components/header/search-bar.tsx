@@ -11,11 +11,10 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 interface SearchBarProps {
-  isMobile?: boolean;
-  onResultClick?: () => void;
+  // onResultClick?: () => void;
 }
 
-const SearchBar = ({ isMobile, onResultClick }: SearchBarProps) => {
+const SearchBar = ({}: SearchBarProps) => {
   const [inputValue, setInputValue] = useState("");
   const [debouncedValue, setDebouncedValue] = useState("");
 
@@ -34,7 +33,7 @@ const SearchBar = ({ isMobile, onResultClick }: SearchBarProps) => {
   });
 
   return (
-    <div className={`relative ${isMobile ? "w-full" : "hidden w-96 md:block"}`}>
+    <div className="relative w-full">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
         <Input
@@ -66,7 +65,6 @@ const SearchBar = ({ isMobile, onResultClick }: SearchBarProps) => {
                 key={order.id}
                 className="flex w-full items-center space-x-2 px-3 py-2 text-left transition duration-200 hover:bg-gray-100 sm:space-x-3 sm:px-4"
                 onClick={() => {
-                  onResultClick?.();
                   setInputValue("");
                   setDebouncedValue("");
                   redirect(`/orders?query=${debouncedValue}`);

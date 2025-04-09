@@ -8,6 +8,8 @@ import {
   ProductImagesTable,
   ProductsTable,
   PurchasesTable,
+  BrandsTable,
+  CategoriesTable,
 } from "@/server/db/schema";
 import { addProductType } from "@/lib/zod/schema";
 import { addBrand } from "@/server/actions/brand";
@@ -52,169 +54,62 @@ const categoriesData: CategoryInsertType[] = [
   { name: "Energy Supplements" },
 ];
 
-// Sample data for products (10 vitamin products)
-const productsData: addProductType[] = [
-  {
-    name: "Vitamin A",
-    description: "High-quality Vitamin A supplement.",
-    dailyIntake: 1,
-    brandId: 1,
-    categoryId: 1,
-    amount: "60 capsules",
-    potency: "1000 IU per capsule",
-    stock: 100,
-    price: 50000,
-    images: [
-      { url: "https://picsum.photos/600/400?random=1" },
-      { url: "https://picsum.photos/600/400?random=2" },
-    ],
-    status: "active",
-  },
-  {
-    name: "Vitamin C",
-    description: "Natural Vitamin C supplement from citrus sources.",
-    dailyIntake: 2,
-    brandId: 2,
-    categoryId: 1,
-    amount: "120 tablets",
-    potency: "1000 mg per tablet",
-    stock: 150,
-    price: 80000,
-    images: [
-      { url: "https://picsum.photos/600/400?random=3" },
-      { url: "https://picsum.photos/600/400?random=4" },
-    ],
-    status: "active",
-  },
-  {
-    name: "Vitamin D3",
-    description: "Cholecalciferol form of Vitamin D3.",
-    dailyIntake: 1,
-    brandId: 3,
-    categoryId: 1,
-    amount: "90 softgels",
-    potency: "2000 IU per softgel",
-    stock: 200,
-    price: 75000,
-    images: [
-      { url: "https://picsum.photos/600/400?random=5" },
-      { url: "https://picsum.photos/600/400?random=6" },
-    ],
-    status: "active",
-  },
-  {
-    name: "Vitamin E",
-    description: "Tocopherol-rich Vitamin E supplement.",
-    dailyIntake: 1,
-    brandId: 4,
-    categoryId: 1,
-    amount: "60 capsules",
-    potency: "400 IU per capsule",
-    stock: 120,
-    price: 90000,
-    images: [
-      { url: "https://picsum.photos/600/400?random=7" },
-      { url: "https://picsum.photos/600/400?random=8" },
-    ],
-    status: "active",
-  },
-  {
-    name: "Vitamin B Complex",
-    description: "Complete B vitamin complex for energy metabolism.",
-    dailyIntake: 1,
-    brandId: 5,
-    categoryId: 1,
-    amount: "60 tablets",
-    potency: "50 mg per tablet",
-    stock: 180,
-    price: 120000,
-    images: [
-      { url: "https://picsum.photos/600/400?random=9" },
-      { url: "https://picsum.photos/600/400?random=10" },
-    ],
-    status: "active",
-  },
-  {
-    name: "Vitamin K2",
-    description: "Vitamin K2 for bone and heart health.",
-    dailyIntake: 1,
-    brandId: 1,
-    categoryId: 1,
-    amount: "60 capsules",
-    potency: "100 mcg per capsule",
-    stock: 90,
-    price: 150000,
-    images: [
-      { url: "https://picsum.photos/600/400?random=11" },
-      { url: "https://picsum.photos/600/400?random=12" },
-    ],
-    status: "active",
-  },
-  {
-    name: "Vitamin B12",
-    description: "Cyanocobalamin form of Vitamin B12.",
-    dailyIntake: 1,
-    brandId: 2,
-    categoryId: 1,
-    amount: "60 tablets",
-    potency: "1000 mcg per tablet",
-    stock: 110,
-    price: 60000,
-    images: [
-      { url: "https://picsum.photos/600/400?random=13" },
-      { url: "https://picsum.photos/600/400?random=14" },
-    ],
-    status: "active",
-  },
-  {
-    name: "Vitamin B6",
-    description: "Pyridoxine form of Vitamin B6.",
-    dailyIntake: 1,
-    brandId: 3,
-    categoryId: 1,
-    amount: "60 capsules",
-    potency: "50 mg per capsule",
-    stock: 130,
-    price: 70000,
-    images: [
-      { url: "https://picsum.photos/600/400?random=15" },
-      { url: "https://picsum.photos/600/400?random=16" },
-    ],
-    status: "active",
-  },
-  {
-    name: "Vitamin B5",
-    description: "Pantothenic acid for energy production.",
-    dailyIntake: 1,
-    brandId: 4,
-    categoryId: 1,
-    amount: "60 capsules",
-    potency: "500 mg per capsule",
-    stock: 140,
-    price: 85000,
-    images: [
-      { url: "https://picsum.photos/600/400?random=17" },
-      { url: "https://picsum.photos/600/400?random=18" },
-    ],
-    status: "active",
-  },
-  {
-    name: "Vitamin B3",
-    description: "Niacin form of Vitamin B3 for skin health.",
-    dailyIntake: 1,
-    brandId: 5,
-    categoryId: 1,
-    amount: "60 tablets",
-    potency: "50 mg per tablet",
-    stock: 160,
-    price: 100000,
-    images: [
-      { url: "https://picsum.photos/600/400?random=19" },
-      { url: "https://picsum.photos/600/400?random=20" },
-    ],
-    status: "active",
-  },
-];
+// Generate more diverse product data
+const generateProductsData = (
+  numProducts: number,
+  brandIds: number[],
+  categoryIds: number[],
+): addProductType[] => {
+  const products: addProductType[] = [];
+  const productNameSet = new Set<string>(); // Ensure unique product names
+
+  for (let i = 0; i < numProducts; i++) {
+    let name = faker.commerce.productName();
+    // Ensure unique name
+    while (productNameSet.has(name)) {
+      name = faker.commerce.productName();
+    }
+    productNameSet.add(name);
+
+    const brandId = brandIds[Math.floor(Math.random() * brandIds.length)];
+    const categoryId =
+      categoryIds[Math.floor(Math.random() * categoryIds.length)];
+    const price = faker.number.int({ min: 10000, max: 300000 }); // Price in cents
+
+    // Ensure brandId and categoryId are valid before pushing
+    if (brandId === undefined || categoryId === undefined) {
+      console.warn(
+        `Skipping product "${name}" due to missing brandId or categoryId.`,
+      );
+      continue; // Skip this iteration if IDs are missing
+    }
+
+    products.push({
+      name: name,
+      description: faker.commerce.productDescription(),
+      dailyIntake: faker.number.int({ min: 1, max: 3 }),
+      brandId: brandId,
+      categoryId: categoryId,
+      amount: `${faker.number.int({ min: 30, max: 180 })} ${faker.helpers.arrayElement(["capsules", "tablets", "softgels", "grams"])}`,
+      potency: `${faker.number.int({ min: 10, max: 1000 })} ${faker.helpers.arrayElement(["mg", "mcg", "IU", "%"])}`,
+      stock: faker.number.int({ min: 50, max: 500 }),
+      price: price,
+      images: Array.from(
+        { length: faker.number.int({ min: 1, max: 3 }) },
+        (_, index) => ({
+          url: `https://picsum.photos/600/400?random=${faker.string.uuid()}`, // Use UUID for more unique random images
+          isPrimary: index === 0,
+        }),
+      ) as [
+        { url: string; isPrimary: boolean },
+        ...{ url: string; isPrimary: boolean }[],
+      ], // Cast to non-empty tuple type
+      status: faker.helpers.arrayElement(["active", "out_of_stock", "draft"]),
+    });
+  }
+  return products;
+};
+
 export const seedFakeOrders = async (
   numOrders: number,
   insertedProducts: { id: number; price: number }[],
@@ -237,12 +132,21 @@ export const seedFakeOrders = async (
       }
     }
 
-    // Step 2: Insert customers in a single transaction
-    await db.transaction(async (tx) => {
-      for (const customer of fakeCustomers) {
-        await tx.insert(CustomersTable).values(customer);
+    // Step 2: Insert customers one by one (removed transaction wrapper)
+    console.log(`Inserting ${fakeCustomers.length} customers...`);
+    for (const customer of fakeCustomers) {
+      try {
+        await db.insert(CustomersTable).values(customer);
+      } catch (error) {
+        console.error(
+          `Failed to insert customer with phone ${customer.phone}:`,
+          error,
+        );
+        // Decide how to handle customer insertion failure. Continue or throw?
+        // For seeding, maybe just log and continue.
       }
-    });
+    }
+    console.log("Customer insertion complete.");
 
     // Step 3: Generate all fake orders first
     const fakeOrders = Array.from({ length: numOrders }, () => {
@@ -287,38 +191,83 @@ export const seedFakeOrders = async (
     // Step 4: Sort orders by createdAt
     fakeOrders.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
-     console.log(`Starting to seed ${fakeOrders.length} orders...`);
+    console.log(`Starting to seed ${fakeOrders.length} orders...`);
     let successCount = 0;
     let failCount = 0;
+    const ORDER_BATCH_SIZE = 20; // Define batch size
 
-    for (let i = 0; i < fakeOrders.length; i++) {
-      const order = fakeOrders[i];
-      try {
-          if(order==undefined){
-            return;
-          }
-          seedOrder(order, order.createdAt);
+    for (let i = 0; i < fakeOrders.length; i += ORDER_BATCH_SIZE) {
+      const batch = fakeOrders.slice(i, i + ORDER_BATCH_SIZE);
+      console.log(
+        `Processing order batch ${i / ORDER_BATCH_SIZE + 1}/${Math.ceil(fakeOrders.length / ORDER_BATCH_SIZE)}...`,
+      );
 
-        
-        successCount++;
-        if (successCount % 10 === 0) {
-          console.log(`Successfully seeded ${successCount} orders so far...`);
+      const batchPromises = batch.map(async (order) => {
+        if (order == undefined) {
+          return; // Skip if order is somehow undefined
         }
-      } catch (error) {
-        failCount++;
-        console.error(`Error seeding order #${i + 1}:`, error);
+        try {
+          await seedOrder(order, order.createdAt);
+          successCount++;
+        } catch (error) {
+          failCount++;
+          console.error(
+            `Error seeding order with phone ${order.customerPhone}:`,
+            error,
+          );
+          // Optionally: throw error here if one failure should stop the whole batch/seed
+        }
+      });
+
+      // Wait for all promises in the current batch to settle
+      await Promise.all(batchPromises);
+
+      console.log(
+        `Batch ${i / ORDER_BATCH_SIZE + 1} complete. Total successes: ${successCount}, Total failures: ${failCount}`,
+      );
+
+      // Add a small delay between batches if needed
+      if (i + ORDER_BATCH_SIZE < fakeOrders.length) {
+        await new Promise((resolve) => setTimeout(resolve, 500)); // Delay between batches
       }
-      
-      // Add a small delay between orders to prevent overwhelming the database
-      await new Promise(resolve => setTimeout(resolve, 200));
     }
 
-    console.log(`Seeding complete: ${successCount} orders added, ${failCount} failed.`);
+    console.log(
+      `Seeding complete: ${successCount} orders added, ${failCount} failed.`,
+    );
   } catch (error) {
     console.error("Error in seedFakeOrders:", error);
     throw error;
   }
-}
+};
+
+// New server action to seed only orders
+export const seedOnlyOrders = async (numOrders: number) => {
+  "use server";
+  console.log(`Starting to seed ${numOrders} orders only...`);
+  try {
+    // Fetch necessary product data (id and price)
+    const products = await db
+      .select({ id: ProductsTable.id, price: ProductsTable.price })
+      .from(ProductsTable);
+
+    if (!products || products.length === 0) {
+      console.error(
+        "No products found in the database. Cannot seed orders without products.",
+      );
+      throw new Error("No products found to create orders from.");
+    }
+
+    // Call the existing function to seed orders
+    await seedFakeOrders(numOrders, products);
+
+    console.log(`Successfully initiated seeding of ${numOrders} orders.`);
+  } catch (error) {
+    console.error("Error during seedOnlyOrders:", error);
+    // Re-throw the error so the Server Action signals failure
+    throw error;
+  }
+};
 
 export const seedDatabase = async () => {
   try {
@@ -328,17 +277,30 @@ export const seedDatabase = async () => {
       ...categoriesData.map((category) => addCategory(category)),
     ]);
 
+    // Fetch inserted brand and category IDs
+    const brands = await db.select({ id: BrandsTable.id }).from(BrandsTable);
+    const categories = await db
+      .select({ id: CategoriesTable.id })
+      .from(CategoriesTable);
+    const brandIds = brands.map((b) => b.id);
+    const categoryIds = categories.map((c) => c.id);
+
+    // Generate products data
+    const productsData = generateProductsData(40, brandIds, categoryIds); // Generate 100 products
+
     revalidateTag("brandCategory");
 
-    // Step 2: Add products in batches
-    const BATCH_SIZE = 5;
+    // Step 2: Add products and their images in parallel batches
+    console.log("Seeding products and images...");
+    const PRODUCT_BATCH_SIZE = 10; // Adjust batch size based on performance/memory
     const insertedProducts: { id: number; stock: number; price: number }[] = [];
 
-    // Process products in batches
-    for (let i = 0; i < productsData.length; i += BATCH_SIZE) {
-      const batch = productsData.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < productsData.length; i += PRODUCT_BATCH_SIZE) {
+      const batch = productsData.slice(i, i + PRODUCT_BATCH_SIZE);
+      console.log(`Processing product batch ${i / PRODUCT_BATCH_SIZE + 1}...`);
+
       await Promise.all(
-        batch.map(async (product) => {
+        batch.map(async (product: addProductType) => {
           try {
             const productResult = await db
               .insert(ProductsTable)
@@ -366,13 +328,15 @@ export const seedDatabase = async () => {
                 price: product.price,
               });
 
-              // Add images for this product
+              // Add images for this product in parallel
               await Promise.all(
-                product.images.map((image, index) =>
+                (
+                  product.images as Array<{ url: string; isPrimary: boolean }>
+                ).map((image) =>
                   db.insert(ProductImagesTable).values({
                     productId: productId,
                     url: image.url,
-                    isPrimary: index === 0,
+                    isPrimary: image.isPrimary,
                   }),
                 ),
               );

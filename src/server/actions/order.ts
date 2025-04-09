@@ -8,7 +8,7 @@ import {
   OrderDetailsTable,
   OrdersTable,
   PaymentsTable,
-  ProductImagesTable
+  ProductImagesTable,
 } from "../db/schema";
 import { generateOrderNumber } from "@/lib/utils";
 import { createPayment } from "./payment";
@@ -19,8 +19,10 @@ import { updateStock } from "./product";
 import { PRODUCT_PER_PAGE } from "@/lib/constants";
 import { OrderStatusType, PaymentStatusType, TimeRange } from "@/lib/types";
 import {
-  calculateExpiration, getDaysFromTimeRange, shapeOrderResult,
-  shapeOrderResults
+  calculateExpiration,
+  getDaysFromTimeRange,
+  shapeOrderResult,
+  shapeOrderResults,
 } from "./utils";
 import { addSale } from "./sales";
 import { getAverageCostOfProduct } from "./purchases";
@@ -614,7 +616,7 @@ export const getPaginatedOrders = async (
             : eq(PaymentsTable.status, paymentStatus),
         ),
       );
-      const orders = shapeOrderResults(result);
+    const orders = shapeOrderResults(result);
 
     return {
       orders: orders,
@@ -654,7 +656,7 @@ export const getOrderCount = async (timeRange: TimeRange) => {
         count: sql<number>`COUNT(*)`,
       })
       .from(OrdersTable)
-      .where(gte(OrdersTable.createdAt,await  getDaysFromTimeRange(timeRange)))
+      .where(gte(OrdersTable.createdAt, await getDaysFromTimeRange(timeRange)))
       .get();
 
     const count = result?.count ?? 0;
@@ -681,7 +683,7 @@ export const getCachedOrderCount = async (timerange: TimeRange = "daily") => {
     return orderCount;
   } catch (e) {
     console.log(e);
-    return await getOrderCount(timerange)
+    return await getOrderCount(timerange);
   }
 };
 
@@ -729,18 +731,24 @@ export const getPendingOrders = async () => {
   }
 };
 
-export const updateOrderStatus = async (id: number, status: OrderStatusType) => {
+export const updateOrderStatus = async (
+  id: number,
+  status: OrderStatusType,
+) => {
   try {
-    await db.update(OrdersTable).set({ status: status }).where(eq(OrdersTable.id, id));
+    await db
+      .update(OrdersTable)
+      .set({ status: status })
+      .where(eq(OrdersTable.id, id));
     revalidateTag("orders");
-    return { message: "Order status updated successfully"+status };
+    return { message: "Order status updated successfully" + status };
   } catch (e) {
     console.log(e);
     if (e instanceof Error) {
-      console.error(e)
+      console.error(e);
       return { message: "Updating order status failed", error: e.message };
     }
-    console.error(e)
+    console.error(e);
     return { message: "Updating order status failed", error: "Unknown error" };
   }
 };

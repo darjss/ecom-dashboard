@@ -1,27 +1,14 @@
-"use client"
+"use client";
 import { UserRound, Search } from "lucide-react";
 import { SidebarTrigger } from "../ui/sidebar";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 
 import UserData from "./user-data";
 import SearchBar from "./search-bar";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import Link from "next/link";
 
 const Header = () => {
-  const [sheetOpen, setSheetOpen] = useState(false);
-
-  const closeMobileSearch = () => {
-    setSheetOpen(false);
-  };
-
   return (
     <header className="sticky flex h-16 border-b shadow-sm">
       <div className="sticky flex h-full w-full items-center justify-between px-4">
@@ -30,38 +17,41 @@ const Header = () => {
           <Link href="/">
             <h1 className="text-lg font-semibold text-gray-900 md:text-xl">
               Home
-              </h1>
-              </Link>
+            </h1>
+          </Link>
           <Link href="/orders">
-          <h1 className="text-lg font-semibold text-gray-900 md:text-xl">
-          Orders
-          </h1>
+            <h1 className="text-lg font-semibold text-gray-900 md:text-xl">
+              Orders
+            </h1>
           </Link>
           <Link href="/products">
-             <h1 className="text-lg font-semibold text-gray-900 md:text-xl">
-          Products
-             </h1>
+            <h1 className="text-lg font-semibold text-gray-900 md:text-xl">
+              Products
+            </h1>
           </Link>
         </div>
 
         {/* Desktop Search bar */}
-        <SearchBar />
+        <div className="hidden w-96 md:block">
+          <SearchBar />
+        </div>
 
         <div className="flex items-center gap-2">
-          {/* Mobile Search Button -> Sheet Trigger */}
-          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-            <SheetTrigger asChild className="md:hidden">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200">
+          {/* Mobile Search Popover */}
+          <Popover>
+            <PopoverTrigger asChild className="md:hidden">
+              <button
+                aria-label="Search"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
+              >
                 <Search className="h-5 w-5 text-gray-600" />
-              </div>
-            </SheetTrigger>
-            <SheetContent side="top" className="p-4">
-              <SheetHeader className="mb-4">
-                <SheetTitle>Search Orders</SheetTitle>
-              </SheetHeader>
-              <SearchBar isMobile onResultClick={closeMobileSearch} />
-            </SheetContent>
-          </Sheet>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-screen max-w-sm p-4">
+              <h4 className="mb-4 text-lg font-medium">Search Orders</h4>
+              <SearchBar />
+            </PopoverContent>
+          </Popover>
 
           {/* User Menu */}
           <Popover>

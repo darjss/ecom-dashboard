@@ -43,6 +43,13 @@
       "when": 1742792520140,
       "tag": "0005_wakeful_ultron",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1744210625806,
+      "tag": "0006_brief_kronos",
+      "breakpoints": true
     }
   ]
 }

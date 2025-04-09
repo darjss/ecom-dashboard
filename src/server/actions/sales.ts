@@ -7,7 +7,13 @@ import {
   ProductsTable,
   SalesTable,
 } from "../db/schema";
-import { AddSalesType, TimeRange, TransactionType } from "@/lib/types";
+import {
+  AddSalesType,
+  DashboardHomePageData,
+  DashboardHomePageErrorData,
+  TimeRange,
+  TransactionType,
+} from "@/lib/types";
 import { and, between, eq, gte, sql } from "drizzle-orm";
 import {
   calculateExpiration,
@@ -165,7 +171,9 @@ export const getAverageOrderValue = async (timerange: TimeRange) => {
   return total / order.length;
 };
 
-export const getDashboardHomePageData = async () => {
+export const getDashboardHomePageData = async (): Promise<
+  DashboardHomePageData | DashboardHomePageErrorData
+> => {
   const isProd = process.env.NODE_ENV === "production";
   const cacheKey = "dashboard-homepage-data";
 
@@ -174,7 +182,7 @@ export const getDashboardHomePageData = async () => {
       const cached = await redis.get(cacheKey);
       if (cached) {
         console.log("Using cached dashboard homepage data");
-        return JSON.parse(cached as string);
+        return cached as DashboardHomePageData;
       }
     } catch (e) {
       console.error("Redis cache read error:", e);
@@ -208,7 +216,7 @@ export const getDashboardHomePageData = async () => {
       getPendingOrders(),
     ]);
 
-    const dashboardData = {
+    const dashboardData: DashboardHomePageData = {
       salesData: {
         daily: salesDaily,
         weekly: salesWeekly,
@@ -244,7 +252,8 @@ export const getDashboardHomePageData = async () => {
   } catch (error) {
     console.error("Error fetching dashboard homepage data:", error);
     // Return a default structure on error to prevent breaking the page
-    return {
+    // Ensure this structure matches DashboardHomePageErrorData
+    const errorData: DashboardHomePageErrorData = {
       salesData: {
         daily: { sum: 0, salesCount: 0, profit: 0 },
         weekly: { sum: 0, salesCount: 0, profit: 0 },
@@ -260,5 +269,6 @@ export const getDashboardHomePageData = async () => {
       lastFetched: new Date().toISOString(),
       error: "Failed to fetch data",
     };
+    return errorData;
   }
 };

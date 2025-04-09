@@ -9,8 +9,7 @@ import {
   status,
 } from "@/lib/constants";
 
-export const createTable = sqliteTableCreator((name) => `ecom_vit_${
-  name}`);
+export const createTable = sqliteTableCreator((name) => `ecom_vit_${name}`);
 
 export const UsersTable = createTable(
   "user",
@@ -18,7 +17,9 @@ export const UsersTable = createTable(
     id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
     username: text("username", { length: 256 }).notNull(),
     googleId: text("google_id", { length: 256 }).unique(),
-    isApproved: int("is_approved", {mode:"boolean"}).default(false).notNull(),
+    isApproved: int("is_approved", { mode: "boolean" })
+      .default(false)
+      .notNull(),
     createdAt: int("created_at", { mode: "timestamp" })
       .default(sql`(unixepoch())`)
       .notNull(),
@@ -29,6 +30,7 @@ export const UsersTable = createTable(
   (table) => [
     index("username_idx").on(table.username),
     index("google_id_idx").on(table.googleId),
+    index("user_created_at_idx").on(table.createdAt),
   ],
 );
 
@@ -44,7 +46,10 @@ export const CustomersTable = createTable(
       () => new Date(),
     ),
   },
-  (table) => [index("phone_idx").on(table.phone)],
+  (table) => [
+    index("phone_idx").on(table.phone),
+    index("customer_created_at_idx").on(table.createdAt),
+  ],
 );
 
 export const BrandsTable = createTable(
@@ -60,7 +65,10 @@ export const BrandsTable = createTable(
       () => new Date(),
     ),
   },
-  (table) => [index("brand_name_idx").on(table.name)],
+  (table) => [
+    index("brand_name_idx").on(table.name),
+    index("brand_created_at_idx").on(table.createdAt),
+  ],
 );
 
 export const CategoriesTable = createTable(
@@ -75,7 +83,10 @@ export const CategoriesTable = createTable(
       () => new Date(),
     ),
   },
-  (table) => [index("category_name_idx").on(table.name)],
+  (table) => [
+    index("category_name_idx").on(table.name),
+    index("category_created_at_idx").on(table.createdAt),
+  ],
 );
 
 export const ProductsTable = createTable(
@@ -108,11 +119,14 @@ export const ProductsTable = createTable(
     ),
   },
   (table) => [
+    index("product_id_idx").on(table.id),
     index("product_name_idx").on(table.name),
-    index("product_slug_idx").on(table.slug),
     index("product_status_idx").on(table.status),
     index("product_category_idx").on(table.categoryId),
     index("product_brand_idx").on(table.brandId),
+    index("product_stock_idx").on(table.stock),
+    index("product_price_idx").on(table.price),
+    index("product_created_at_idx").on(table.createdAt),
   ],
 );
 
@@ -133,7 +147,10 @@ export const ProductImagesTable = createTable(
       .default(sql`(unixepoch())`)
       .notNull(),
   },
-  (table) => [index("image_variant_idx").on(table.productId)],
+  (table) => [
+    index("image_product_idx").on(table.productId),
+    index("image_product_primary_idx").on(table.productId, table.isPrimary),
+  ],
 );
 
 export const OrdersTable = createTable(
@@ -161,8 +178,11 @@ export const OrdersTable = createTable(
     ),
   },
   (table) => [
+    index("order_id_idx").on(table.id),
     index("order_customer_idx").on(table.customerPhone),
     index("order_number_idx").on(table.orderNumber),
+    index("order_status_idx").on(table.status),
+    index("order_created_at_idx").on(table.createdAt),
   ],
 );
 
@@ -178,7 +198,10 @@ export const OrderDetailsTable = createTable(
       .notNull(),
     quantity: int("quantity", { mode: "number" }).notNull(),
   },
-  (table) => [index("detail_order_idx").on(table.orderId)],
+  (table) => [
+    index("detail_order_idx").on(table.orderId),
+    index("detail_product_idx").on(table.productId),
+  ],
 );
 
 export const PaymentsTable = createTable(
@@ -202,6 +225,7 @@ export const PaymentsTable = createTable(
   (table) => [
     index("payment_order_idx").on(table.orderId),
     index("payment_status_idx").on(table.status),
+    index("payment_created_at_idx").on(table.createdAt),
   ],
 );
 
@@ -219,7 +243,10 @@ export const CartsTable = createTable(
       () => new Date(),
     ),
   },
-  (table) => [index("cart_customer_idx").on(table.customerId)],
+  (table) => [
+    index("cart_customer_idx").on(table.customerId),
+    index("cart_created_at_idx").on(table.createdAt),
+  ],
 );
 
 export const CartItemsTable = createTable(
@@ -242,7 +269,7 @@ export const CartItemsTable = createTable(
   },
   (table) => [
     index("cart_item_cart_idx").on(table.cartId),
-    index("cart_item_variant_idx").on(table.productId),
+    index("cart_item_product_idx").on(table.productId),
   ],
 );
 
@@ -267,7 +294,11 @@ export const SalesTable = createTable(
       () => new Date(),
     ),
   },
-  (table) => [index("sales_product_idx").on(table.productId)],
+  (table) => [
+    index("sales_product_idx").on(table.productId),
+    index("sales_created_at_idx").on(table.createdAt),
+    index("sales_product_created_idx").on(table.productId, table.createdAt),
+  ],
 );
 
 export const PurchasesTable = createTable(
@@ -286,8 +317,11 @@ export const PurchasesTable = createTable(
       () => new Date(),
     ),
   },
-  (table) => [index("purchase_product_idx").on(table.productId),
-    index("purchase_created_idx").on(table.createdAt)
+  (table) => [
+    index("purchase_id_idx").on(table.id),
+    index("purchase_product_idx").on(table.productId),
+    index("purchase_created_idx").on(table.createdAt),
+    index("purchase_product_created_idx").on(table.productId, table.createdAt),
   ],
 );
 

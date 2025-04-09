@@ -11,7 +11,7 @@ const globalForDb = globalThis as unknown as {
   client: Client | undefined;
 };
 
-const isDevelopment = process.env.NODE_ENV !== "production";
+const isDevelopment = process.env.NODE_ENV === "production";
 
 const getDbUrl = () => {
   if (isDevelopment) {
