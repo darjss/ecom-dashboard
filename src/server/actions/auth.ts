@@ -24,8 +24,13 @@ export const getSession = async (sessionId: string) => {
   if (sessionStr === null || sessionStr === undefined) {
     return null;
   }
-  console.log(sessionStr)
-  const session = JSON.parse(sessionStr as string);
+  console.log(sessionStr);
+  const sessionJson = JSON.parse(sessionStr as string);
+  const session: Session = {
+    id: sessionJson.id,
+    user: sessionJson.user,
+    expiresAt: new Date(sessionJson.expiresAt),
+  };
   const user = session.user;
   if (user === null || user === undefined) {
     return null;
@@ -39,7 +44,7 @@ export const getSession = async (sessionId: string) => {
 
 export const deleteSession = async (sessionId: string) => {
   revalidateTag("session");
-  return await redis.del(sessionId);
+  return await redis.del(`session:${sessionId}`);
 };
 export const updateSession = async (session: Session) => {
   revalidateTag("session");
