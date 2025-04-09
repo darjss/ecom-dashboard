@@ -24,7 +24,7 @@ export const getSession = async (sessionId: string) => {
   if (sessionStr === null || sessionStr === undefined) {
     return null;
   }
-
+  console.log(sessionStr)
   const session = JSON.parse(sessionStr as string);
   const user = session.user;
   if (user === null || user === undefined) {

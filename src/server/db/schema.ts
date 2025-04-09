@@ -9,7 +9,8 @@ import {
   status,
 } from "@/lib/constants";
 
-export const createTable = sqliteTableCreator((name) => `ecom_vit_${name}`);
+export const createTable = sqliteTableCreator((name) => `ecom_vit_${
+  name}`);
 
 export const UsersTable = createTable(
   "user",
