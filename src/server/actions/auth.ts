@@ -20,17 +20,11 @@ export const insertSession = async (session: Session) => {
 
 export const getSession = async (sessionId: string) => {
   console.log("Getting session from redis");
-  const sessionStr = await redis.get(`session:${sessionId}`);
-  if (sessionStr === null || sessionStr === undefined) {
-    return null;
+  const session = await redis.get(`session:${sessionId}`) as Session;
+  if (session === null || session === undefined) {
+    return session;
   }
-  console.log("json",sessionStr, "type", typeof sessionStr);
-  const sessionJson = JSON.parse(sessionStr as string);
-  const session: Session = {
-    id: sessionJson.id,
-    user: sessionJson.user,
-    expiresAt: new Date(sessionJson.expiresAt),
-  };
+
   const user = session.user;
   if (user === null || user === undefined) {
     return null;
