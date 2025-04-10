@@ -10,6 +10,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { sideNavItems } from "@/lib/constants";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export function AppSidebar() {
@@ -23,12 +24,12 @@ export function AppSidebar() {
             <SidebarMenu className="gap-4 pt-6">
               {sideNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <a href={item.url} className="flex items-center gap-4" >
-                    <SidebarMenuButton  variant={path===item.url?"outline":"default"}   >
+                  <Link href={item.url} className="flex items-center gap-4" >
+                    <SidebarMenuButton   variant={path===item.url?"outline":"default"}   >
                       <item.icon className="size-5" />
                       <span className="text-base">{item.title}</span>
                     </SidebarMenuButton>
-                  </a>
+                  </Link>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
