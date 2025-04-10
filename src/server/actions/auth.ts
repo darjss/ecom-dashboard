@@ -20,7 +20,7 @@ export const insertSession = async (session: Session) => {
 
 export const getSession = async (sessionId: string) => {
   console.log("Getting session from redis");
-  const session = await redis.get(`session:${sessionId}`) as Session;
+  const session = (await redis.get(`session:${sessionId}`)) as Session;
   if (session === null || session === undefined) {
     return session;
   }
@@ -35,6 +35,26 @@ export const getSession = async (sessionId: string) => {
     user: user as UserSelectType,
   };
 };
+
+export const redisBenchmark = async () => {
+  if (process.env.NODE_ENV === "production") {
+    const setStart = performance.now();
+    redis.set("test", "test");
+    const setEnd = performance.now();
+    const getStart = performance.now();
+    redis.get("test");
+    const getEnd = performance.now();
+    return {
+      set: setEnd - setStart,
+      get: getEnd - getStart,
+    };
+  } else {
+    return {
+      set: 0,
+      get: 0,
+    };
+  }
+};  
 
 export const deleteSession = async (sessionId: string) => {
   revalidateTag("session");

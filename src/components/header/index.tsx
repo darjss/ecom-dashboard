@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 import { UserRound, Search } from "lucide-react";
 import { SidebarTrigger } from "../ui/sidebar";
 import { Suspense } from "react";

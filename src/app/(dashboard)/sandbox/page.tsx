@@ -1,11 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { seedDatabase, seedOnlyOrders } from "@/lib/seed";
+import { redisBenchmark } from "@/server/actions/auth";
 import { getProductBenchmark } from "@/server/actions/product";
 import { Database } from "lucide-react";
 import { Suspense } from "react";
 
 const Page = async () => {
   const dbQueryTime = await getProductBenchmark();
+  
+  const redisQueryTime = await redisBenchmark();
   return (
     <div className="space-y-4">
       <h1>Sandbox page</h1>
@@ -33,8 +36,10 @@ const Page = async () => {
           </Button>
         </form>
       </div>
-      <Suspense>
+      <Suspense fallback={<p>Loading...</p>}>
         <p>Time to get DB query {dbQueryTime.toFixed(2)} ms</p>
+        <p>Time to set redis value {redisQueryTime.set.toFixed(2)} ms</p>
+        <p>Time to get redis value {redisQueryTime.get.toFixed(2)} ms</p>
       </Suspense>
     </div>
   );

@@ -10,8 +10,11 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { sideNavItems } from "@/lib/constants";
+import { usePathname } from "next/navigation";
 
 export function AppSidebar() {
+  const pathname = usePathname();
+  const path=pathname.substring(pathname.indexOf("/"));
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarContent>
@@ -20,8 +23,8 @@ export function AppSidebar() {
             <SidebarMenu className="gap-4 pt-6">
               {sideNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <a href={item.url} className="flex items-center gap-4">
-                    <SidebarMenuButton>
+                  <a href={item.url} className="flex items-center gap-4" >
+                    <SidebarMenuButton  variant={path===item.url?"outline":"default"}   >
                       <item.icon className="size-5" />
                       <span className="text-base">{item.title}</span>
                     </SidebarMenuButton>

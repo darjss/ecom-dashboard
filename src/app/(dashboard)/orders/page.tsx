@@ -91,8 +91,7 @@ const {page, query, status, dir, payment, sort} = await loadSearchParams(searchP
     <div className="space-y-4">
       {/* Pass the dehydrated state to the client */}
       <HydrationBoundary state={dehydrate(queryClient)}>
-        {/* OrderGrid now doesn't need initialData prop,
-            as useSuspenseQuery will pick up from hydrated cache */}
+
         <OrderGrid />
       </HydrationBoundary>
     </div>

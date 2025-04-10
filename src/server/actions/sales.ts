@@ -171,6 +171,8 @@ export const getAverageOrderValue = async (timerange: TimeRange) => {
   return total / order.length;
 };
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const getDashboardHomePageData = async (): Promise<
   DashboardHomePageData | DashboardHomePageErrorData
 > => {
@@ -189,7 +191,7 @@ export const getDashboardHomePageData = async (): Promise<
       // Proceed to fetch fresh data if cache read fails
     }
   }
-
+  sleep(2000)
   console.log("Fetching fresh dashboard homepage data");
   try {
     const [
