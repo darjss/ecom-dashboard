@@ -12,7 +12,19 @@ import {
 } from "../db/schema";
 import { generateOrderNumber } from "@/lib/utils";
 import { createPayment } from "./payment";
-import { and, eq, like, sql, desc, asc, or, gte } from "drizzle-orm";
+import {
+  and,
+  eq,
+  like,
+  sql,
+  desc,
+  asc,
+  or,
+  gte,
+  gt,
+  lt,
+  SQL,
+} from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { unstable_cacheTag as cacheTag } from "next/cache";
 import { updateStock } from "./product";
@@ -519,17 +531,23 @@ export const getOrderById = async (id: number) => {
   }
 };
 
+// Define cursor type for Orders
+type OrderCursor = {
+  id: number; // Use order ID as the primary cursor component
+  [key: string]: number | string | Date | undefined; // For sort field value (total, createdAt)
+} | null;
+
 export const getPaginatedOrders = async (
-  page: number = 1,
   pageSize = PRODUCT_PER_PAGE,
   paymentStatus?: PaymentStatusType,
   orderStatus?: OrderStatusType,
   sortField?: string,
   sortDirection: "asc" | "desc" = "asc",
+  cursor: OrderCursor = null, // Added cursor
 ) => {
   console.log(
-    "Fetching paginated orders with page:",
-    page,
+    "Fetching paginated orders with cursor:", // Updated log
+    cursor,
     "pageSize:",
     pageSize,
     "paymentStatus:",
@@ -543,46 +561,112 @@ export const getPaginatedOrders = async (
   );
 
   try {
-    let orderBy;
-    if (sortField === "total") {
-      orderBy =
-        sortDirection === "asc"
-          ? asc(OrdersTable.total)
-          : desc(OrdersTable.total);
-    } else if (sortField === "createdAt") {
-      orderBy =
-        sortDirection === "asc"
-          ? asc(OrdersTable.createdAt)
-          : desc(OrdersTable.createdAt);
-    } else {
-      orderBy = desc(OrdersTable.createdAt);
-    }
+    const conditions: (SQL<unknown> | undefined)[] = []; // Allow undefined elements
 
-    const result = await db.query.OrdersTable.findMany({
-      offset: (page - 1) * pageSize,
-      limit: pageSize,
-      orderBy: orderBy,
-      where:
-        orderStatus === undefined
-          ? undefined
-          : eq(OrdersTable.status, orderStatus),
+    // --- Existing Filters --- Filter only on OrdersTable here
+    if (orderStatus !== undefined) {
+      conditions.push(eq(OrdersTable.status, orderStatus));
+    }
+    // --- End Existing Filters ---
+
+    // --- Cursor Logic --- Based on OrdersTable columns
+    if (cursor) {
+      const { id: cursorId, ...sortValues } = cursor;
+      let cursorSortValue: number | string | Date | undefined;
+      // Use the specific column object type
+      let sortColumnObject:
+        | typeof OrdersTable.total
+        | typeof OrdersTable.createdAt;
+
+      if (sortField === "total") {
+        sortColumnObject = OrdersTable.total;
+        cursorSortValue = cursor.total; // Expect number
+      } else {
+        // Default to createdAt
+        sortColumnObject = OrdersTable.createdAt;
+        cursorSortValue = cursor.createdAt; // Expect Date object typically
+        // Add type check/conversion if cursor stores date differently (e.g., ISO string)
+        if (cursorSortValue && typeof cursorSortValue === "string") {
+          try {
+            cursorSortValue = new Date(cursorSortValue);
+          } catch {
+            /* Ignore parsing errors? */
+          }
+        }
+      }
+
+      // Ensure cursorId is defined before proceeding with cursor logic
+      if (cursorId !== undefined) {
+        if (
+          cursorSortValue !== undefined &&
+          cursorSortValue instanceof Date &&
+          isNaN(cursorSortValue.getTime())
+        ) {
+          // Handle invalid date potentially parsed from string
+          console.warn(
+            "Invalid date encountered in order cursor:",
+            cursor.createdAt,
+          );
+          // Optionally fall back to ID-only pagination or throw error
+          conditions.push(gt(OrdersTable.id, cursorId));
+        } else if (cursorSortValue !== undefined) {
+          // We have a valid sort value and ID
+          const operator = sortDirection === "asc" ? gt : lt;
+
+          // Cast value type explicitly if needed, though Drizzle should infer
+          const cursorCondition = operator(
+            sortColumnObject,
+            cursorSortValue as number | Date,
+          );
+
+          const tieBreakingCondition = and(
+            eq(sortColumnObject, cursorSortValue as number | Date),
+            gt(OrdersTable.id, cursorId),
+          );
+
+          conditions.push(or(cursorCondition, tieBreakingCondition));
+        } else {
+          // Fallback: ID-based cursor if sort value is missing or invalid
+          conditions.push(gt(OrdersTable.id, cursorId));
+        }
+      }
+    }
+    // --- End Cursor Logic ---
+
+    // --- Define Order By --- Based on OrdersTable columns
+    let orderByClauses: SQL<unknown>[] = [];
+    const primarySortColumn =
+      sortField === "total" ? OrdersTable.total : OrdersTable.createdAt;
+
+    const primaryOrderBy =
+      sortDirection === "asc"
+        ? asc(primarySortColumn)
+        : desc(primarySortColumn);
+
+    orderByClauses.push(primaryOrderBy);
+    orderByClauses.push(asc(OrdersTable.id)); // Ascending ID for tie-breaker stability
+    // --- End Define Order By ---
+
+    // Filter out undefined conditions before passing to `and`
+    const finalConditions = conditions.filter(
+      (c): c is SQL<unknown> => c !== undefined,
+    );
+
+    // === Query using db.query ===
+    const orderResults = await db.query.OrdersTable.findMany({
+      limit: pageSize + 1,
+      orderBy: orderByClauses,
+      // Pass the combined condition or undefined if it's empty
+      where: finalConditions.length > 0 ? and(...finalConditions) : undefined,
       with: {
         orderDetails: {
-          columns: {
-            quantity: true,
-          },
+          columns: { quantity: true },
           with: {
             product: {
-              columns: {
-                name: true,
-                id: true,
-                price: true,
-              },
+              columns: { name: true, id: true, price: true },
               with: {
                 images: {
-                  columns: {
-                    url: true,
-                  },
+                  columns: { url: true },
                   where: eq(ProductImagesTable.isPrimary, true),
                 },
               },
@@ -590,11 +674,7 @@ export const getPaginatedOrders = async (
           },
         },
         payments: {
-          columns: {
-            provider: true,
-            status: true,
-            createdAt: true,
-          },
+          columns: { provider: true, status: true, createdAt: true },
           where:
             paymentStatus === undefined
               ? undefined
@@ -602,39 +682,51 @@ export const getPaginatedOrders = async (
         },
       },
     });
-    const total = await db
-      .select({ count: sql<number>`count (*)` })
-      .from(OrdersTable)
-      .leftJoin(PaymentsTable, eq(OrdersTable.id, PaymentsTable.orderId))
-      .where(
-        and(
-          orderStatus === undefined
-            ? undefined
-            : eq(OrdersTable.status, orderStatus),
-          paymentStatus === undefined
-            ? undefined
-            : eq(PaymentsTable.status, paymentStatus),
-        ),
+
+    // Filter orders based on payment status *after* fetching, if specified
+    let filteredOrders = orderResults;
+    if (paymentStatus !== undefined) {
+      filteredOrders = orderResults.filter((order) =>
+        order.payments.some((p) => p.status === paymentStatus),
       );
-    const orders = shapeOrderResults(result);
+    }
+
+    // --- Determine next cursor (from unfiltered list) ---
+    let finalNextCursor: OrderCursor = null;
+    if (orderResults.length > pageSize) {
+      const nextOrder = orderResults[pageSize]; // The potential next item before filtering
+      if (nextOrder) {
+        finalNextCursor = { id: nextOrder.id };
+        if (sortField === "total") finalNextCursor.total = nextOrder.total;
+        if (!sortField || sortField === "createdAt") {
+          finalNextCursor.createdAt = nextOrder.createdAt;
+        }
+      }
+    }
+    // --- End determine next cursor ---
+
+    // Limit the final list to pageSize *after* potential filtering
+    const ordersForPage = filteredOrders.slice(0, pageSize);
+
+    const shapedOrders = shapeOrderResults(ordersForPage);
 
     return {
-      orders: orders,
-      total: total[0]?.count,
+      orders: shapedOrders,
+      nextCursor: finalNextCursor,
     };
   } catch (e) {
     console.log("Error fetching paginated orders:", e);
     if (e instanceof Error) {
       return {
         orders: [],
-        total: 0,
+        nextCursor: null, // Added
         message: "Fetching orders failed",
         error: e.message,
       };
     }
     return {
       orders: [],
-      total: 0,
+      nextCursor: null, // Added
       message: "Fetching orders failed",
       error: "Unknown error",
     };

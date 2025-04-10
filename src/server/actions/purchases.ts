@@ -1,10 +1,34 @@
 "use server";
 import "server-only";
-import { eq, desc, asc, sql, and, lt } from "drizzle-orm";
+import {
+  eq,
+  desc,
+  asc,
+  sql,
+  and,
+  lt,
+  gt,
+  or,
+  like,
+  SQLWrapper,
+} from "drizzle-orm";
 import { db } from "../db";
 import { ProductsTable, PurchasesTable } from "../db/schema";
 import { PRODUCT_PER_PAGE } from "@/lib/constants";
 import type { addPurchaseType } from "@/lib/zod/schema";
+
+// Define cursor type for purchases
+type PurchaseCursor = {
+  id: number;
+  quantityPurchased?: number;
+  unitCost?: number;
+  createdAt?: Date;
+} | null;
+
+// Type alias for purchase with product name
+type PurchaseWithProduct = Awaited<
+  ReturnType<typeof getPaginatedPurchases>
+>["purchases"][number];
 
 export const addPurchase = async (data: addPurchaseType) => {
   try {
@@ -91,41 +115,119 @@ export const getPurchaseById = async (id: number) => {
 };
 
 export const getPaginatedPurchases = async (
-  page: number = 1,
-  pageSize = PRODUCT_PER_PAGE,
-  sortField?: string,
-  sortDirection: "asc" | "desc" = "asc",
+  limit: number = PRODUCT_PER_PAGE,
+  sortField: string = "createdAt", // Default sort field
+  sortDirection: "asc" | "desc" = "desc", // Default direction
   productId?: number,
+  cursor: PurchaseCursor = null,
 ) => {
   try {
-    let orderBy;
-    if (sortField === "quantity") {
-      orderBy =
-        sortDirection === "asc"
-          ? asc(PurchasesTable.quantityPurchased)
-          : desc(PurchasesTable.quantityPurchased);
-    } else if (sortField === "date") {
-      orderBy =
-        sortDirection === "asc"
-          ? asc(PurchasesTable.createdAt)
-          : desc(PurchasesTable.createdAt);
-    } else if (sortField === "cost") {
-      orderBy =
-        sortDirection === "asc"
-          ? asc(PurchasesTable.unitCost)
-          : desc(PurchasesTable.unitCost);
-    } else {
-      orderBy = desc(PurchasesTable.createdAt);
+    // Determine the orderBy clause
+    const direction = sortDirection === "asc" ? asc : desc;
+    let orderByColumn;
+    switch (sortField) {
+      case "quantity":
+        orderByColumn = PurchasesTable.quantityPurchased;
+        break;
+      case "cost":
+        orderByColumn = PurchasesTable.unitCost;
+        break;
+      case "date": // Default to createdAt for 'date'
+      default:
+        orderByColumn = PurchasesTable.createdAt;
+        sortField = "createdAt"; // Ensure sortField matches the column
+        break;
+    }
+    const primaryOrderBy = direction(PurchasesTable.id); // Always use ID for tie-breaking
+    const secondaryOrderBy = direction(orderByColumn);
+
+    // Build the where clause for cursor pagination
+    let baseWhere = productId
+      ? eq(PurchasesTable.productId, productId)
+      : undefined;
+    let cursorWhere = undefined;
+
+    if (cursor) {
+      const cursorValue = cursor[sortField as keyof PurchaseCursor];
+      const cursorId = cursor.id;
+
+      if (cursorValue !== undefined && cursorValue !== null) {
+        const eqValue = eq(orderByColumn, cursorValue);
+        const compareValue =
+          sortDirection === "asc"
+            ? gt(orderByColumn, cursorValue)
+            : lt(orderByColumn, cursorValue);
+        const compareId = gt(PurchasesTable.id, cursorId);
+
+        cursorWhere = or(compareValue, and(eqValue, compareId));
+      } else {
+        cursorWhere = gt(PurchasesTable.id, cursorId);
+      }
     }
 
-    const result = await db.query.PurchasesTable.findMany({
-      offset: (page - 1) * pageSize,
-      limit: pageSize,
-      orderBy: orderBy,
-      where:
-        productId === undefined
-          ? undefined
-          : eq(PurchasesTable.productId, productId),
+    // Combine using inferred types
+    const whereClause =
+      baseWhere && cursorWhere
+        ? and(baseWhere, cursorWhere)
+        : cursorWhere
+          ? cursorWhere
+          : baseWhere
+            ? baseWhere
+            : undefined;
+
+    const purchases = await db.query.PurchasesTable.findMany({
+      limit: limit + 1,
+      orderBy: [secondaryOrderBy, primaryOrderBy],
+      where: whereClause,
+      with: {
+        product: {
+          columns: {
+            name: true,
+            id: true,
+            price: true, // Keep relevant product columns
+          },
+        },
+      },
+    });
+
+    let nextCursor: PurchaseCursor = null;
+    if (purchases.length > limit) {
+      const nextItem = purchases.pop(); // Remove the extra item
+      if (nextItem) {
+        nextCursor = {
+          id: nextItem.id,
+          quantityPurchased: nextItem.quantityPurchased,
+          unitCost: nextItem.unitCost,
+          createdAt: nextItem.createdAt,
+        };
+      }
+    }
+
+    return {
+      purchases,
+      nextCursor,
+    };
+  } catch (e) {
+    console.error("Error fetching paginated purchases:", e);
+    const error = e instanceof Error ? e.message : "Unknown error";
+    return {
+      purchases: [],
+      nextCursor: null,
+      message: "Fetching purchases failed",
+      error,
+    };
+  }
+};
+
+// Search function (example: search by product name)
+export const searchPurchaseByProductName = async (query: string) => {
+  if (!query) {
+    return []; // Or return paginated results?
+  }
+
+  try {
+    const results = await db.query.PurchasesTable.findMany({
+      where: like(ProductsTable.name, `%${query}%`), // Needs join in query
       with: {
         product: {
           columns: {
@@ -135,37 +237,43 @@ export const getPaginatedPurchases = async (
           },
         },
       },
+      // Consider adding orderBy and limit here if needed
+      orderBy: desc(PurchasesTable.createdAt),
+      limit: 50, // Limit search results
     });
 
-    const total = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(PurchasesTable)
-      .where(
-        productId === undefined
-          ? undefined
-          : eq(PurchasesTable.productId, productId),
-      );
+    // Drizzle doesn't directly support where conditions on joined tables easily in findMany.
+    // Perform join and filter manually or use a raw query / view.
+    // Alternative: Query Products first, then Purchases.
 
-    return {
-      purchases: result,
-      total: total[0]?.count || 0,
-    };
+    // Let's refine using a join approach:
+    const joinedResults = await db
+      .select({
+        purchase: PurchasesTable,
+        product: {
+          id: ProductsTable.id,
+          name: ProductsTable.name,
+          price: ProductsTable.price,
+        },
+      })
+      .from(PurchasesTable)
+      .innerJoin(ProductsTable, eq(PurchasesTable.productId, ProductsTable.id))
+      .where(like(ProductsTable.name, `%${query}%`))
+      .orderBy(desc(PurchasesTable.createdAt))
+      .limit(50);
+
+    // Map results to the expected structure
+    const mappedResults: PurchaseWithProduct[] = joinedResults.map((item) => ({
+      ...item.purchase,
+      product: item.product,
+    }));
+
+    return mappedResults;
   } catch (e) {
-    console.error("Error fetching paginated purchases:", e);
-    if (e instanceof Error) {
-      return {
-        purchases: [],
-        total: 0,
-        message: "Fetching purchases failed",
-        error: e.message,
-      };
-    }
-    return {
-      purchases: [],
-      total: 0,
-      message: "Fetching purchases failed",
-      error: "Unknown error",
-    };
+    console.error("Error searching purchases:", e);
+    const error = e instanceof Error ? e.message : "Unknown error";
+    // Return structure consistent with potential error handling in UI
+    return { message: "Searching purchases failed", error };
   }
 };
 

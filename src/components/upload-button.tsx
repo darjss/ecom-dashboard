@@ -27,6 +27,10 @@ export const UploadButton = ({
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/upload/image`,
         {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "Access-Control-Allow-Origin": "*",
+          },
           method: "POST",
           body: formData,
         },
