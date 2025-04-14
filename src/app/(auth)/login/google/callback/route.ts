@@ -76,8 +76,12 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   if (existingUser === null || existingUser.isApproved === false) {
+    
     return new Response(null, {
       status: 400,
+      headers:{
+        Location: "/login"
+      }
     });
   }
 
